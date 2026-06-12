@@ -1,0 +1,14 @@
+{
+  "name": "daily-life-tracking-system",
+  "version": "1.0.0",
+  "description": "Personal Productivity Tracker",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Benjie",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^37.0.0"
+  }
+}
