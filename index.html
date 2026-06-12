@@ -1,156 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Life Tracking System</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Life Tracking System</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="app-header">
-            <div class="header-content">
-                <h1>Daily Life Tracking System</h1>
-                <p id="today" class="today-date"></p>
-            </div>
-        </header>
+<div class="container">
+    <header>
+        <h1>Daily Life Tracking System</h1>
+        <p id="today"></p>
+    </header>
 
-        <!-- Dashboard Overview Section -->
-        <section class="dashboard-overview">
-            <div class="dashboard-cards">
-                <div class="dashboard-card">
-                    <div class="dashboard-label">Total Categories</div>
-                    <link rel="stylesheet" href="style.css">
+    <section class="summary-grid">
+        <article class="card summary-card">
+            <h3>Streak</h3>
+            <div class="summary-value" id="summaryStreak">0</div>
+        </article>
+        <article class="card summary-card">
+            <h3>Total Categories</h3>
+            <div class="summary-value" id="summaryTotalCategories">0</div>
+        </article>
+        <article class="card summary-card">
+            <h3>Active Categories</h3>
+            <div class="summary-value" id="summaryActiveCategories">0</div>
+        </article>
+        <article class="card summary-card">
+            <h3>Tasks Completed</h3>
+            <div class="summary-value" id="summaryCompletedTasks">0</div>
+        </article>
+        <article class="card summary-card">
+            <h3>Loans Remaining</h3>
+            <div class="summary-value" id="summaryLoansRemaining">0</div>
+        </article>
+        <article class="card summary-card">
+            <h3>Upcoming Payments</h3>
+            <div class="summary-value" id="summaryUpcomingPayments">0</div>
+        </article>
+        <article class="card summary-card">
+            <h3>Overall Progress</h3>
+            <div class="summary-value" id="summaryOverallProgress">0%</div>
+        </article>
+    </section>
 
-                    </head>
-                    <body>
+    <section class="actions-grid">
+        <button id="newCategoryAction" class="action-card" type="button">+ New Category</button>
+        <button id="addTaskAction" class="action-card" type="button">+ Add Task</button>
+        <button id="addLoanAction" class="action-card" type="button">+ Add Loan</button>
+        <button id="addPaymentAction" class="action-card" type="button">+ Add Payment</button>
+    </section>
 
-                    <div class="app">
+    <section class="category-grid" id="categoryGrid"></section>
 
-                        <header class="app-header">
-                            <div>
-                                <h1>Daily Life Tracking System</h1>
-                                <p id="today"></p>
-                            </div>
-                            <div class="top-actions">
-                                <button id="openNewCategory">+ New Category</button>
-                            </div>
-                        </header>
+</div>
 
-                        <section class="overview" id="overview">
-                            <div class="overview-grid">
-                                <div class="summary-card">
-                                    <div class="label">Total Categories</div>
-                                    <div class="value" id="totalCategories">0</div>
-                                </div>
-                                <div class="summary-card">
-                                    <div class="label">Active Categories</div>
-                                    <div class="value" id="activeCategories">0</div>
-                                </div>
-                                <div class="summary-card">
-                                    <div class="label">Tasks Completed</div>
-                                    <div class="value" id="tasksCompleted">0</div>
-                                </div>
-                                <div class="summary-card">
-                                    <div class="label">Loans Remaining</div>
-                                    <div class="value" id="loansRemaining">0</div>
-                                </div>
-                                <div class="summary-card">
-                                    <div class="label">Upcoming Payments</div>
-                                    <div class="value" id="upcomingPayments">0</div>
-                                </div>
-                                <div class="summary-card">
-                                    <div class="label">Overall Progress</div>
-                                    <div class="value" id="overallProgress">0%</div>
-                                </div>
-                            </div>
-                        </section>
+<div class="toast hidden" id="toastMessage" role="status" aria-live="polite"></div>
 
-                        <main class="grid-container" id="gridContainer">
-                            <!-- Category cards will be injected here -->
-                        </main>
-
-                        <!-- Modal: Create / Edit Category -->
-                        <div id="categoryModal" class="modal" aria-hidden="true">
-                            <div class="modal-content">
-                                <button class="modal-close" id="closeModal">✕</button>
-                                <h2 id="modalTitle">New Category</h2>
-                                <form id="categoryForm">
-                                    <div class="form-row">
-                                        <label>Category Name</label>
-                                        <input id="catName" type="text" required />
-                                    </div>
-                                    <div class="form-row">
-                                        <label>Tracking Type</label>
-                                        <select id="catType" required>
-                                            <option value="timer">TIMER</option>
-                                            <option value="checklist">CHECKLIST</option>
-                                            <option value="payment">PAYMENT</option>
-                                            <option value="loan">LOAN</option>
-                                            <option value="date">DATE</option>
-                                            <option value="savings">SAVINGS</option>
-                                        </select>
-                                    </div>
-
-                                    <div id="dynamicFields"></div>
-
-                                    <div class="form-actions">
-                                        <button type="submit" id="saveCategory">Save</button>
-                                        <button type="button" id="cancelCategory">Cancel</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-
-                        <!-- Modal: Category Details -->
-                        <div id="detailsModal" class="modal" aria-hidden="true">
-                            <div class="modal-content large">
-                                <button class="modal-close" id="closeDetails">✕</button>
-                                <div id="detailsContent"></div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <script src="main.js"></script>
-                    <script src="script.js"></script>
-
-                    </body>
-                    </html>
-                    <div id="savingsFields" class="conditional-fields" style="display: none;">
-                        <div class="form-group">
-                            <label for="savingsTarget">Target Amount</label>
-                            <input type="number" id="savingsTarget" min="0" step="0.01" placeholder="50000">
-                        </div>
-                        <div class="form-group">
-                            <label for="savingsCurrent">Current Amount</label>
-                            <input type="number" id="savingsCurrent" min="0" step="0.01" value="0">
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Create Category</button>
-                        <button type="button" class="btn btn-secondary" id="cancelAddBtn">Cancel</button>
-                    </div>
-                </form>
+<div class="modal-overlay hidden" id="categoryModalOverlay" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="categoryModalTitle">
+        <button class="modal-close" type="button" id="closeCategoryModal" aria-label="Close category form">×</button>
+        <div class="modal-header">
+            <h3 id="categoryModalTitle">Create Category</h3>
+            <p class="modal-description">Add a new tracking category for timers, checklists, or goals.</p>
+        </div>
+        <div class="modal-body">
+            <div class="add-category modal-form">
+                <label>
+                    Category name
+                    <input id="newCategoryName" type="text" placeholder="Category name" />
+                </label>
+                <label>
+                    Category type
+                    <select id="newCategoryType" aria-label="Select category type">
+                        <option value="Timer">Timer</option>
+                        <option value="Date">Date</option>
+                        <option value="Day">Day</option>
+                        <option value="Month">Month</option>
+                        <option value="Payment">Payment</option>
+                        <option value="Loan">Loan</option>
+                        <option value="Checklist">Checklist</option>
+                        <option value="Goal">Goal</option>
+                        <option value="Custom">Custom</option>
+                    </select>
+                </label>
+                <div id="categoryTypeFields" class="category-type-fields"></div>
+                <button id="addCategoryButton" type="button">Create Category</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Modal: Category Details -->
-    <div id="categoryModal" class="modal">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h2 id="categoryModalTitle">Category Details</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body" id="categoryModalBody">
-                <!-- Content inserted dynamically -->
+<div class="modal-overlay hidden" id="taskModalOverlay" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+        <button class="modal-close" type="button" id="closeTaskModal" aria-label="Close task form">×</button>
+        <div class="modal-header">
+            <h3 id="taskModalTitle">Add Task</h3>
+            <p class="modal-description">Create a task for an existing category.</p>
+        </div>
+        <div class="modal-body">
+            <div class="modal-form">
+                <select id="taskCategory" aria-label="Select category for new task"></select>
+                <input id="newTaskInput" type="text" placeholder="Task description" />
+                <input id="newTaskCalories" type="number" placeholder="Calories" min="0" style="display:none;" />
+                <button id="addTaskButton" type="button">Add Task</button>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="script.js"></script>
+<div class="modal-overlay hidden" id="loanModalOverlay" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="loanModalTitle">
+        <button class="modal-close" type="button" id="closeLoanModal" aria-label="Close loan form">×</button>
+        <div class="modal-header">
+            <h3 id="loanModalTitle">Add Loan</h3>
+            <p class="modal-description">Log a new loan tracking category with amount, payment and due date.</p>
+        </div>
+        <div class="modal-body">
+            <div class="modal-form">
+                <input id="loanCategoryName" type="text" placeholder="Loan name" />
+                <input id="loanAmount" type="number" placeholder="Loan amount" min="0" />
+                <input id="loanMonthlyPayment" type="number" placeholder="Monthly payment" min="0" />
+                <input id="loanDueDate" type="date" placeholder="Due date" />
+                <button id="createLoanButton" type="button">Create Loan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay hidden" id="paymentModalOverlay" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="paymentModalTitle">
+        <button class="modal-close" type="button" id="closePaymentModal" aria-label="Close payment form">×</button>
+        <div class="modal-header">
+            <h3 id="paymentModalTitle">Add Payment</h3>
+            <p class="modal-description">Record a payment category with amount and due date.</p>
+        </div>
+        <div class="modal-body">
+            <div class="modal-form">
+                <input id="paymentCategoryName" type="text" placeholder="Payment name" />
+                <input id="paymentAmount" type="number" placeholder="Payment amount" min="0" />
+                <input id="paymentDueDate" type="date" placeholder="Due date" />
+                <button id="createPaymentButton" type="button">Create Payment</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>

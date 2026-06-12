@@ -1,696 +1,1047 @@
-// Daily Life Tracking System - Refactored
-// Supports: TIMER, CHECKLIST, PAYMENT, LOAN, DATE, SAVINGS
+﻿const today = new Date();
+const todayDisplay = document.getElementById("today");
 
-// --- Utilities
-const $ = selector => document.querySelector(selector);
-const $$ = selector => Array.from(document.querySelectorAll(selector));
+const categoryGrid = document.getElementById("categoryGrid");
+const taskCategory = document.getElementById("taskCategory");
+const newTaskInput = document.getElementById("newTaskInput");
+const newTaskCalories = document.getElementById("newTaskCalories");
+const addTaskButton = document.getElementById("addTaskButton");
+const newCategoryName = document.getElementById("newCategoryName");
+const newCategoryType = document.getElementById("newCategoryType");
+const categoryTypeFields = document.getElementById("categoryTypeFields");
+const addCategoryButton = document.getElementById("addCategoryButton");
+const newCategoryAction = document.getElementById("newCategoryAction");
+const addTaskAction = document.getElementById("addTaskAction");
+const addLoanAction = document.getElementById("addLoanAction");
+const addPaymentAction = document.getElementById("addPaymentAction");
+const loanCategoryName = document.getElementById("loanCategoryName");
+const loanAmount = document.getElementById("loanAmount");
+const loanMonthlyPayment = document.getElementById("loanMonthlyPayment");
+const loanDueDate = document.getElementById("loanDueDate");
+const createLoanButton = document.getElementById("createLoanButton");
+const paymentCategoryName = document.getElementById("paymentCategoryName");
+const paymentAmount = document.getElementById("paymentAmount");
+const paymentDueDate = document.getElementById("paymentDueDate");
+const createPaymentButton = document.getElementById("createPaymentButton");
+const toastMessage = document.getElementById("toastMessage");
 
-function uid(prefix = '') { return prefix + Math.random().toString(36).slice(2,9); }
-function daysBetween(date) { return Math.ceil((new Date(date) - new Date()) / (1000*60*60*24)); }
+const summaryStreak = document.getElementById("summaryStreak");
+const summaryTotalCategories = document.getElementById("summaryTotalCategories");
+const summaryActiveCategories = document.getElementById("summaryActiveCategories");
+const summaryCompletedTasks = document.getElementById("summaryCompletedTasks");
+const summaryLoansRemaining = document.getElementById("summaryLoansRemaining");
+const summaryUpcomingPayments = document.getElementById("summaryUpcomingPayments");
+const summaryOverallProgress = document.getElementById("summaryOverallProgress");
 
-// --- State
-let categories = [];
-let timers = {}; // running timers
-
-// --- DOM refs
-const gridContainer = $('#gridContainer');
-const openNewCategory = $('#openNewCategory');
-const categoryModal = $('#categoryModal');
-const categoryForm = $('#categoryForm');
-const catName = $('#catName');
-const catType = $('#catType');
-const dynamicFields = $('#dynamicFields');
-const closeModalBtn = $('#closeModal');
-const detailsModal = $('#detailsModal');
-const detailsContent = $('#detailsContent');
-const closeDetailsBtn = $('#closeDetails');
-
-// --- Persistence
-const STORAGE_KEY = 'dailylife_categories_v2';
-function load() {
-  try { categories = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-  catch(e){ categories = []; }
-  if(categories.length === 0) seedDefaults();
-}
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(categories)); }
-
-function seedDefaults(){
-  categories = [
-    { id: 'gym', label: 'Gym Routine', type: 'checklist', tasks: [
-        { text: 'Incline DB Press – 4x6-8', done:false },
-        { text: 'Flat DB Press – 3x10', done:false },
-        { text: 'Shoulder Press – 3x6-8', done:false }
-      ] },
-    { id: 'english', label: 'Study English', type: 'timer', durationMinutes: 180, startTime: '23:00', autoStart:false },
-    { id: 'coding', label: 'Study Coding', type: 'timer', durationMinutes: 180, startTime: '02:00', autoStart:true }
-  ];
-  save();
-}
-
-// --- UI Helpers
-function openModal(el){ el.style.display='flex'; document.body.style.overflow='hidden'; }
-function closeModal(el){ el.style.display='none'; document.body.style.overflow='auto'; }
-
-openNewCategory.addEventListener('click', ()=>{
-  categoryForm.dataset.editId = '';
-  categoryForm.reset();
-  renderDynamicFields();
-  $('#modalTitle').textContent = 'New Category';
-  openModal(categoryModal);
-});
-closeModalBtn.addEventListener('click', ()=> closeModal(categoryModal));
-closeDetailsBtn.addEventListener('click', ()=> closeModal(detailsModal));
-
-categoryModal.addEventListener('click', (e)=>{ if(e.target===categoryModal) closeModal(categoryModal); });
-detailsModal.addEventListener('click', (e)=>{ if(e.target===detailsModal) closeModal(detailsModal); });
-
-catType.addEventListener('change', renderDynamicFields);
-
-function renderDynamicFields(){
-  const type = catType.value;
-  dynamicFields.innerHTML = '';
-  const mk = (html) => { const d = document.createElement('div'); d.innerHTML = html; dynamicFields.appendChild(d); };
-
-  if(type==='timer'){
-    mk(`<div class="form-group"><label>Hours</label><input id="timerHours" type="number" min="0" value="3"></div>
-        <div class="form-group"><label>Minutes</label><input id="timerMinutes" type="number" min="0" max="59" value="0"></div>
-        <div class="form-group"><label>Start Time (HH:MM)</label><input id="timerStartTime" type="time"></div>
-        <div class="form-group"><label><input id="timerAuto" type="checkbox"> Auto-start at scheduled time</label></div>`);
-  } else if(type==='checklist'){
-    mk(`<div class="form-group"><label>Tasks (one per line)</label><textarea id="checklistTasks" rows="6" placeholder="Incline DB Press – 4x6-8\nFlat DB Press – 3x10"></textarea></div>`);
-  } else if(type==='payment'){
-    mk(`<div class="form-group"><label>Amount</label><input id="paymentAmount" type="number" step="0.01">
-        <label>Due Date</label><input id="paymentDue" type="date"></div>`);
-  } else if(type==='loan'){
-    mk(`<div class="form-group"><label>Monthly Payment</label><input id="loanMonthly" type="number" step="0.01">
-        <label>Total Months</label><input id="loanTotal" type="number">
-        <label>Paid Months</label><input id="loanPaid" type="number" value="0"></div>`);
-  } else if(type==='date'){
-    mk(`<div class="form-group"><label>Target Date</label><input id="dateTarget" type="date"></div>`);
-  } else if(type==='savings'){
-    mk(`<div class="form-group"><label>Target Amount</label><input id="saveTarget" type="number" step="0.01">
-        <label>Current Amount</label><input id="saveCurrent" type="number" step="0.01" value="0"></div>`);
-  }
-}
-
-// --- Create / Edit Category
-categoryForm.addEventListener('submit', (e)=>{
-  e.preventDefault();
-  const editId = categoryForm.dataset.editId;
-  const name = catName.value.trim();
-  const type = catType.value;
-  if(!name || !type) return alert('Name and Type required');
-
-  let cat = editId ? categories.find(c=>c.id===editId) : { id: uid('cat_'), createdAt: new Date().toISOString() };
-  cat.label = name; cat.type = type;
-
-  if(type==='timer'){
-    const h = parseInt($('#timerHours').value)||0; const m = parseInt($('#timerMinutes').value)||0;
-    cat.durationMinutes = h*60 + m; cat.startTime = $('#timerStartTime').value || null; cat.autoStart = !!$('#timerAuto').checked;
-  } else if(type==='checklist'){
-    const tasks = ($('#checklistTasks').value||'').split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({ text:t, done:false }));
-    cat.tasks = tasks;
-  } else if(type==='payment'){
-    cat.amount = parseFloat($('#paymentAmount').value)||0; cat.dueDate = $('#paymentDue').value || null; cat.status = 'pending'; cat.paidDate = null;
-  } else if(type==='loan'){
-    cat.monthlyPayment = parseFloat($('#loanMonthly').value)||0; cat.totalMonths = parseInt($('#loanTotal').value)||0; cat.paidMonths = parseInt($('#loanPaid').value)||0;
-  } else if(type==='date'){
-    cat.targetDate = $('#dateTarget').value || null;
-  } else if(type==='savings'){
-    cat.targetAmount = parseFloat($('#saveTarget').value)||0; cat.currentAmount = parseFloat($('#saveCurrent').value)||0;
-  }
-
-  if(!editId) categories.push(cat);
-  save(); renderAll(); closeModal(categoryModal);
-});
-
-// --- Rendering
-function renderAll(){ renderGrid(); renderOverview(); }
-
-function renderOverview(){
-  $('#totalCategories').textContent = categories.length;
-  const checklistTasks = categories.filter(c=>c.type==='checklist').reduce((s,c)=>s+(c.tasks||[]).length,0);
-  const completed = categories.filter(c=>c.type==='checklist').reduce((s,c)=>s+(c.tasks||[]).filter(t=>t.done).length,0);
-  $('#tasksCompleted').textContent = `${completed}/${checklistTasks}`;
-  $('#activeCategories').textContent = categories.filter(c=> c.type!=='date' || (c.type==='date' && c.targetDate)).length;
-  const loansRemaining = categories.filter(c=>c.type==='loan').reduce((s,c)=>s+Math.max(0,(c.totalMonths||0)-(c.paidMonths||0)),0);
-  $('#loansRemaining').textContent = loansRemaining;
-  const upcoming = categories.filter(c=>c.type==='payment' && c.dueDate && daysBetween(c.dueDate) <=7 && c.status!=='paid').length;
-  $('#upcomingPayments').textContent = upcoming;
-  const overall = computeOverallProgress();
-  $('#overallProgress').textContent = overall+'%';
-}
-
-function computeOverallProgress(){
-  // average of progress across categories
-  if(categories.length===0) return 0;
-  const sum = categories.reduce((s,c)=>s+Number(getProgress(c)||0),0);
-  return Math.round(sum/categories.length);
-}
-
-function getProgress(cat){
-  if(cat.type==='checklist'){
-    const t = (cat.tasks||[]); if(t.length===0) return 0;
-    return Math.round((t.filter(x=>x.done).length / t.length)*100);
-  }
-  if(cat.type==='savings') return cat.targetAmount? Math.round((cat.currentAmount||0)/cat.targetAmount*100):0;
-  if(cat.type==='loan') return cat.totalMonths? Math.round((cat.paidMonths||0)/cat.totalMonths*100):0;
-  if(cat.type==='payment') return cat.status==='paid'?100:0;
-  return 0;
-}
-
-function renderGrid(){
-  gridContainer.innerHTML = '';
-  categories.forEach(cat=> gridContainer.appendChild(renderCard(cat)) );
-}
-
-function renderCard(cat){
-  const card = document.createElement('div'); card.className='category-card';
-  const title = document.createElement('div'); title.className='card-header'; title.innerHTML = `<h3>${cat.label}</h3><span class="card-type">${cat.type.toUpperCase()}</span>`;
-  const body = document.createElement('div'); body.className='card-body';
-  const summary = document.createElement('div'); summary.className='card-summary'; summary.innerHTML = getCardSummary(cat);
-  const progBar = document.createElement('div'); progBar.className='progress-bar'; progBar.innerHTML = `<div class='progress-fill' style='width:${Math.min(getProgress(cat),100)}%'></div>`;
-  const progText = document.createElement('div'); progText.className='progress-text'; progText.textContent = getProgress(cat)+'%';
-  body.appendChild(summary); body.appendChild(progBar); body.appendChild(progText);
-  const footer = document.createElement('div'); footer.className='card-footer';
-  const openBtn = document.createElement('button'); openBtn.className='btn btn-small btn-primary'; openBtn.textContent='Open'; openBtn.addEventListener('click',(e)=>{e.stopPropagation(); openCategoryDetails(cat.id);} );
-  const editBtn = document.createElement('button'); editBtn.className='btn btn-small'; editBtn.textContent='Edit'; editBtn.addEventListener('click',(e)=>{ e.stopPropagation(); openEditModal(cat.id); });
-  const delBtn = document.createElement('button'); delBtn.className='btn btn-small btn-danger'; delBtn.textContent='Delete'; delBtn.addEventListener('click',(e)=>{ e.stopPropagation(); if(confirm('Delete category?')){ categories = categories.filter(x=>x.id!==cat.id); save(); renderAll(); } });
-  footer.appendChild(openBtn); footer.appendChild(editBtn); footer.appendChild(delBtn);
-  card.appendChild(title); card.appendChild(body); card.appendChild(footer);
-  card.addEventListener('click', ()=> openCategoryDetails(cat.id));
-  return card;
-}
-
-function getCardSummary(cat){
-  if(cat.type==='timer') return `Duration: ${Math.floor((cat.durationMinutes||0)/60)}h ${((cat.durationMinutes||0)%60)}m`;
-  if(cat.type==='checklist') return `${(cat.tasks||[]).filter(t=>t.done).length}/${(cat.tasks||[]).length} completed`;
-  if(cat.type==='payment') return `₱${(cat.amount||0).toFixed(2)} ${cat.status==='paid'?'✓ Paid':'Pending'}`;
-  if(cat.type==='loan'){ const rem = Math.max(0,(cat.totalMonths||0)-(cat.paidMonths||0)); const bal = ((cat.monthlyPayment||0)*rem); return `₱${bal.toFixed(2)} remaining (${rem} months)`; }
-  if(cat.type==='date') return `${daysBetween(cat.targetDate)} days remaining`;
-  if(cat.type==='savings') return `₱${(cat.currentAmount||0).toFixed(2)} / ₱${(cat.targetAmount||0).toFixed(2)}`;
-  return '';
-}
-
-// --- Details Modal
-function openCategoryDetails(id){
-  const cat = categories.find(c=>c.id===id); if(!cat) return;
-  detailsContent.innerHTML = getDetailsHtml(cat);
-  attachDetailsListeners(cat);
-  openModal(detailsModal);
-}
-
-function getDetailsHtml(cat){
-  if(cat.type==='timer'){
-    const mins = cat.durationMinutes||0; const h = Math.floor(mins/60); const m = mins%60;
-    return `<div class="modal-section"><h3>⏱ ${cat.label}</h3><p>Duration: ${h}h ${m}m</p>${cat.startTime?`<p>Start: ${cat.startTime} ${cat.autoStart?'<em>(auto)</em>':''}</p>`:''}
-      <div class="timer-display" id="timerDisplay_${cat.id}">00:00:00</div>
-      <div class="modal-actions"><button class="btn btn-primary" id="startTimer_${cat.id}">Start/Pause</button><button class="btn" id="resetTimer_${cat.id}">Reset</button></div></div>`;
-  }
-  if(cat.type==='checklist'){
-    const items = (cat.tasks||[]).map((t,i)=>`<div class="checklist-item"><input type="checkbox" id="chk_${cat.id}_${i}" data-idx="${i}" ${t.done?'checked':''}><label for="chk_${cat.id}_${i}">${t.text}</label></div>`).join('');
-    return `<div class="modal-section"><h3>✓ ${cat.label}</h3><div class="checklist-container">${items||'<em>No tasks</em>'}</div><div class="modal-actions"><button class="btn" id="addCheck_${cat.id}">Add Task</button></div></div>`;
-  }
-  if(cat.type==='payment'){
-    return `<div class="modal-section"><h3>💳 ${cat.label}</h3><div class="modal-info">Amount: <strong>₱${(cat.amount||0).toFixed(2)}</strong><br>Due: <strong>${cat.dueDate||'—'}</strong><br>Status: <strong>${cat.status||'pending'}</strong>${cat.paidDate?`<br>Paid: ${cat.paidDate}`:''}</div>
-      <div class="modal-actions">${cat.status!=='paid'?`<button class="btn btn-primary" id="markPaid_${cat.id}">Mark Paid</button>`:`<button class="btn" id="markPending_${cat.id}">Mark Pending</button>`}</div></div>`;
-  }
-  if(cat.type==='loan'){
-    const rem = Math.max(0,(cat.totalMonths||0)-(cat.paidMonths||0)); const bal = ((cat.monthlyPayment||0)*rem);
-    return `<div class="modal-section"><h3>🏦 ${cat.label}</h3><div class="modal-info">Monthly: <strong>₱${(cat.monthlyPayment||0).toFixed(2)}</strong><br>Total: <strong>${cat.totalMonths||0}</strong><br>Paid: <strong>${cat.paidMonths||0}</strong><br>Remaining: <strong>${rem} months</strong><br>Balance: <strong>₱${bal.toFixed(2)}</strong></div>
-      <div class="modal-actions">${rem>0?`<button class="btn btn-primary" id="payInstall_${cat.id}">Pay Installment</button>`:'<span style="color:green; font-weight:700">Loan complete</span>'}</div></div>`;
-  }
-  if(cat.type==='date'){
-    const d = daysBetween(cat.targetDate);
-    return `<div class="modal-section"><h3>📅 ${cat.label}</h3><div class="modal-info">Target: <strong>${cat.targetDate||'—'}</strong></div><div class="countdown-display">${d<0?`Overdue ${Math.abs(d)}d`:`${d} days remaining`}</div></div>`;
-  }
-  if(cat.type==='savings'){
-    const prog = cat.targetAmount? Math.round((cat.currentAmount||0)/cat.targetAmount*100):0; return `<div class="modal-section"><h3>💰 ${cat.label}</h3><div class="modal-info">${(cat.currentAmount||0).toFixed(2)} / ${(cat.targetAmount||0).toFixed(2)}</div><div class="progress-bar"><div class="progress-fill" style="width:${Math.min(prog,100)}%"></div></div><p>${prog}%</p><div class="modal-actions"><input id="addSave_${cat.id}" type="number" placeholder="Add amount" style="flex:1;padding:8px"><button class="btn btn-primary" id="addSaveBtn_${cat.id}">Add</button></div></div>`; }
-  return '<div class="modal-section">Unknown type</div>';
-}
-
-function attachDetailsListeners(cat){
-  if(cat.type==='timer'){
-    $('#startTimer_'+cat.id).addEventListener('click', ()=> { toggleTimer(cat.id); });
-    $('#resetTimer_'+cat.id).addEventListener('click', ()=> { resetTimer(cat.id); });
-    updateTimerUI(cat.id);
-  }
-  if(cat.type==='checklist'){
-    (cat.tasks||[]).forEach((t,i)=>{ const el = $('#chk_'+cat.id+'_'+i); if(el) el.addEventListener('change', (e)=>{ cat.tasks[i].done = e.target.checked; save(); renderAll(); }) });
-    $('#addCheck_'+cat.id).addEventListener('click', ()=>{ const text = prompt('Task text'); if(text){ cat.tasks.push({text,done:false}); save(); openCategoryDetails(cat.id); renderAll(); } });
-  }
-  if(cat.type==='payment'){
-    const mp = $('#markPaid_'+cat.id); if(mp) mp.addEventListener('click', ()=>{ cat.status='paid'; cat.paidDate = new Date().toISOString().split('T')[0]; save(); openCategoryDetails(cat.id); renderAll(); });
-    const mp2 = $('#markPending_'+cat.id); if(mp2) mp2.addEventListener('click', ()=>{ cat.status='pending'; cat.paidDate=null; save(); openCategoryDetails(cat.id); renderAll(); });
-  }
-  if(cat.type==='loan'){
-    const btn = $('#payInstall_'+cat.id); if(btn) btn.addEventListener('click', ()=>{ if((cat.paidMonths||0) < (cat.totalMonths||0)){ cat.paidMonths = (cat.paidMonths||0)+1; save(); openCategoryDetails(cat.id); renderAll(); } });
-  }
-  if(cat.type==='savings'){
-    const addBtn = $('#addSaveBtn_'+cat.id); if(addBtn) addBtn.addEventListener('click', ()=>{ const val = parseFloat($('#addSave_'+cat.id).value)||0; if(val>0){ cat.currentAmount = (cat.currentAmount||0)+val; save(); openCategoryDetails(cat.id); renderAll(); } });
-  }
-}
-
-// --- Timer management
-function toggleTimer(catId){
-  const key = 't_'+catId; const cat = categories.find(c=>c.id===catId); if(!cat) return;
-  if(!timers[key]){ timers[key] = { remaining: (cat.durationMinutes||0)*60, interval:null }; }
-  if(timers[key].interval){ clearInterval(timers[key].interval); timers[key].interval=null; } else { timers[key].interval = setInterval(()=>{ timers[key].remaining--; if(timers[key].remaining<=0){ clearInterval(timers[key].interval); timers[key].interval=null; alert(cat.label+' complete'); } updateTimerUI(catId); },1000); }
-  updateTimerUI(catId);
-}
-function resetTimer(catId){ const cat = categories.find(c=>c.id===catId); timers['t_'+catId] = { remaining:(cat.durationMinutes||0)*60, interval:null }; updateTimerUI(catId); }
-function updateTimerUI(catId){ const d = timers['t_'+catId]; const el = $('#timerDisplay_'+catId); if(!el) return; const rem = d?d.remaining: (categories.find(c=>c.id===catId).durationMinutes||0)*60; const h=Math.floor(rem/3600); const m=Math.floor((rem%3600)/60); const s=rem%60; el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
-
-// Auto-start timers at scheduled time
-function checkAutoStart(){ const now = new Date(); const hh = String(now.getHours()).padStart(2,'0'); const mm = String(now.getMinutes()).padStart(2,'0'); const current = `${hh}:${mm}`; const todayKey = now.toISOString().split('T')[0]; categories.forEach(cat=>{ if(cat.type==='timer' && cat.startTime && cat.autoStart){ const key = `auto_${cat.id}_${todayKey}`; if(!localStorage.getItem(key) && current>=cat.startTime){ toggleTimer(cat.id); localStorage.setItem(key,'1'); } } }); }
-setInterval(checkAutoStart,60000); checkAutoStart();
-
-// --- Edit existing
-function openEditModal(id){ const cat = categories.find(c=>c.id===id); if(!cat) return; categoryForm.dataset.editId = id; $('#modalTitle').textContent='Edit Category'; catName.value = cat.label; catType.value = cat.type; renderDynamicFields(); setTimeout(()=>{ // populate dynamic
-  if(cat.type==='timer'){ const h = Math.floor((cat.durationMinutes||0)/60); const m=(cat.durationMinutes||0)%60; $('#timerHours').value=h; $('#timerMinutes').value=m; $('#timerStartTime').value=cat.startTime||''; $('#timerAuto').checked=!!cat.autoStart; }
-  if(cat.type==='checklist'){ $('#checklistTasks').value = (cat.tasks||[]).map(t=>t.text).join('\n'); }
-  if(cat.type==='payment'){ $('#paymentAmount').value=cat.amount||''; $('#paymentDue').value=cat.dueDate||''; }
-  if(cat.type==='loan'){ $('#loanMonthly').value=cat.monthlyPayment||''; $('#loanTotal').value=cat.totalMonths||''; $('#loanPaid').value=cat.paidMonths||0; }
-  if(cat.type==='date'){ $('#dateTarget').value=cat.targetDate||''; }
-  if(cat.type==='savings'){ $('#saveTarget').value=cat.targetAmount||''; $('#saveCurrent').value=cat.currentAmount||0; }
-},50);
- openModal(categoryModal);
-}
-
-// --- Other helpers
-function openCategoryDetails(id){ openCategoryDetails; }
-
-// --- Init
-load(); renderAll();
-
-// Expose small API for console testing
-window.__DLTS = { categories, save, load, renderAll };
-// Daily Life Tracking System - Unified Multi-Type Implementation
-// Supports: TIMER, CHECKLIST, PAYMENT, LOAN, DATE, SAVINGS
-
-const STORAGE_KEY = 'dailylife_categories_v1';
-const autoTimerChecks = [];
-let categories = [];
-const timers = {};
-
-// --- Defaults (first-run) ---
-const DEFAULT_CATEGORIES = [
+const defaultCategories = [
     {
-        id: 'study_english',
-        label: 'Study English',
-        type: 'timer',
-        durationMinutes: 180,
-        startTime: '23:00',
-        autoStart: false
+        key: "english",
+        label: "Study English",
+        type: "Timer",
+        duration: 3,
+        startTime: "23:00",
+        initial: [
+            "English Grammar",
+            "Listening Practice",
+            "Speaking Practice"
+        ]
     },
     {
-        id: 'study_coding',
-        label: 'Study Coding',
-        type: 'timer',
-        durationMinutes: 120,
-        startTime: '02:00',
-        autoStart: true
+        key: "coding",
+        label: "Study Coding",
+        type: "Timer",
+        duration: 3,
+        startTime: "02:00",
+        initial: [
+            "Coding Concept",
+            "Practice Problems",
+            "Mini Project"
+        ]
     },
     {
-        id: 'gym_routine',
-        label: 'Gym Routine',
-        type: 'checklist',
-        tasks: [
-            { text: 'Incline DB Press — 4x6-8', done: false },
-            { text: 'Flat DB Press — 3x10', done: false },
-            { text: 'Shoulder Press — 3x6-8', done: false },
-            { text: 'Lateral Raise — 5x15', done: false }
+        key: "gym",
+        label: "Gym Routine",
+        type: "Checklist",
+        initial: [
+            { group: "MONDAY – PUSH (Chest Focus)", text: "Incline DB Press – 4x6-8" },
+            { group: "MONDAY – PUSH (Chest Focus)", text: "Flat DB Press – 3x10" },
+            { group: "MONDAY – PUSH (Chest Focus)", text: "Shoulder Press – 3x6-8" },
+            { group: "MONDAY – PUSH (Chest Focus)", text: "Lateral Raise – 5x15" },
+            { group: "MONDAY – PUSH (Chest Focus)", text: "Cable / Rope Pushdown – 3x12" },
+            { group: "MONDAY – PUSH (Chest Focus)", text: "Overhead Tricep Extension – 3x12" },
+            { group: "MONDAY – PUSH (Chest Focus)", text: "Incline Walk – 20 mins" },
+            { group: "TUESDAY – PULL (Back Width Focus)", text: "Lat Pulldown (wide grip) – 4x10" },
+            { group: "TUESDAY – PULL (Back Width Focus)", text: "Assisted Pullups / Pullups – 3 sets" },
+            { group: "TUESDAY – PULL (Back Width Focus)", text: "Chest Supported Row – 3x10" },
+            { group: "TUESDAY – PULL (Back Width Focus)", text: "Seated Cable Row – 3x12" },
+            { group: "TUESDAY – PULL (Back Width Focus)", text: "Straight Arm Pulldown – 3x15" },
+            { group: "TUESDAY – PULL (Back Width Focus)", text: "Face Pull – 3x15" },
+            { group: "TUESDAY – PULL (Back Width Focus)", text: "Rear Delt Fly – 3x15" },
+            { group: "TUESDAY – PULL (Back Width Focus)", text: "Barbell Curl – 3x10" },
+            { group: "TUESDAY – PULL (Back Width Focus)", text: "Incline Walk – 15 mins" },
+            { group: "WEDNESDAY – LEGS + CORE", text: "Squat / Leg Press – 4x6-8" },
+            { group: "WEDNESDAY – LEGS + CORE", text: "Romanian Deadlift – 3x10" },
+            { group: "WEDNESDAY – LEGS + CORE", text: "Walking Lunges – 3x12 each" },
+            { group: "WEDNESDAY – LEGS + CORE", text: "Leg Extension – 3x15" },
+            { group: "WEDNESDAY – LEGS + CORE", text: "Plank – 3x1 min" },
+            { group: "WEDNESDAY – LEGS + CORE", text: "Leg Raises – 3x12" },
+            { group: "WEDNESDAY – LEGS + CORE", text: "Russian Twist – 3x20" },
+            { group: "THURSDAY – ACTIVE RECOVERY + FAT LOSS", text: "10k steps" },
+            { group: "THURSDAY – ACTIVE RECOVERY + FAT LOSS", text: "Stretching" },
+            { group: "THURSDAY – ACTIVE RECOVERY + FAT LOSS", text: "Dead hang – 3x max" },
+            { group: "THURSDAY – ACTIVE RECOVERY + FAT LOSS", text: "15 min HIIT (bike / jog intervals)" },
+            { group: "FRIDAY – UPPER (SHAPE DAY)", text: "Incline DB Press – 3x12" },
+            { group: "FRIDAY – UPPER (SHAPE DAY)", text: "Single Arm Lat Pulldown – 3x12" },
+            { group: "FRIDAY – UPPER (SHAPE DAY)", text: "Chest Supported Row – 3x12" },
+            { group: "FRIDAY – UPPER (SHAPE DAY)", text: "Lateral Raise – 5x15" },
+            { group: "FRIDAY – UPPER (SHAPE DAY)", text: "Leaning Lateral Raise – 3x15" },
+            { group: "FRIDAY – UPPER (SHAPE DAY)", text: "Rear Delt Fly – 3x15" },
+            { group: "FRIDAY – UPPER (SHAPE DAY)", text: "Dips – 3x failure" },
+            { group: "FRIDAY – UPPER (SHAPE DAY)", text: "DB Curl – 3x12" },
+            { group: "FRIDAY – UPPER (SHAPE DAY)", text: "20 min incline walk" },
+            { group: "SATURDAY – LOWER + FAT BURN", text: "Goblet Squat – 3x15" },
+            { group: "SATURDAY – LOWER + FAT BURN", text: "RDL – 3x12" },
+            { group: "SATURDAY – LOWER + FAT BURN", text: "Leg Press – 3x15" },
+            { group: "SATURDAY – LOWER + FAT BURN", text: "Kettlebell Swin" }
         ]
     }
 ];
 
-// --- Utilities ---
-function uid(prefix='id'){
-    return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
+let categories = [];
+let tasks = [];
+let timers = {};
+
+function parseTimeString(value){
+    if(!value) return null;
+    const parts = value.split(":").map(Number);
+    if(parts.length !== 2 || parts.some(val => Number.isNaN(val))) return null;
+    return { hours: parts[0], minutes: parts[1] };
 }
 
-function save(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(categories));
+function formatTimeLabel(value){
+    const parsed = parseTimeString(value);
+    if(!parsed) return "";
+    const hour12 = parsed.hours % 12 === 0 ? 12 : parsed.hours % 12;
+    const suffix = parsed.hours >= 12 ? "PM" : "AM";
+    return `${hour12}:${String(parsed.minutes).padStart(2, "0")} ${suffix}`;
 }
 
-function load(){
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) {
-        categories = DEFAULT_CATEGORIES.slice();
-        save();
+function formatDuration(seconds){
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
+}
+
+function getTodayKey(){
+    const now = new Date();
+    return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+}
+
+function getWeekNumber(date = new Date()){
+    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = Math.floor((date - firstDayOfYear) / 86400000);
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+}
+
+function generateId(){
+    return typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+function getTodayGymGroup(){
+    const names = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
+    return names[new Date().getDay()];
+}
+
+function getItemCalories(text){
+    const lower = text.toLowerCase();
+    if(lower.includes("walk") && lower.includes("20")) return 100;
+    if(lower.includes("incline walk") && lower.includes("15")) return 90;
+    if(lower.includes("10k steps")) return 120;
+    if(lower.includes("hiit")) return 180;
+    if(lower.includes("squat") || lower.includes("leg press") || lower.includes("romanian deadlift") || lower.includes("goblet squat") || lower.includes("kettlebell")) return 45;
+    if(lower.includes("lat pulldown") || lower.includes("chest supported row") || lower.includes("seated cable row") || lower.includes("incline db press")) return 35;
+    if(lower.includes("assisted pullups") || lower.includes("dips") || lower.includes("barbell curl") || lower.includes("db curl") || lower.includes("dead hang")) return 40;
+    if(lower.includes("plank") || lower.includes("leg raises") || lower.includes("russian twist")) return 20;
+    if(lower.includes("lateral raise") || lower.includes("rear delt fly") || lower.includes("straight arm pulldown") || lower.includes("face pull") || lower.includes("overhead tricep extension") || lower.includes("cable / rope pushdown")) return 20;
+    if(lower.includes("stretching")) return 30;
+    return 25;
+}
+
+function normalizeCategoryData(item){
+    return {
+        ...item,
+        type: item.type || "Checklist",
+        initial: Array.isArray(item.initial) ? item.initial : []
+    };
+}
+
+function loadCategories(){
+    const saved = localStorage.getItem("customCategories");
+    let persisted = [];
+    if(saved){
+        try {
+            persisted = JSON.parse(saved);
+        } catch {
+            localStorage.removeItem("customCategories");
+        }
+    }
+
+    const merged = defaultCategories.map(defaultCat => {
+        const found = persisted.find(savedCat => savedCat.key === defaultCat.key);
+        return normalizeCategoryData(found ? { ...defaultCat, ...found } : defaultCat);
+    });
+
+    persisted.forEach(savedCat => {
+        if(!merged.some(category => category.key === savedCat.key)){
+            merged.push(normalizeCategoryData(savedCat));
+        }
+    });
+
+    return merged;
+}
+
+function saveCategories(){
+    localStorage.setItem("customCategories", JSON.stringify(categories));
+}
+
+function getGymBaseTasks(){
+    const gymCategory = categories.find(c => c.key === "gym");
+    return gymCategory ? Array.isArray(gymCategory.initial) ? gymCategory.initial : [] : [];
+}
+
+function getGymTasksForGroup(groupPrefix){
+    return getGymBaseTasks().filter(item => item.group?.startsWith(groupPrefix));
+}
+
+function refreshGymTasks(savedTasks){
+    const todayGroup = getTodayGymGroup();
+    const lastGymDay = localStorage.getItem("lastGymDay");
+    if(lastGymDay === todayGroup) return savedTasks;
+
+    const gymItems = getGymTasksForGroup(todayGroup);
+    const gymBase = gymItems.length ? gymItems : getGymBaseTasks();
+    const defaultKeys = new Set(gymBase.map(item => `${item.group ?? ""}|${item.text}`));
+
+    const otherTasks = savedTasks.filter(task => task.category !== "gym");
+    const customGym = savedTasks.filter(task => task.category === "gym" && !defaultKeys.has(`${task.group ?? ""}|${task.text}`));
+
+    const generatedGym = gymBase.map(item => ({
+        id: generateId(),
+        text: item.text,
+        category: "gym",
+        done: false,
+        group: item.group ?? "",
+        calories: item.calories ?? getItemCalories(item.text)
+    }));
+
+    localStorage.setItem("lastGymDay", todayGroup);
+    return [...otherTasks, ...customGym, ...generatedGym];
+}
+
+function loadTasks(){
+    const saved = localStorage.getItem("dailyTasks");
+    if(saved){
+        try {
+            const parsed = JSON.parse(saved);
+            const normalized = parsed.map(task => ({
+                id: task.id || generateId(),
+                text: task.text || "",
+                category: task.category || "",
+                done: Boolean(task.done),
+                group: task.group || "",
+                calories: Number.isFinite(task.calories) ? task.calories : 0
+            })).filter(task => task.category && categories.some(c => c.key === task.category));
+
+            const refreshed = refreshGymTasks(normalized);
+            checkWeeklyReset(refreshed);
+            return refreshed;
+        } catch {
+            localStorage.removeItem("dailyTasks");
+        }
+    }
+
+    const todayGymGroup = getTodayGymGroup();
+    return categories.flatMap(category => createTasksForCategory(category, todayGymGroup));
+}
+
+function saveTasks(){
+    localStorage.setItem("dailyTasks", JSON.stringify(tasks));
+}
+
+function createTasksForCategory(category, gymGroup = getTodayGymGroup()){
+    if(!Array.isArray(category.initial) || category.initial.length === 0) return [];
+
+    if(category.key === "gym"){
+        const todayItems = getGymTasksForGroup(gymGroup);
+        const sourceItems = todayItems.length ? todayItems : category.initial;
+        return sourceItems.map(item => ({
+            id: generateId(),
+            text: item.text,
+            category: category.key,
+            done: false,
+            group: item.group || "",
+            calories: item.calories ?? getItemCalories(item.text)
+        }));
+    }
+
+    return category.initial.map(item => {
+        if(typeof item === "string"){
+            return { id: generateId(), text: item, category: category.key, done: false, group: "", calories: 0 };
+        }
+        return {
+            id: generateId(),
+            text: item.text || "",
+            category: category.key,
+            done: false,
+            group: item.group || "",
+            calories: Number.isFinite(item.calories) ? item.calories : 0
+        };
+    });
+}
+
+function getCategoryByKey(key){
+    return categories.find(category => category.key === key);
+}
+
+function updateCategorySelect(){
+    taskCategory.innerHTML = "";
+
+    const chooseOption = document.createElement("option");
+    chooseOption.value = "";
+    chooseOption.textContent = "Select a category";
+    chooseOption.disabled = true;
+    chooseOption.selected = true;
+    taskCategory.appendChild(chooseOption);
+
+    categories.forEach(category => {
+        const taskOption = document.createElement("option");
+        taskOption.value = category.key;
+        taskOption.textContent = category.label;
+        taskCategory.appendChild(taskOption);
+    });
+
+    updateTaskCaloriesVisibility();
+}
+
+function getCategoryCompletion(categoryKey){
+    const categoryTasks = tasks.filter(task => task.category === categoryKey);
+    if(categoryTasks.length === 0) return false;
+    return categoryTasks.every(task => task.done);
+}
+
+function updateSummaryCards(){
+    const streak = updateStreak();
+    const completedTasks = tasks.filter(task => task.done).length;
+    const loansRemaining = categories.filter(category => category.type === "Loan" && !getCategoryCompletion(category.key)).length;
+    const upcomingPayments = categories.filter(category => category.type === "Payment" && !getCategoryCompletion(category.key)).length;
+    const totalCategories = categories.length;
+    const activeCategories = categories.filter(category => !getCategoryCompletion(category.key)).length;
+    const overallProgress = tasks.length ? Math.round((completedTasks / tasks.length) * 100) : 0;
+
+    summaryStreak.textContent = streak;
+    summaryTotalCategories.textContent = totalCategories;
+    summaryActiveCategories.textContent = activeCategories;
+    summaryCompletedTasks.textContent = completedTasks;
+    summaryLoansRemaining.textContent = loansRemaining;
+    summaryUpcomingPayments.textContent = upcomingPayments;
+    summaryOverallProgress.textContent = `${overallProgress}%`;
+}
+
+function updateStreak(){
+    const todayKey = getTodayKey();
+    const lastStreakDate = localStorage.getItem("lastStreakDate");
+    const streak = Number(localStorage.getItem("dailyStreak") || "0");
+    const completedAll = tasks.length > 0 && tasks.every(task => task.done);
+
+    if(completedAll && lastStreakDate !== todayKey){
+        localStorage.setItem("dailyStreak", String(streak + 1));
+        localStorage.setItem("lastStreakDate", todayKey);
+        return streak + 1;
+    }
+
+    return streak;
+}
+
+function getCategoryMetaElements(category){
+    const meta = [];
+    if(category.type === "Timer"){
+        if(category.startTime) meta.push(`Start: ${formatTimeLabel(category.startTime)}`);
+        if(category.duration) meta.push(`Duration: ${category.duration} hr${category.duration !== 1 ? "s" : ""}`);
+    }
+    if(category.type === "Payment" || category.type === "Loan"){
+        if(category.amount != null) meta.push(`Amount: ₱${category.amount}`);
+        if(category.monthlyPayment != null) meta.push(`Monthly: ₱${category.monthlyPayment}`);
+        if(category.dueDate) meta.push(`Due: ${category.dueDate}`);
+    }
+    if(category.type === "Date" && category.dueDate) meta.push(`Due: ${category.dueDate}`);
+    if(category.type === "Day" && category.selectedDay) meta.push(`Day: ${category.selectedDay}`);
+    if(category.type === "Month" && category.selectedMonth) meta.push(`Month: ${category.selectedMonth}`);
+    if(category.type === "Goal" && category.targetValue) meta.push(`Target: ${category.targetValue}`);
+    if(category.type === "Custom" && category.notes) meta.push(`Notes: ${category.notes}`);
+    return meta;
+}
+
+function renderCategoryGrid(){
+    categoryGrid.innerHTML = "";
+    categories.forEach(category => {
+        const categoryTasks = tasks.filter(task => task.category === category.key);
+        const completedCount = categoryTasks.filter(task => task.done).length;
+        const totalCount = categoryTasks.length;
+        const progressValue = totalCount ? Math.round((completedCount / totalCount) * 100) : 0;
+
+        const card = document.createElement("article");
+        card.className = "category-card";
+
+        const header = document.createElement("div");
+        header.className = "card-header";
+
+        const titleBlock = document.createElement("div");
+        const title = document.createElement("h3");
+        title.textContent = category.label;
+        const badge = document.createElement("span");
+        badge.className = "badge";
+        badge.textContent = category.type;
+        titleBlock.appendChild(title);
+        titleBlock.appendChild(badge);
+
+        const removeButton = document.createElement("button");
+        removeButton.className = "category-remove";
+        removeButton.type = "button";
+        removeButton.textContent = "Remove";
+        removeButton.addEventListener("click", () => removeCategory(category.key));
+
+        header.appendChild(titleBlock);
+        header.appendChild(removeButton);
+
+        const meta = document.createElement("div");
+        meta.className = "category-meta";
+        getCategoryMetaElements(category).forEach(text => {
+            const span = document.createElement("span");
+            span.textContent = text;
+            meta.appendChild(span);
+        });
+
+        const progressBlock = document.createElement("div");
+        progressBlock.className = "category-progress";
+        const progressLabel = document.createElement("div");
+        progressLabel.className = "progress-label";
+        progressLabel.innerHTML = `<span>${completedCount}/${totalCount} completed</span><strong>${progressValue}%</strong>`;
+        const progressBar = document.createElement("div");
+        progressBar.className = "progress-bar";
+        const progressFill = document.createElement("div");
+        progressFill.className = "progress-bar-fill";
+        progressFill.style.width = `${progressValue}%`;
+        progressBar.appendChild(progressFill);
+        progressBlock.appendChild(progressLabel);
+        progressBlock.appendChild(progressBar);
+
+        const content = document.createElement("div");
+        content.className = "card-content";
+        const summary = document.createElement("div");
+        summary.className = "category-details";
+        if(totalCount === 0){
+            summary.classList.add("empty-state");
+            summary.textContent = "No tasks yet for this category.";
+        } else {
+            summary.innerHTML = `
+                <div><strong>${totalCount}</strong> task${totalCount === 1 ? "" : "s"}</div>
+                <div><strong>${completedCount}</strong> completed</div>
+            `;
+        }
+        content.appendChild(summary);
+
+        card.appendChild(header);
+        card.appendChild(meta);
+        card.appendChild(progressBlock);
+        card.appendChild(content);
+
+        if(category.type === "Timer" && category.duration > 0){
+            const footer = document.createElement("div");
+            footer.className = "card-footer";
+
+            const timerDisplay = document.createElement("div");
+            timerDisplay.className = "timer-display";
+            timerDisplay.id = `${category.key}TimerDisplay`;
+            const timerState = timers[category.key] || { remaining: category.duration * 3600 };
+            timerDisplay.textContent = formatDuration(timerState.remaining);
+
+            const actionRow = document.createElement("div");
+            actionRow.className = "card-footer-actions";
+
+            const startBtn = document.createElement("button");
+            startBtn.type = "button";
+            startBtn.textContent = "Start";
+            startBtn.addEventListener("click", () => startCategoryTimer(category.key));
+
+            const pauseBtn = document.createElement("button");
+            pauseBtn.type = "button";
+            pauseBtn.textContent = "Pause";
+            pauseBtn.addEventListener("click", () => pauseCategoryTimer(category.key));
+
+            const resetBtn = document.createElement("button");
+            resetBtn.type = "button";
+            resetBtn.textContent = "Reset";
+            resetBtn.addEventListener("click", () => resetCategoryTimer(category.key));
+
+            actionRow.appendChild(startBtn);
+            actionRow.appendChild(pauseBtn);
+            actionRow.appendChild(resetBtn);
+
+            footer.appendChild(timerDisplay);
+            footer.appendChild(actionRow);
+            card.appendChild(footer);
+        }
+
+        categoryGrid.appendChild(card);
+    });
+    updateSummaryCards();
+}
+
+
+function toggleTaskDone(taskId, done){
+    const task = tasks.find(item => item.id === taskId);
+    if(!task) return;
+    task.done = done;
+    saveTasks();
+    renderCategoryGrid();
+}
+
+function deleteTask(taskId){
+    tasks = tasks.filter(task => task.id !== taskId);
+    saveTasks();
+    renderCategoryGrid();
+}
+
+function updateStats(){
+    const totalDone = tasks.filter(task => task.done).length;
+    const overallPct = tasks.length ? Math.round((totalDone / tasks.length) * 100) : 0;
+
+    summaryCompletedTasks.textContent = totalDone;
+    summaryOverallProgress.textContent = `${overallPct}%`;
+}
+
+function updateTaskCaloriesVisibility(){
+    const selectedCategory = getCategoryByKey(taskCategory.value);
+    const show = selectedCategory?.key === "gym";
+    newTaskCalories.style.display = show ? "block" : "none";
+    if(!show) newTaskCalories.value = "";
+}
+
+function renderCategoryTypeFields(){
+    categoryTypeFields.innerHTML = "";
+    const type = newCategoryType.value;
+
+    function createInput(labelText, id, typeAttr = "text", attrs = {}){
+        const wrapper = document.createElement("label");
+        wrapper.textContent = labelText;
+        const input = document.createElement("input");
+        input.type = typeAttr;
+        input.id = id;
+        Object.entries(attrs).forEach(([key, value]) => input.setAttribute(key, value));
+        wrapper.appendChild(input);
+        categoryTypeFields.appendChild(wrapper);
+        return input;
+    }
+
+    function createTextarea(labelText, id, placeholder = ""){
+        const wrapper = document.createElement("label");
+        wrapper.textContent = labelText;
+        const textarea = document.createElement("textarea");
+        textarea.id = id;
+        textarea.placeholder = placeholder;
+        wrapper.appendChild(textarea);
+        categoryTypeFields.appendChild(wrapper);
+        return textarea;
+    }
+
+    if(type === "Timer"){
+        createInput("Duration (hours)", "categoryDuration", "number", { min: "1", value: "3", placeholder: "3" });
+        createInput("Start Time", "categoryStartTime", "time");
+    }
+    if(type === "Date"){
+        createInput("Due Date", "categoryDueDate", "date");
+    }
+    if(type === "Day"){
+        const wrapper = document.createElement("label");
+        wrapper.textContent = "Day";
+        const select = document.createElement("select");
+        select.id = "categoryDay";
+        ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"].forEach(day => {
+            const option = document.createElement("option");
+            option.value = day;
+            option.textContent = day;
+            select.appendChild(option);
+        });
+        wrapper.appendChild(select);
+        categoryTypeFields.appendChild(wrapper);
+    }
+    if(type === "Month"){
+        createInput("Month", "categoryMonth", "month");
+    }
+    if(type === "Payment"){
+        createInput("Amount", "categoryAmount", "number", { min: "0", step: "0.01", placeholder: "1000" });
+        createInput("Due Date", "categoryDueDate", "date");
+    }
+    if(type === "Loan"){
+        createInput("Loan Amount", "categoryAmount", "number", { min: "0", step: "0.01", placeholder: "10000" });
+        createInput("Monthly Payment", "categoryMonthlyPayment", "number", { min: "0", step: "0.01", placeholder: "1000" });
+        createInput("Due Date", "categoryDueDate", "date");
+    }
+    if(type === "Checklist"){
+        createTextarea("Checklist items", "categoryItems", "One task per line");
+    }
+    if(type === "Goal"){
+        createInput("Target", "categoryTarget", "number", { min: "1", placeholder: "10" });
+        createInput("Due Date", "categoryDueDate", "date");
+    }
+    if(type === "Custom"){
+        createTextarea("Notes", "categoryNotes", "Notes or details for this custom category");
+    }
+}
+
+function getNewCategoryFormData(){
+    const type = newCategoryType.value;
+    const data = { type };
+    if(type === "Timer"){
+        const duration = Number(document.getElementById("categoryDuration")?.value || 0);
+        if(duration > 0) data.duration = duration;
+        const startTime = document.getElementById("categoryStartTime")?.value;
+        if(startTime) data.startTime = startTime;
+    }
+    if(type === "Date"){
+        const dueDate = document.getElementById("categoryDueDate")?.value;
+        if(dueDate) data.dueDate = dueDate;
+    }
+    if(type === "Day"){
+        const selectedDay = document.getElementById("categoryDay")?.value;
+        if(selectedDay) data.selectedDay = selectedDay;
+    }
+    if(type === "Month"){
+        const selectedMonth = document.getElementById("categoryMonth")?.value;
+        if(selectedMonth) data.selectedMonth = selectedMonth;
+    }
+    if(type === "Payment"){
+        const amount = Number(document.getElementById("categoryAmount")?.value || 0);
+        if(amount) data.amount = amount;
+        const dueDate = document.getElementById("categoryDueDate")?.value;
+        if(dueDate) data.dueDate = dueDate;
+    }
+    if(type === "Loan"){
+        const amount = Number(document.getElementById("categoryAmount")?.value || 0);
+        if(amount) data.amount = amount;
+        const monthlyPayment = Number(document.getElementById("categoryMonthlyPayment")?.value || 0);
+        if(monthlyPayment) data.monthlyPayment = monthlyPayment;
+        const dueDate = document.getElementById("categoryDueDate")?.value;
+        if(dueDate) data.dueDate = dueDate;
+    }
+    if(type === "Checklist"){
+        const items = document.getElementById("categoryItems")?.value || "";
+        data.items = items.split("\n").map(item => item.trim()).filter(Boolean);
+    }
+    if(type === "Goal"){
+        const targetValue = document.getElementById("categoryTarget")?.value;
+        if(targetValue) data.targetValue = targetValue;
+        const dueDate = document.getElementById("categoryDueDate")?.value;
+        if(dueDate) data.dueDate = dueDate;
+    }
+    if(type === "Custom"){
+        const notes = document.getElementById("categoryNotes")?.value;
+        if(notes) data.notes = notes;
+    }
+    return data;
+}
+
+function addTask(){
+    const text = newTaskInput.value.trim();
+    const categoryKey = taskCategory.value;
+    if(!text || !categoryKey){
+        alert("Please select a category and enter a task.");
+        return false;
+    }
+
+    const calories = categoryKey === "gym" ? Math.max(0, Number(newTaskCalories.value) || 0) : 0;
+
+    tasks.push({
+        id: generateId(),
+        text,
+        category: categoryKey,
+        done: false,
+        group: "",
+        calories
+    });
+    saveTasks();
+    renderCategoryGrid();
+    newTaskInput.value = "";
+    newTaskCalories.value = "";
+    return true;
+}
+
+function addCategory(){
+    const name = newCategoryName.value.trim();
+    const type = newCategoryType.value;
+    if(!name) {
+        alert("Please enter a category name.");
+        return false;
+    }
+    const key = name.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_-]/g, "");
+    if(categories.some(category => category.key === key)){
+        alert("That category already exists.");
+        return false;
+    }
+
+    const data = getNewCategoryFormData();
+    const category = { key, label: name, type, initial: [] };
+
+    if(type === "Timer"){
+        category.duration = data.duration || 1;
+        if(data.startTime) category.startTime = data.startTime;
+    }
+    if(type === "Date"){
+        if(data.dueDate) category.dueDate = data.dueDate;
+    }
+    if(type === "Day"){
+        if(data.selectedDay) category.selectedDay = data.selectedDay;
+    }
+    if(type === "Month"){
+        if(data.selectedMonth) category.selectedMonth = data.selectedMonth;
+    }
+    if(type === "Payment"){
+        if(data.amount) category.amount = data.amount;
+        if(data.dueDate) category.dueDate = data.dueDate;
+    }
+    if(type === "Loan"){
+        if(data.amount) category.amount = data.amount;
+        if(data.monthlyPayment) category.monthlyPayment = data.monthlyPayment;
+        if(data.dueDate) category.dueDate = data.dueDate;
+    }
+    if(type === "Checklist"){
+        if(data.items?.length){
+            category.initial = data.items.map(text => ({ text, group: "", calories: getItemCalories(text) }));
+        }
+    }
+    if(type === "Goal"){
+        if(data.targetValue) category.targetValue = data.targetValue;
+        if(data.dueDate) category.dueDate = data.dueDate;
+    }
+    if(type === "Custom"){
+        if(data.notes) category.notes = data.notes;
+    }
+
+    categories.push(category);
+    saveCategories();
+
+    if(category.initial.length){
+        const newTasks = createTasksForCategory(category);
+        tasks.push(...newTasks);
+        saveTasks();
+    }
+
+    updateCategorySelect();
+    renderCategoryGrid();
+
+    newCategoryName.value = "";
+    newCategoryType.value = "Timer";
+    renderCategoryTypeFields();
+    return true;
+}
+
+function removeCategory(key){
+    if(!confirm("Delete this category and all associated tasks?")) return;
+    categories = categories.filter(category => category.key !== key);
+    tasks = tasks.filter(task => task.category !== key);
+    if(timers[key] && timers[key].interval){
+        clearInterval(timers[key].interval);
+    }
+    delete timers[key];
+    saveCategories();
+    saveTasks();
+    updateCategorySelect();
+    renderCategoryGrid();
+}
+
+function startCategoryTimer(key){
+    const category = getCategoryByKey(key);
+    if(!category || category.type !== "Timer" || !category.duration) return;
+
+    if(!timers[key]){
+        timers[key] = { remaining: category.duration * 3600, interval: null };
+    }
+    if(timers[key].interval) return;
+    if(timers[key].remaining <= 0){
+        timers[key].remaining = category.duration * 3600;
+    }
+
+    timers[key].interval = setInterval(() => {
+        if(!timers[key]) return;
+        timers[key].remaining -= 1;
+        if(timers[key].remaining <= 0){
+            clearInterval(timers[key].interval);
+            timers[key].interval = null;
+            timers[key].remaining = 0;
+            updateCategoryTimerDisplay(key);
+            alert(`${category.label} time is complete!`);
+            return;
+        }
+        updateCategoryTimerDisplay(key);
+    }, 1000);
+    updateCategoryTimerDisplay(key);
+}
+
+function pauseCategoryTimer(key){
+    if(timers[key] && timers[key].interval){
+        clearInterval(timers[key].interval);
+        timers[key].interval = null;
+    }
+}
+
+function resetCategoryTimer(key){
+    const category = getCategoryByKey(key);
+    if(!category || category.type !== "Timer") return;
+    if(timers[key] && timers[key].interval){
+        clearInterval(timers[key].interval);
+    }
+    timers[key] = { remaining: category.duration * 3600, interval: null };
+    updateCategoryTimerDisplay(key);
+}
+
+function updateCategoryTimerDisplay(key){
+    const category = getCategoryByKey(key);
+    if(!category) return;
+    const timer = timers[key] || { remaining: category.duration * 3600 };
+    const display = document.getElementById(`${key}TimerDisplay`);
+    if(display){
+        display.textContent = formatDuration(timer.remaining);
+    }
+}
+
+function scheduleAutoStartTimers(){
+    const now = new Date();
+    const todayKey = getTodayKey();
+
+    categories.filter(category => category.type === "Timer" && category.startTime).forEach(category => {
+        const parsed = parseTimeString(category.startTime);
+        if(!parsed) return;
+        const autoKey = `autoStarted_${category.key}`;
+        const lastAuto = localStorage.getItem(autoKey);
+        const nowMinutes = now.getHours() * 60 + now.getMinutes();
+        const targetMinutes = parsed.hours * 60 + parsed.minutes;
+        if(nowMinutes >= targetMinutes && lastAuto !== todayKey){
+            startCategoryTimer(category.key);
+            localStorage.setItem(autoKey, todayKey);
+        }
+    });
+}
+
+function checkWeeklyReset(currentTasks){
+    const currentWeek = getWeekNumber();
+    const savedWeek = localStorage.getItem("lastWeek");
+    if(savedWeek !== currentWeek.toString()){
+        currentTasks.forEach(task => task.done = false);
+        localStorage.setItem("lastWeek", currentWeek.toString());
+    }
+}
+
+function showModal(modalId){
+    const overlay = document.getElementById(modalId);
+    if(overlay){
+        overlay.classList.remove("hidden");
+        overlay.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+        const focusable = overlay.querySelector("button, input, select, textarea");
+        if(focusable) focusable.focus({ preventScroll: true });
+    }
+}
+
+function hideModal(modalId){
+    const overlay = document.getElementById(modalId);
+    if(overlay){
+        overlay.classList.add("hidden");
+        overlay.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+    }
+}
+
+function resetCategoryModal(type){
+    newCategoryName.value = "";
+    newCategoryType.value = type || "Timer";
+    renderCategoryTypeFields();
+}
+
+function resetTaskModal(){
+    newTaskInput.value = "";
+    newTaskCalories.value = "";
+    const firstCategory = taskCategory.querySelector("option[value]:not([value=''])");
+    if(firstCategory) taskCategory.value = firstCategory.value;
+}
+
+function resetLoanModal(){
+    loanCategoryName.value = "";
+    loanAmount.value = "";
+    loanMonthlyPayment.value = "";
+    loanDueDate.value = "";
+}
+
+function resetPaymentModal(){
+    paymentCategoryName.value = "";
+    paymentAmount.value = "";
+    paymentDueDate.value = "";
+}
+
+function showToast(message){
+    if(!toastMessage) return;
+    toastMessage.textContent = message;
+    toastMessage.classList.remove("hidden");
+    clearTimeout(showToast.timeoutId);
+    showToast.timeoutId = setTimeout(() => toastMessage.classList.add("hidden"), 3200);
+}
+
+if(todayDisplay){
+    todayDisplay.textContent = today.toDateString();
+}
+
+if(newCategoryAction){
+    newCategoryAction.addEventListener("click", () => {
+        resetCategoryModal("Timer");
+        showModal("categoryModalOverlay");
+    });
+}
+if(addTaskAction){
+    addTaskAction.addEventListener("click", () => {
+        resetTaskModal();
+        showModal("taskModalOverlay");
+    });
+}
+if(addLoanAction){
+    addLoanAction.addEventListener("click", () => {
+        resetLoanModal();
+        showModal("loanModalOverlay");
+    });
+}
+if(addPaymentAction){
+    addPaymentAction.addEventListener("click", () => {
+        resetPaymentModal();
+        showModal("paymentModalOverlay");
+    });
+}
+
+const closeCategoryModal = document.getElementById("closeCategoryModal");
+const closeTaskModal = document.getElementById("closeTaskModal");
+const closeLoanModal = document.getElementById("closeLoanModal");
+const closePaymentModal = document.getElementById("closePaymentModal");
+if(closeCategoryModal){
+    closeCategoryModal.addEventListener("click", () => hideModal("categoryModalOverlay"));
+}
+if(closeTaskModal){
+    closeTaskModal.addEventListener("click", () => hideModal("taskModalOverlay"));
+}
+if(closeLoanModal){
+    closeLoanModal.addEventListener("click", () => hideModal("loanModalOverlay"));
+}
+if(closePaymentModal){
+    closePaymentModal.addEventListener("click", () => hideModal("paymentModalOverlay"));
+}
+
+window.addEventListener("click", event => {
+    if(event.target === document.getElementById("categoryModalOverlay")){
+        hideModal("categoryModalOverlay");
+    }
+    if(event.target === document.getElementById("taskModalOverlay")){
+        hideModal("taskModalOverlay");
+    }
+    if(event.target === document.getElementById("loanModalOverlay")){
+        hideModal("loanModalOverlay");
+    }
+    if(event.target === document.getElementById("paymentModalOverlay")){
+        hideModal("paymentModalOverlay");
+    }
+});
+
+newCategoryType.addEventListener("change", renderCategoryTypeFields);
+addCategoryButton.addEventListener("click", () => {
+    if(addCategory()){
+        hideModal("categoryModalOverlay");
+        showToast("Category created successfully.");
+    }
+});
+newCategoryName.addEventListener("keypress", event => { if(event.key === "Enter") {
+    event.preventDefault();
+    if(addCategory()){
+        hideModal("categoryModalOverlay");
+        showToast("Category created successfully.");
+    }
+}});
+addTaskButton.addEventListener("click", () => {
+    if(addTask()){
+        hideModal("taskModalOverlay");
+        showToast("Task added successfully.");
+    }
+});
+newTaskInput.addEventListener("keypress", event => { if(event.key === "Enter") {
+    event.preventDefault();
+    if(addTask()){
+        hideModal("taskModalOverlay");
+        showToast("Task added successfully.");
+    }
+}});
+createLoanButton.addEventListener("click", () => {
+    const name = loanCategoryName.value.trim();
+    const amount = Number(loanAmount.value || 0);
+    const monthlyPayment = Number(loanMonthlyPayment.value || 0);
+    const dueDate = loanDueDate.value;
+    if(!name || amount <= 0 || monthlyPayment <= 0 || !dueDate){
+        alert("Please fill in all loan fields.");
         return;
     }
-    try{
-        const parsed = JSON.parse(raw);
-        // merge defaults for missing categories
-        categories = parsed.slice();
-        DEFAULT_CATEGORIES.forEach(def => {
-            const exists = categories.find(c => c.id === def.id);
-            if(!exists) categories.push(def);
-        });
-    }catch(e){
-        console.error('Failed to load categories', e);
-        categories = DEFAULT_CATEGORIES.slice();
+    const key = name.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_-]/g, "");
+    if(categories.some(category => category.key === key)){
+        alert("That category already exists.");
+        return;
     }
-}
-
-// --- DOM refs ---
-const gridContainer = document.getElementById('gridContainer');
-const openNewBtn = document.getElementById('openNewCategory');
-const categoryModal = document.getElementById('categoryModal');
-const categoryForm = document.getElementById('categoryForm');
-const catNameInput = document.getElementById('catName');
-const catTypeSelect = document.getElementById('catType');
-const dynamicFields = document.getElementById('dynamicFields');
-const closeModalBtn = document.getElementById('closeModal');
-const cancelCategoryBtn = document.getElementById('cancelCategory');
-const detailsModal = document.getElementById('detailsModal');
-const closeDetailsBtn = document.getElementById('closeDetails');
-const detailsContent = document.getElementById('detailsContent');
-
-// Dashboard refs
-const totalCategoriesEl = document.getElementById('totalCategories');
-const activeCategoriesEl = document.getElementById('activeCategories');
-const tasksCompletedEl = document.getElementById('tasksCompleted');
-const loansRemainingEl = document.getElementById('loansRemaining');
-const upcomingPaymentsEl = document.getElementById('upcomingPayments');
-const overallProgressEl = document.getElementById('overallProgress');
-
-// --- Modal helpers ---
-function showModal(modal){ modal.style.display = 'flex'; document.body.style.overflow='hidden'; }
-function hideModal(modal){ modal.style.display = 'none'; document.body.style.overflow='auto'; }
-
-closeModalBtn.addEventListener('click', ()=> hideModal(categoryModal));
-cancelCategoryBtn.addEventListener('click', ()=> hideModal(categoryModal));
-openNewBtn.addEventListener('click', ()=> openNewCategory());
-closeDetailsBtn.addEventListener('click', ()=> hideModal(detailsModal));
-
-// click outside to close
-[categoryModal, detailsModal].forEach(m=>{
-    m.addEventListener('click', (ev)=>{ if(ev.target === m) hideModal(m); });
+    const category = { key, label: name, type: "Loan", initial: [], amount, monthlyPayment, dueDate };
+    categories.push(category);
+    saveCategories();
+    updateCategorySelect();
+    renderCategoryGrid();
+    resetLoanModal();
+    hideModal("loanModalOverlay");
+    showToast("Loan category created successfully.");
 });
-
-// --- Dynamic form fields ---
-function renderDynamicFields(type, existing){
-    dynamicFields.innerHTML = '';
-    const makeRow = (label, inner)=>{
-        const r = document.createElement('div'); r.className='form-row';
-        const l = document.createElement('label'); l.textContent = label; r.appendChild(l);
-        r.appendChild(inner); return r;
-    };
-
-    if(type === 'timer'){
-        const h = document.createElement('input'); h.type='number'; h.id='timerHours'; h.min=0; h.placeholder='Hours';
-        const m = document.createElement('input'); m.type='number'; m.id='timerMinutes'; m.min=0; m.placeholder='Minutes';
-        const wrap = document.createElement('div'); wrap.style.display='flex'; wrap.style.gap='8px'; wrap.appendChild(h); wrap.appendChild(m);
-        dynamicFields.appendChild(makeRow('Duration (H / M)', wrap));
-
-        const st = document.createElement('input'); st.type='time'; st.id='timerStartTime'; st.value = existing?.startTime || '';
-        dynamicFields.appendChild(makeRow('Start Time (optional)', st));
-
-        const auto = document.createElement('input'); auto.type='checkbox'; auto.id='timerAuto'; auto.checked = existing?.autoStart || false;
-        dynamicFields.appendChild(makeRow('Auto-start at Start Time', auto));
+createPaymentButton.addEventListener("click", () => {
+    const name = paymentCategoryName.value.trim();
+    const amount = Number(paymentAmount.value || 0);
+    const dueDate = paymentDueDate.value;
+    if(!name || amount <= 0 || !dueDate){
+        alert("Please fill in all payment fields.");
+        return;
     }
-
-    if(type === 'checklist'){
-        const ta = document.createElement('textarea'); ta.id='checklistTasks'; ta.placeholder='One task per line'; ta.rows=6;
-        if(existing?.tasks) ta.value = existing.tasks.map(t=>t.text).join('\n');
-        dynamicFields.appendChild(makeRow('Tasks', ta));
+    const key = name.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_-]/g, "");
+    if(categories.some(category => category.key === key)){
+        alert("That category already exists.");
+        return;
     }
-
-    if(type === 'payment'){
-        const amt = document.createElement('input'); amt.type='number'; amt.step='0.01'; amt.id='paymentAmount'; amt.placeholder='Amount'; amt.value = existing?.amount||'';
-        dynamicFields.appendChild(makeRow('Amount', amt));
-        const due = document.createElement('input'); due.type='date'; due.id='paymentDueDate'; due.value = existing?.dueDate||'';
-        dynamicFields.appendChild(makeRow('Due Date', due));
-    }
-
-    if(type === 'loan'){
-        const monthly = document.createElement('input'); monthly.type='number'; monthly.step='0.01'; monthly.id='loanMonthlyPayment'; monthly.placeholder='Monthly Payment'; monthly.value = existing?.monthlyPayment||'';
-        dynamicFields.appendChild(makeRow('Monthly Payment', monthly));
-        const total = document.createElement('input'); total.type='number'; total.id='loanTotalMonths'; total.placeholder='Total Months'; total.value = existing?.totalMonths||12;
-        dynamicFields.appendChild(makeRow('Total Months', total));
-        const paid = document.createElement('input'); paid.type='number'; paid.id='loanPaidMonths'; paid.placeholder='Paid Months'; paid.value = existing?.paidMonths||0;
-        dynamicFields.appendChild(makeRow('Paid Months', paid));
-        const due = document.createElement('input'); due.type='date'; due.id='loanDueDate'; due.value = existing?.dueDate||'';
-        dynamicFields.appendChild(makeRow('Next Due Date', due));
-    }
-
-    if(type === 'date'){
-        const d = document.createElement('input'); d.type='date'; d.id='targetDate'; d.value = existing?.targetDate||'';
-        dynamicFields.appendChild(makeRow('Target Date', d));
-    }
-
-    if(type === 'savings'){
-        const target = document.createElement('input'); target.type='number'; target.step='0.01'; target.id='savingsTarget'; target.placeholder='Target Amount'; target.value = existing?.targetAmount||'';
-        dynamicFields.appendChild(makeRow('Target Amount', target));
-        const current = document.createElement('input'); current.type='number'; current.step='0.01'; current.id='savingsCurrent'; current.placeholder='Current Amount'; current.value = existing?.currentAmount||0;
-        dynamicFields.appendChild(makeRow('Current Amount', current));
-    }
-}
-
-catTypeSelect.addEventListener('change',(e)=> renderDynamicFields(e.target.value));
-
-// --- Create / Edit Category ---
-let editingCategoryId = null;
-function openNewCategory(){
-    editingCategoryId = null;
-    document.getElementById('modalTitle').textContent = 'New Category';
-    categoryForm.reset();
-    renderDynamicFields('timer');
-    showModal(categoryModal);
-}
-
-categoryForm.addEventListener('submit', (ev)=>{
-    ev.preventDefault();
-    const name = catNameInput.value.trim();
-    const type = catTypeSelect.value;
-    if(!name || !type) return alert('Please fill name and type');
-
-    const payload = { label: name, type };
-
-    if(type === 'timer'){
-        const h = parseInt(document.getElementById('timerHours').value)||0;
-        const m = parseInt(document.getElementById('timerMinutes').value)||0;
-        payload.durationMinutes = h*60 + m;
-        payload.startTime = document.getElementById('timerStartTime').value || null;
-        payload.autoStart = document.getElementById('timerAuto').checked;
-    }
-    if(type === 'checklist'){
-        const tasks = (document.getElementById('checklistTasks').value||'').split('\n').map(t=>t.trim()).filter(Boolean);
-        payload.tasks = tasks.map(t=>({ text: t, done: false }));
-    }
-    if(type === 'payment'){
-        payload.amount = parseFloat(document.getElementById('paymentAmount').value)||0;
-        payload.dueDate = document.getElementById('paymentDueDate').value || null;
-        payload.status = payload.amount>0? 'pending' : 'paid';
-    }
-    if(type === 'loan'){
-        payload.monthlyPayment = parseFloat(document.getElementById('loanMonthlyPayment').value)||0;
-        payload.totalMonths = parseInt(document.getElementById('loanTotalMonths').value)||12;
-        payload.paidMonths = parseInt(document.getElementById('loanPaidMonths').value)||0;
-        payload.dueDate = document.getElementById('loanDueDate').value||null;
-        payload.history = [];
-    }
-    if(type === 'date'){
-        payload.targetDate = document.getElementById('targetDate').value||null;
-    }
-    if(type === 'savings'){
-        payload.targetAmount = parseFloat(document.getElementById('savingsTarget').value)||0;
-        payload.currentAmount = parseFloat(document.getElementById('savingsCurrent').value)||0;
-    }
-
-    if(editingCategoryId){
-        const cat = categories.find(c=>c.id===editingCategoryId);
-        Object.assign(cat, payload);
-    } else {
-        const newCat = Object.assign({ id: uid('cat'), createdAt: new Date().toISOString() }, payload);
-        categories.push(newCat);
-    }
-
-    save();
-    hideModal(categoryModal);
-    renderAll();
+    const category = { key, label: name, type: "Payment", initial: [], amount, dueDate };
+    categories.push(category);
+    saveCategories();
+    updateCategorySelect();
+    renderCategoryGrid();
+    resetPaymentModal();
+    hideModal("paymentModalOverlay");
+    showToast("Payment category created successfully.");
 });
+taskCategory.addEventListener("change", updateTaskCaloriesVisibility);
 
-// --- Rendering ---
-function renderAll(){ renderGrid(); renderDashboard(); }
+renderCategoryTypeFields();
 
-function renderGrid(){
-    gridContainer.innerHTML = '';
-    categories.forEach(cat=> gridContainer.appendChild(makeCard(cat)));
-}
+categories = loadCategories();
+tasks = loadTasks();
 
-function makeCard(cat){
-    const card = document.createElement('div'); card.className='category-card';
-    const header = document.createElement('div'); header.className='card-header';
-    const h = document.createElement('h3'); h.textContent = `${cat.label}`; header.appendChild(h);
-    const typeBadge = document.createElement('span'); typeBadge.className='card-type'; typeBadge.textContent = cat.type.toUpperCase(); header.appendChild(typeBadge);
-    const body = document.createElement('div'); body.className='card-body';
-    const summary = document.createElement('div'); summary.className='card-summary'; summary.innerHTML = summarize(cat);
-    const progressWrap = document.createElement('div'); progressWrap.className='progress-bar';
-    const fill = document.createElement('div'); fill.className='progress-fill'; fill.style.width = getProgress(cat)+'%'; progressWrap.appendChild(fill);
-    const progressText = document.createElement('div'); progressText.className='progress-text'; progressText.textContent = getProgress(cat)+'%';
-    body.appendChild(summary); body.appendChild(progressWrap); body.appendChild(progressText);
-    const footer = document.createElement('div'); footer.className='card-footer';
-    const openBtn = document.createElement('button'); openBtn.className='btn btn-small btn-primary'; openBtn.textContent='Open'; openBtn.onclick = (e)=>{ e.stopPropagation(); openDetails(cat.id); };
-    const editBtn = document.createElement('button'); editBtn.className='btn btn-small btn-secondary'; editBtn.textContent='Edit'; editBtn.onclick = (e)=>{ e.stopPropagation(); openEdit(cat.id); };
-    const delBtn = document.createElement('button'); delBtn.className='btn btn-small btn-danger'; delBtn.textContent='Delete'; delBtn.onclick = (e)=>{ e.stopPropagation(); if(confirm('Delete category?')){ categories = categories.filter(c=>c.id!==cat.id); save(); renderAll(); } };
-    footer.appendChild(openBtn); footer.appendChild(editBtn); footer.appendChild(delBtn);
+updateCategorySelect();
+renderCategoryGrid();
+scheduleAutoStartTimers();
+setInterval(scheduleAutoStartTimers, 60000);
 
-    card.appendChild(header); card.appendChild(body); card.appendChild(footer);
-    card.addEventListener('click', ()=> openDetails(cat.id));
-    return card;
-}
-
-function summarize(cat){
-    switch(cat.type){
-        case 'timer': return `Duration: ${Math.floor((cat.durationMinutes||0)/60)}h ${(cat.durationMinutes||0)%60}m ${cat.startTime? `<br>Start: ${cat.startTime}`: ''}`;
-        case 'checklist': {
-            const total=(cat.tasks||[]).length; const done=(cat.tasks||[]).filter(t=>t.done).length; return `${done}/${total} completed`;
-        }
-        case 'payment': return `₱${(cat.amount||0).toFixed(2)} — ${cat.status||'pending'}`;
-        case 'loan': { const rem=(cat.totalMonths||0)-(cat.paidMonths||0); const bal=(cat.monthlyPayment||0)*rem; return `₱${bal.toFixed(2)} remaining — ${rem} months`; }
-        case 'date': return `${getDaysRemaining(cat.targetDate)} days remaining`;
-        case 'savings': return `₱${(cat.currentAmount||0).toFixed(2)} / ₱${(cat.targetAmount||0).toFixed(2)}`;
-    }
-    return '';
-}
-
-function getProgress(cat){
-    switch(cat.type){
-        case 'checklist': { const total=(cat.tasks||[]).length; const done=(cat.tasks||[]).filter(t=>t.done).length; return total? Math.round(done/total*100):0; }
-        case 'savings': return ((cat.currentAmount||0)/(cat.targetAmount||1)*100).toFixed(0);
-        case 'loan': return Math.round(((cat.paidMonths||0)/(cat.totalMonths||1))*100);
-        case 'payment': return cat.status==='paid'?100:0;
-        default: return 0;
-    }
-}
-
-function getDaysRemaining(target){ if(!target) return '—'; const t=new Date(target); const diff = (t - new Date())/(1000*60*60*24); return Math.ceil(diff); }
-
-// --- Details / Actions ---
-function openDetails(catId){
-    const cat = categories.find(c=>c.id===catId); if(!cat) return;
-    detailsContent.innerHTML = renderDetails(cat);
-    attachDetailsListeners(cat);
-    showModal(detailsModal);
-}
-
-function renderDetails(cat){
-    let html = `<h2>${cat.label} — ${cat.type.toUpperCase()}</h2>`;
-    switch(cat.type){
-        case 'timer': {
-            html += `<p>Duration: ${Math.floor((cat.durationMinutes||0)/60)}h ${(cat.durationMinutes||0)%60}m</p>`;
-            html += `<div id="timerDisplay_${cat.id}" class="timer-display">00:00:00</div>`;
-            html += `<div class="modal-actions"><button id="startTimer_${cat.id}" class="btn btn-primary">Start</button><button id="pauseTimer_${cat.id}" class="btn btn-secondary">Pause</button><button id="resetTimer_${cat.id}" class="btn btn-secondary">Reset</button></div>`;
-            break;
-        }
-        case 'checklist': {
-            html += `<div class="checklist-container">`;
-            (cat.tasks||[]).forEach((t,i)=>{
-                html += `<div class="checklist-item"><input type="checkbox" id="chk_${cat.id}_${i}" data-cat="${cat.id}" data-i="${i}" ${t.done? 'checked':''}><label for="chk_${cat.id}_${i}">${t.text}</label></div>`;
-            });
-            html += `</div><div class="modal-actions"><button id="addTask_${cat.id}" class="btn btn-secondary">Add Task</button></div>`;
-            break;
-        }
-        case 'payment': {
-            html += `<div class="modal-info"><div class="info-row"><span>Amount</span><strong>₱${(cat.amount||0).toFixed(2)}</strong></div><div class="info-row"><span>Due</span><strong>${cat.dueDate||'—'}</strong></div><div class="info-row"><span>Status</span><strong>${cat.status||'pending'}</strong></div></div>`;
-            html += `<div class="modal-actions">${cat.status==='paid'? `<button id="markPending_${cat.id}" class="btn btn-secondary">Mark Pending</button>`: `<button id="markPaid_${cat.id}" class="btn btn-primary">Mark Paid</button>`}</div>`;
-            break;
-        }
-        case 'loan': {
-            const rem=(cat.totalMonths||0)-(cat.paidMonths||0); const bal=(cat.monthlyPayment||0)*rem;
-            html += `<div class="modal-info"><div class="info-row"><span>Monthly</span><strong>₱${(cat.monthlyPayment||0).toFixed(2)}</strong></div><div class="info-row"><span>Paid Months</span><strong>${cat.paidMonths||0}</strong></div><div class="info-row"><span>Remaining Balance</span><strong>₱${bal.toFixed(2)}</strong></div></div>`;
-            if(rem>0) html += `<div class="modal-actions"><button id="payInstall_${cat.id}" class="btn btn-primary">Pay Installment</button></div>`; else html += `<div style="color:green;font-weight:700;">Loan Complete ✓</div>`;
-            break;
-        }
-        case 'date': html += `<div class="countdown-display">${getDaysRemaining(cat.targetDate)} days remaining</div>`; break;
-        case 'savings': html += `<div class="modal-info"><div class="info-row"><span>Target</span><strong>₱${(cat.targetAmount||0).toFixed(2)}</strong></div><div class="info-row"><span>Current</span><strong>₱${(cat.currentAmount||0).toFixed(2)}</strong></div></div><div class="modal-actions"><input id="addSave_${cat.id}" type="number" step="0.01" placeholder="Amount" style="flex:1;padding:8px;"><button id="addSaveBtn_${cat.id}" class="btn btn-primary">Add</button></div>`; break;
-    }
-    return html;
-}
-
-function attachDetailsListeners(cat){
-    if(cat.type === 'timer'){
-        document.getElementById(`startTimer_${cat.id}`).addEventListener('click', ()=> startTimer(cat));
-        document.getElementById(`pauseTimer_${cat.id}`).addEventListener('click', ()=> pauseTimer(cat));
-        document.getElementById(`resetTimer_${cat.id}`).addEventListener('click', ()=> resetTimer(cat));
-        updateTimerUI(cat);
-    }
-    if(cat.type === 'checklist'){
-        (cat.tasks||[]).forEach((t,i)=>{
-            const el = document.getElementById(`chk_${cat.id}_${i}`);
-            if(el) el.addEventListener('change',(e)=>{ cat.tasks[i].done = e.target.checked; save(); renderAll(); });
-        });
-        const addBtn = document.getElementById(`addTask_${cat.id}`);
-        if(addBtn) addBtn.addEventListener('click', ()=>{
-            const txt = prompt('New task'); if(!txt) return; cat.tasks.push({ text: txt, done: false }); save(); openDetails(cat.id); renderAll();
-        });
-    }
-    if(cat.type === 'payment'){
-        const paidBtn = document.getElementById(`markPaid_${cat.id}`);
-        if(paidBtn) paidBtn.addEventListener('click', ()=>{ cat.status='paid'; cat.paidDate = new Date().toISOString().split('T')[0]; save(); openDetails(cat.id); renderAll(); });
-        const pendingBtn = document.getElementById(`markPending_${cat.id}`);
-        if(pendingBtn) pendingBtn.addEventListener('click', ()=>{ cat.status='pending'; cat.paidDate=null; save(); openDetails(cat.id); renderAll(); });
-    }
-    if(cat.type === 'loan'){
-        const payBtn = document.getElementById(`payInstall_${cat.id}`);
-        if(payBtn) payBtn.addEventListener('click', ()=>{ cat.paidMonths = (cat.paidMonths||0) + 1; (cat.history = cat.history||[]).push({ date: new Date().toISOString().split('T')[0], amount: cat.monthlyPayment||0 }); save(); openDetails(cat.id); renderAll(); });
-    }
-    if(cat.type === 'savings'){
-        const addInput = document.getElementById(`addSave_${cat.id}`);
-        const addBtn = document.getElementById(`addSaveBtn_${cat.id}`);
-        if(addBtn) addBtn.addEventListener('click', ()=>{ const v = parseFloat(addInput.value)||0; if(v>0){ cat.currentAmount = (cat.currentAmount||0)+v; save(); openDetails(cat.id); renderAll(); } });
-    }
-}
-
-function openEdit(catId){
-    const cat = categories.find(c=>c.id===catId); if(!cat) return;
-    editingCategoryId = catId;
-    document.getElementById('modalTitle').textContent = 'Edit Category';
-    catNameInput.value = cat.label; catTypeSelect.value = cat.type; renderDynamicFields(cat.type, cat);
-    showModal(categoryModal);
-}
-
-// --- Timer core ---
-function startTimer(cat){
-    const key = `t_${cat.id}`;
-    if(!timers[key]) timers[key] = { remaining: (cat.durationMinutes||0)*60, interval:null };
-    if(timers[key].interval) return;
-    timers[key].interval = setInterval(()=>{ if(timers[key].remaining<=0){ clearInterval(timers[key].interval); timers[key].interval=null; alert(`${cat.label} complete!`); return;} timers[key].remaining--; updateTimerUI(cat); },1000);
-    updateTimerUI(cat);
-}
-function pauseTimer(cat){ const key=`t_${cat.id}`; if(timers[key]&&timers[key].interval){ clearInterval(timers[key].interval); timers[key].interval=null; } }
-function resetTimer(cat){ const key=`t_${cat.id}`; if(timers[key]&&timers[key].interval){ clearInterval(timers[key].interval); } timers[key]={ remaining:(cat.durationMinutes||0)*60, interval:null }; updateTimerUI(cat); }
-function updateTimerUI(cat){ const key=`t_${cat.id}`; const el = document.getElementById(`timerDisplay_${cat.id}`); if(!el) return; if(!timers[key]) timers[key]={ remaining:(cat.durationMinutes||0)*60, interval:null }; const r=timers[key].remaining; const hh=Math.floor(r/3600); const mm=Math.floor((r%3600)/60); const ss=r%60; el.textContent = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`; }
-
-// --- Auto-start timers ---
-function checkAutoStarts(){ const now=new Date(); const tm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`; categories.forEach(cat=>{ if(cat.type==='timer' && cat.autoStart && cat.startTime){ const key=`auto_${cat.id}_${new Date().toISOString().split('T')[0]}`; if(!localStorage.getItem(key) && tm>=cat.startTime){ startTimer(cat); localStorage.setItem(key,'1'); } } }); }
-setInterval(checkAutoStarts, 60*1000);
-
-// --- Dashboard ---
-function renderDashboard(){
-    totalCategoriesEl.textContent = categories.length;
-    const active = categories.filter(c=>{ if(c.type==='timer') return (c.durationMinutes||0)>0; if(c.type==='checklist') return (c.tasks||[]).length>0; return true; }).length;
-    activeCategoriesEl.textContent = active;
-    const tasksTotal = categories.reduce((s,c)=> s + ((c.type==='checklist')? (c.tasks||[]).length : 0), 0);
-    const tasksDone = categories.reduce((s,c)=> s + ((c.type==='checklist')? (c.tasks||[]).filter(t=>t.done).length : 0), 0);
-    tasksCompletedEl.textContent = `${tasksDone}/${tasksTotal}`;
-    const loansRemain = categories.reduce((s,c)=> s + ((c.type==='loan')? Math.max(0,(c.totalMonths||0)-(c.paidMonths||0)) : 0), 0);
-    loansRemainingEl.textContent = loansRemain;
-    const upcoming = categories.reduce((s,c)=> s + ((c.type==='payment' && c.dueDate && daysUntil(c.dueDate)<=7 && c.status!=='paid')?1:0),0);
-    upcomingPaymentsEl.textContent = upcoming;
-    const overall = categories.reduce((acc,c)=> acc + Number(getProgress(c)),0) / Math.max(1,categories.length);
-    overallProgressEl.textContent = `${Math.round(overall)}%`;
-}
-
-function daysUntil(dateStr){ if(!dateStr) return Infinity; return Math.ceil((new Date(dateStr)-new Date())/(1000*60*60*24)); }
-
-// --- Init ---
-load();
-renderAll();
-checkAutoStarts();
-
-// Expose a small API for console debugging
-window.app = { categories, save, renderAll };
+window.addEventListener("beforeunload", () => {
+    saveTasks();
+    saveCategories();
+});
