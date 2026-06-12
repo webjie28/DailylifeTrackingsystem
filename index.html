@@ -1,136 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Daily Life Tracking System</title>
-
-<link rel="stylesheet" href="style.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Life Tracking System</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div class="container">
-
-    <header>
-
-        <h1> Daily Life Tracking System</h1>
-
-        <p id="today"></p>
-
-    </header>
-
-    <div class="dashboard">
-
-        <div class="card">
-
-            <h2> Streak</h2>
-
-            <div class="big-number" id="streak">
-                0
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>Daily Life Tracking System</h1>
+                <p id="today" class="today-date"></p>
             </div>
+        </header>
 
-        </div>
+        <!-- Dashboard Overview Section -->
+        <section class="dashboard-overview">
+            <div class="dashboard-cards">
+                <div class="dashboard-card">
+                    <div class="dashboard-label">Total Categories</div>
+                    <link rel="stylesheet" href="style.css">
 
-        <div class="card">
+                    </head>
+                    <body>
 
-            <h2> Study English</h2>
+                    <div class="app">
 
-            <div class="big-number" id="englishProgress">
-                0%
+                        <header class="app-header">
+                            <div>
+                                <h1>Daily Life Tracking System</h1>
+                                <p id="today"></p>
+                            </div>
+                            <div class="top-actions">
+                                <button id="openNewCategory">+ New Category</button>
+                            </div>
+                        </header>
+
+                        <section class="overview" id="overview">
+                            <div class="overview-grid">
+                                <div class="summary-card">
+                                    <div class="label">Total Categories</div>
+                                    <div class="value" id="totalCategories">0</div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="label">Active Categories</div>
+                                    <div class="value" id="activeCategories">0</div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="label">Tasks Completed</div>
+                                    <div class="value" id="tasksCompleted">0</div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="label">Loans Remaining</div>
+                                    <div class="value" id="loansRemaining">0</div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="label">Upcoming Payments</div>
+                                    <div class="value" id="upcomingPayments">0</div>
+                                </div>
+                                <div class="summary-card">
+                                    <div class="label">Overall Progress</div>
+                                    <div class="value" id="overallProgress">0%</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <main class="grid-container" id="gridContainer">
+                            <!-- Category cards will be injected here -->
+                        </main>
+
+                        <!-- Modal: Create / Edit Category -->
+                        <div id="categoryModal" class="modal" aria-hidden="true">
+                            <div class="modal-content">
+                                <button class="modal-close" id="closeModal">✕</button>
+                                <h2 id="modalTitle">New Category</h2>
+                                <form id="categoryForm">
+                                    <div class="form-row">
+                                        <label>Category Name</label>
+                                        <input id="catName" type="text" required />
+                                    </div>
+                                    <div class="form-row">
+                                        <label>Tracking Type</label>
+                                        <select id="catType" required>
+                                            <option value="timer">TIMER</option>
+                                            <option value="checklist">CHECKLIST</option>
+                                            <option value="payment">PAYMENT</option>
+                                            <option value="loan">LOAN</option>
+                                            <option value="date">DATE</option>
+                                            <option value="savings">SAVINGS</option>
+                                        </select>
+                                    </div>
+
+                                    <div id="dynamicFields"></div>
+
+                                    <div class="form-actions">
+                                        <button type="submit" id="saveCategory">Save</button>
+                                        <button type="button" id="cancelCategory">Cancel</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Modal: Category Details -->
+                        <div id="detailsModal" class="modal" aria-hidden="true">
+                            <div class="modal-content large">
+                                <button class="modal-close" id="closeDetails">✕</button>
+                                <div id="detailsContent"></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <script src="main.js"></script>
+                    <script src="script.js"></script>
+
+                    </body>
+                    </html>
+                    <div id="savingsFields" class="conditional-fields" style="display: none;">
+                        <div class="form-group">
+                            <label for="savingsTarget">Target Amount</label>
+                            <input type="number" id="savingsTarget" min="0" step="0.01" placeholder="50000">
+                        </div>
+                        <div class="form-group">
+                            <label for="savingsCurrent">Current Amount</label>
+                            <input type="number" id="savingsCurrent" min="0" step="0.01" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Create Category</button>
+                        <button type="button" class="btn btn-secondary" id="cancelAddBtn">Cancel</button>
+                    </div>
+                </form>
             </div>
-
         </div>
-
-        <div class="card">
-
-            <h2> Study Coding</h2>
-
-            <div class="big-number" id="codingProgress">
-                0%
-            </div>
-
-        </div>
-
-        <div class="card">
-
-            <h2> Gym Progress</h2>
-
-            <div class="big-number" id="gymProgress">
-                0%
-            </div>
-
-        </div>
-
-        <div class="card">
-
-            <h2> Calories Burned</h2>
-
-            <div class="big-number" id="caloriesBurned">
-                0 kcal
-            </div>
-
-        </div>
-
-        <div class="card">
-
-            <h2> Overall Progress</h2>
-
-            <div class="big-number" id="progress">
-                0%
-            </div>
-
-        </div>
-
     </div>
 
-    <div class="section">
-
-        <div class="section-header">
-            <h2>Manage Tasks</h2>
-            <div class="task-filter">
-                <select id="viewCategory" aria-label="Filter tasks by category">
-                    <option value="">View all categories</option>
-                </select>
+    <!-- Modal: Category Details -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2 id="categoryModalTitle">Category Details</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="categoryModalBody">
+                <!-- Content inserted dynamically -->
             </div>
         </div>
-
-        <div class="task-actions">
-            <div class="task-block">
-                <div class="action-header">New Category</div>
-                <div class="add-category">
-                    <input id="newCategoryName" type="text" placeholder="New category name" />
-                    <input id="newCategoryDuration" type="number" placeholder="Hours" min="1" max="12" />
-                    <button id="addCategoryButton">Add Category</button>
-                </div>
-            </div>
-
-            <div class="task-block">
-                <div class="action-header">Add Task Today
-                </div>
-                <div class="task-input">
-                    <select id="taskCategory" aria-label="Choose task category">
-                        <option value="english">Study English</option>
-                        <option value="coding">Study Coding</option>
-                        <option value="gym">Gym Routine</option>
-                    </select>
-                    <input id="newTaskInput" type="text" placeholder="Add a new task">
-                    <input id="newTaskCalories" type="number" placeholder="Calories burned" min="0" style="display:none;" />
-                    <button id="addTaskButton">Add</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="task-groups" id="taskGroups"></div>
-
     </div>
 
-
-</div>
-
-<script src="script.js"></script>
-
+    <script src="script.js"></script>
 </body>
 </html>
