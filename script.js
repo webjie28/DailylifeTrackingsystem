@@ -1,4 +1,5 @@
-﻿const today = new Date();
+﻿const Chart = require("chart.js/auto");
+const today = new Date();
 const todayDisplay = document.getElementById("today");
 
 const categoryGrid = document.getElementById("categoryGrid");
@@ -305,6 +306,7 @@ function getCategoryByKey(key){
 }
 
 function updateCategorySelect(){
+    if(!taskCategory) return;
     taskCategory.innerHTML = "";
 
     const chooseOption = document.createElement("option");
@@ -339,13 +341,13 @@ function updateSummaryCards(){
     const activeCategories = categories.filter(category => !getCategoryCompletion(category.key)).length;
     const overallProgress = tasks.length ? Math.round((completedTasks / tasks.length) * 100) : 0;
 
-    summaryStreak.textContent = streak;
-    summaryTotalCategories.textContent = totalCategories;
-    summaryActiveCategories.textContent = activeCategories;
-    summaryCompletedTasks.textContent = completedTasks;
-    summaryLoansRemaining.textContent = loansRemaining;
-    summaryUpcomingPayments.textContent = upcomingPayments;
-    summaryOverallProgress.textContent = `${overallProgress}%`;
+    if(summaryStreak) summaryStreak.textContent = streak;
+    if(summaryTotalCategories) summaryTotalCategories.textContent = totalCategories;
+    if(summaryActiveCategories) summaryActiveCategories.textContent = activeCategories;
+    if(summaryCompletedTasks) summaryCompletedTasks.textContent = completedTasks;
+    if(summaryLoansRemaining) summaryLoansRemaining.textContent = loansRemaining;
+    if(summaryUpcomingPayments) summaryUpcomingPayments.textContent = upcomingPayments;
+    if(summaryOverallProgress) summaryOverallProgress.textContent = `${overallProgress}%`;
 }
 
 function updateStreak(){
@@ -383,6 +385,7 @@ function getCategoryMetaElements(category){
 }
 
 function renderCategoryGrid(){
+    if(!categoryGrid) return;
     categoryGrid.innerHTML = "";
     categories.forEach(category => {
         const categoryTasks = tasks.filter(task => task.category === category.key);
@@ -521,7 +524,151 @@ function updateStats(){
     summaryOverallProgress.textContent = `${overallPct}%`;
 }
 
+function getSavingsHistory(){
+    return [
+        { label: 'Jan', value: 1000 },
+        { label: 'Feb', value: 2500 },
+        { label: 'Mar', value: 3500 },
+        { label: 'Apr', value: 5000 }
+    ];
+}
+
+function getExpenseCategoryData(){
+    const loanTotal = categories
+        .filter(category => category.type === 'Loan')
+        .reduce((sum, category) => sum + (Number(category.amount) || 0), 0);
+    const paymentTotal = categories
+        .filter(category => category.type === 'Payment')
+        .reduce((sum, category) => sum + (Number(category.amount) || 0), 0);
+    const sampleOther = 6800;
+    const otherTotal = loanTotal + paymentTotal === 0
+        ? sampleOther
+        : Math.max(0, sampleOther - loanTotal - paymentTotal);
+
+    return [
+        { label: 'Loans', value: loanTotal || 2500 },
+        { label: 'Payments', value: paymentTotal || 2000 },
+        { label: 'Other', value: otherTotal || 1800 }
+    ];
+}
+
+function getLoanProgressData(){
+    const loanCategories = categories.filter(category => category.type === 'Loan');
+    if(loanCategories.length === 0){
+        return [
+            { label: 'Loan A', progress: 55 },
+            { label: 'Loan B', progress: 32 },
+            { label: 'Loan C', progress: 72 }
+        ];
+    }
+
+    return loanCategories.map(category => {
+        const amount = Number(category.amount) || 0;
+        const monthlyPayment = Number(category.monthlyPayment) || 0;
+        const progress = amount > 0 ? Math.min(100, Math.round((monthlyPayment / amount) * 100)) : 0;
+        return { label: category.label, progress: progress || 10 };
+    });
+}
+
+function createSavingsChart(){
+    const history = getSavingsHistory();
+    const ctx = document.getElementById('savingsChart');
+    if(!ctx) return;
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: history.map(point => point.label),
+            datasets: [{
+                label: 'Savings',
+                data: history.map(point => point.value),
+                borderColor: '#7c3aed',
+                backgroundColor: 'rgba(124, 58, 237, 0.18)',
+                fill: true,
+                tension: 0.35,
+                pointRadius: 4,
+                pointBackgroundColor: '#7c3aed',
+                pointBorderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.2)' } }
+            }
+        }
+    });
+}
+
+function createExpensesChart(){
+    const categoriesData = getExpenseCategoryData();
+    const ctx = document.getElementById('expensesChart');
+    if(!ctx) return;
+
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: categoriesData.map(item => item.label),
+            datasets: [{
+                data: categoriesData.map(item => item.value),
+                backgroundColor: ['#7c3aed', '#22c55e', '#f97316'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+}
+
+function createLoanPayoffChart(){
+    const loanData = getLoanProgressData();
+    const ctx = document.getElementById('loanPayoffChart');
+    if(!ctx) return;
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: loanData.map(item => item.label),
+            datasets: [{
+                label: 'Loan Payoff Progress',
+                data: loanData.map(item => item.progress),
+                backgroundColor: '#22c55e',
+                borderRadius: 12,
+                maxBarThickness: 40
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, max: 100, ticks: { callback: value => `${value}%` }, grid: { color: 'rgba(148, 163, 184, 0.2)' } }
+            }
+        }
+    });
+}
+
+function renderDashboardCharts(){
+    createSavingsChart();
+    createExpensesChart();
+    createLoanPayoffChart();
+}
+
 function updateTaskCaloriesVisibility(){
+    if(!taskCategory || !newTaskCalories) return;
     const selectedCategory = getCategoryByKey(taskCategory.value);
     const show = selectedCategory?.key === "gym";
     newTaskCalories.style.display = show ? "block" : "none";
@@ -529,6 +676,7 @@ function updateTaskCaloriesVisibility(){
 }
 
 function renderCategoryTypeFields(){
+    if(!categoryTypeFields) return;
     categoryTypeFields.innerHTML = "";
     const type = newCategoryType.value;
 
@@ -957,89 +1105,110 @@ window.addEventListener("click", event => {
     }
 });
 
-newCategoryType.addEventListener("change", renderCategoryTypeFields);
-addCategoryButton.addEventListener("click", () => {
-    if(addCategory()){
-        hideModal("categoryModalOverlay");
-        showToast("Category created successfully.");
-    }
-});
-newCategoryName.addEventListener("keypress", event => { if(event.key === "Enter") {
-    event.preventDefault();
-    if(addCategory()){
-        hideModal("categoryModalOverlay");
-        showToast("Category created successfully.");
-    }
-}});
-addTaskButton.addEventListener("click", () => {
-    if(addTask()){
-        hideModal("taskModalOverlay");
-        showToast("Task added successfully.");
-    }
-});
-newTaskInput.addEventListener("keypress", event => { if(event.key === "Enter") {
-    event.preventDefault();
-    if(addTask()){
-        hideModal("taskModalOverlay");
-        showToast("Task added successfully.");
-    }
-}});
-createLoanButton.addEventListener("click", () => {
-    const name = loanCategoryName.value.trim();
-    const amount = Number(loanAmount.value || 0);
-    const monthlyPayment = Number(loanMonthlyPayment.value || 0);
-    const dueDate = loanDueDate.value;
-    if(!name || amount <= 0 || monthlyPayment <= 0 || !dueDate){
-        alert("Please fill in all loan fields.");
-        return;
-    }
-    const key = name.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_-]/g, "");
-    if(categories.some(category => category.key === key)){
-        alert("That category already exists.");
-        return;
-    }
-    const category = { key, label: name, type: "Loan", initial: [], amount, monthlyPayment, dueDate };
-    categories.push(category);
-    saveCategories();
-    updateCategorySelect();
-    renderCategoryGrid();
-    resetLoanModal();
-    hideModal("loanModalOverlay");
-    showToast("Loan category created successfully.");
-});
-createPaymentButton.addEventListener("click", () => {
-    const name = paymentCategoryName.value.trim();
-    const amount = Number(paymentAmount.value || 0);
-    const dueDate = paymentDueDate.value;
-    if(!name || amount <= 0 || !dueDate){
-        alert("Please fill in all payment fields.");
-        return;
-    }
-    const key = name.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_-]/g, "");
-    if(categories.some(category => category.key === key)){
-        alert("That category already exists.");
-        return;
-    }
-    const category = { key, label: name, type: "Payment", initial: [], amount, dueDate };
-    categories.push(category);
-    saveCategories();
-    updateCategorySelect();
-    renderCategoryGrid();
-    resetPaymentModal();
-    hideModal("paymentModalOverlay");
-    showToast("Payment category created successfully.");
-});
-taskCategory.addEventListener("change", updateTaskCaloriesVisibility);
+if(newCategoryType){
+    newCategoryType.addEventListener("change", renderCategoryTypeFields);
+}
+if(addCategoryButton){
+    addCategoryButton.addEventListener("click", () => {
+        if(addCategory()){
+            hideModal("categoryModalOverlay");
+            showToast("Category created successfully.");
+        }
+    });
+}
+if(newCategoryName){
+    newCategoryName.addEventListener("keypress", event => { if(event.key === "Enter") {
+        event.preventDefault();
+        if(addCategory()){
+            hideModal("categoryModalOverlay");
+            showToast("Category created successfully.");
+        }
+    }});
+}
+if(addTaskButton){
+    addTaskButton.addEventListener("click", () => {
+        if(addTask()){
+            hideModal("taskModalOverlay");
+            showToast("Task added successfully.");
+        }
+    });
+}
+if(newTaskInput){
+    newTaskInput.addEventListener("keypress", event => { if(event.key === "Enter") {
+        event.preventDefault();
+        if(addTask()){
+            hideModal("taskModalOverlay");
+            showToast("Task added successfully.");
+        }
+    }});
+}
+if(createLoanButton){
+    createLoanButton.addEventListener("click", () => {
+        const name = loanCategoryName?.value.trim() || "";
+        const amount = Number(loanAmount?.value || 0);
+        const monthlyPayment = Number(loanMonthlyPayment?.value || 0);
+        const dueDate = loanDueDate?.value || "";
+        if(!name || amount <= 0 || monthlyPayment <= 0 || !dueDate){
+            alert("Please fill in all loan fields.");
+            return;
+        }
+        const key = name.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_-]/g, "");
+        if(categories.some(category => category.key === key)){
+            alert("That category already exists.");
+            return;
+        }
+        const category = { key, label: name, type: "Loan", initial: [], amount, monthlyPayment, dueDate };
+        categories.push(category);
+        saveCategories();
+        updateCategorySelect();
+        renderCategoryGrid();
+        resetLoanModal();
+        hideModal("loanModalOverlay");
+        showToast("Loan category created successfully.");
+    });
+}
+if(createPaymentButton){
+    createPaymentButton.addEventListener("click", () => {
+        const name = paymentCategoryName?.value.trim() || "";
+        const amount = Number(paymentAmount?.value || 0);
+        const dueDate = paymentDueDate?.value || "";
+        if(!name || amount <= 0 || !dueDate){
+            alert("Please fill in all payment fields.");
+            return;
+        }
+        const key = name.toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_-]/g, "");
+        if(categories.some(category => category.key === key)){
+            alert("That category already exists.");
+            return;
+        }
+        const category = { key, label: name, type: "Payment", initial: [], amount, dueDate };
+        categories.push(category);
+        saveCategories();
+        updateCategorySelect();
+        renderCategoryGrid();
+        resetPaymentModal();
+        hideModal("paymentModalOverlay");
+        showToast("Payment category created successfully.");
+    });
+}
+if(taskCategory){
+    taskCategory.addEventListener("change", updateTaskCaloriesVisibility);
+}
 
-renderCategoryTypeFields();
+if(newCategoryType){
+    renderCategoryTypeFields();
+}
 
 categories = loadCategories();
 tasks = loadTasks();
 
 updateCategorySelect();
 renderCategoryGrid();
-scheduleAutoStartTimers();
-setInterval(scheduleAutoStartTimers, 60000);
+renderDashboardCharts();
+if(typeof scheduleAutoStartTimers === 'function'){
+    scheduleAutoStartTimers();
+    setInterval(scheduleAutoStartTimers, 60000);
+}
 
 window.addEventListener("beforeunload", () => {
     saveTasks();

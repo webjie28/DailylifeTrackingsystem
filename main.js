@@ -29,10 +29,14 @@ function createWindow() {
         height: 850,
         minWidth: 1000,
         minHeight: 700,
-        autoHideMenuBar: true
+        autoHideMenuBar: true,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false
+        }
     });
 
-    win.loadFile('index.html');
+    win.loadFile('dashboard.html');
 }
 
 app.whenReady().then(() => {

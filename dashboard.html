@@ -7,11 +7,32 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-    <header>
-        <h1>Daily Life Tracking System</h1>
-        <p id="today"></p>
-    </header>
+    <div class="container">
+        <header>
+            <h1>Daily Life Tracking System</h1>
+            <p id="today"></p>
+        </header>
+
+        <nav class="page-nav">
+            <a href="dashboard.html" class="active">Dashboard</a>
+            <a href="pages/tasks.html">Tasks</a>
+            <a href="pages/finance.html">Finance</a>
+        </nav>
+
+        <section class="charts-grid">
+            <article class="card chart-card">
+                <h3>Savings Growth</h3>
+                <canvas id="savingsChart" aria-label="Savings Growth chart" role="img"></canvas>
+            </article>
+            <article class="card chart-card">
+                <h3>Expenses by Category</h3>
+                <canvas id="expensesChart" aria-label="Expenses by Category chart" role="img"></canvas>
+            </article>
+            <article class="card chart-card">
+                <h3>Loan Payoff Progress</h3>
+                <canvas id="loanPayoffChart" aria-label="Loan Payoff Progress chart" role="img"></canvas>
+            </article>
+        </section>
 
     <section class="summary-grid">
         <article class="card summary-card">
