@@ -1199,6 +1199,51 @@ if(newCategoryType){
     renderCategoryTypeFields();
 }
 
+// Load shared sidebar component into pages that have a `#sidebar` container.
+function loadSidebar(){
+    try {
+        const isInPages = window.location.pathname.includes('/pages/');
+        const fetchPath = (isInPages ? '../' : '') + 'sidebar.html';
+        fetch(fetchPath).then(res => res.text()).then(html => {
+            const container = document.getElementById('sidebar');
+            if(!container) return;
+            container.innerHTML = html;
+
+            // Resolve each link's href depending on current page location.
+            container.querySelectorAll('a[data-href]').forEach(a => {
+                const dh = a.getAttribute('data-href') || '';
+                let resolved = '';
+                if(isInPages){
+                    if(dh.startsWith('pages/')){
+                        // link to another file inside pages/ folder
+                        resolved = dh.replace(/^pages\//, '');
+                    } else {
+                        // link to a root-level page
+                        resolved = '../' + dh;
+                    }
+                } else {
+                    // root pages: use the path as-is
+                    resolved = dh;
+                }
+                a.setAttribute('href', resolved);
+
+                // mark active link
+                const currentFile = window.location.pathname.split('/').pop();
+                const targetFile = resolved.split('/').pop();
+                if(currentFile === targetFile){
+                    a.classList.add('active');
+                }
+            });
+        }).catch(() => {});
+    } catch (e) {
+        // fail silently
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if(document.getElementById('sidebar')) loadSidebar();
+});
+
 categories = loadCategories();
 tasks = loadTasks();
 

@@ -36,7 +36,7 @@ function createWindow() {
         }
     });
 
-    win.loadFile('dashboard.html');
+    win.loadFile('home.html');
 }
 
 app.whenReady().then(() => {

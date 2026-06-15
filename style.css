@@ -58,6 +58,35 @@ header p{
     font-weight:700;
 }
 
+/* Vertical sidebar variant */
+.page-nav.vertical{ display:block; }
+.sidebar{ padding:8px 6px; }
+.sidebar .nav-section{ margin-bottom:12px; }
+.nav-section-header{
+    font-size:12px;
+    font-weight:800;
+    color:#475569;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    margin:6px 6px 10px;
+}
+.page-nav.vertical ul{ list-style:none; margin:0; padding:0 6px 8px 6px; }
+.page-nav.vertical li{ margin-bottom:6px; }
+.page-nav.vertical li a{
+    display:block;
+    padding:9px 12px;
+    border-radius:12px;
+    background:transparent;
+    color:#0f172a;
+    font-weight:700;
+    text-decoration:none;
+}
+.page-nav.vertical li a:hover{ background:#f1f5f9; }
+.page-nav.vertical li a.active{ background:#e9e7ff; color:#3730a3; }
+.nav-divider{ height:1px; background:rgba(148,163,184,0.12); margin:10px 6px; border-radius:1px; }
+
+/* Keep horizontal nav styles unaffected */
+
 .page-nav a.active,
 .page-nav a:hover{
     background:#c7d2fe;
