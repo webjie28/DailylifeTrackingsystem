@@ -7,34 +7,35 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Hamburger Button -->
+    <button id="toggleSidebar" class="toggle-sidebar-btn">☰ Menu</button>
+
     <div class="app-shell">
-        <div id="sidebar" class="sidebar-container"></div>
+        <!-- Naka-'collapsed' agad para tago ang sidebar sa Home -->
+        <div id="sidebar" class="sidebar-container collapsed"></div>
 
         <main class="main-content">
-            <header>
-                <h1>Welcome to Daily Life Tracking</h1>
+            <header class="minimal-header">
+                <h1>Daily Life Tracking</h1>
                 <p id="today"></p>
             </header>
 
-            <section class="welcome-card card">
-                <h2>Quick Start</h2>
-                <p>Track tasks, manage finances, and review your progress.</p>
-                <div class="quick-actions">
-                    <a class="btn" href="dashboard.html">Go to Dashboard</a>
-                    <a class="btn" href="pages/tasks.html">View Tasks</a>
-                    <a class="btn" href="pages/finance.html">Finance</a>
-                </div>
-            </section>
-
-            <section class="overview-grid">
-                <article class="card">
-                    <h3>Overview</h3>
-                    <p>Personalized summary and recent activity will appear here.</p>
-                </article>
-                <article class="card">
-                    <h3>Tips</h3>
-                    <p>Use the sidebar to switch between modules quickly.</p>
-                </article>
+            <section class="minimal-cards">
+                <a class="minimal-card" href="dashboard.html">
+                    <h3 style="font-size: 28px; margin-bottom: 5px;">📊</h3>
+                    <h3>Dashboard</h3>
+                    <p>View stats and insights</p>
+                </a>
+                <a class="minimal-card" href="pages/tasks.html">
+                    <h3 style="font-size: 28px; margin-bottom: 5px;">✅</h3>
+                    <h3>Tasks</h3>
+                    <p>Manage daily checklists</p>
+                </a>
+                <a class="minimal-card" href="pages/finance.html">
+                    <h3 style="font-size: 28px; margin-bottom: 5px;">💰</h3>
+                    <h3>Finance</h3>
+                    <p>Track your budget</p>
+                </a>
             </section>
         </main>
     </div>

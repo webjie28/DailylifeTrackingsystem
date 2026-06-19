@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Workout Tracker</title>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <div id="sidebar" class="sidebar-container"></div>
+        <main class="main-content">
+            <div class="container">
+                <h1>Workout & Burn Tracker</h1>
+                
+                <!-- Dito natin ilalagay ang checkbox routine -->
+                <section class="card" style="padding: 20px;">
+                    <div id="gymChecklist"></div>
+                    
+                    <hr style="margin: 20px 0;">
+                    
+                    <h3>Burned Calories</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="gymCaloriesInput" placeholder="Enter calories burned">
+                        <button id="saveGymBtn" class="btn">Save Calories</button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script src="../script.js"></script>
+</body>
+</html>
