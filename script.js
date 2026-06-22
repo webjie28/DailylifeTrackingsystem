@@ -1,5 +1,4 @@
-﻿
-if(!localStorage.getItem("dataResetV2")){
+﻿if(!localStorage.getItem("dataResetV2")){
     localStorage.removeItem("dailyTasks");
     localStorage.removeItem("customCategories");
     localStorage.removeItem("lastGymDay");
@@ -349,6 +348,17 @@ function updateSummaryCards(){
     const activeCategories = categories.filter(category => !getCategoryCompletion(category.key)).length;
     const overallProgress = tasks.length ? Math.round((completedTasks / tasks.length) * 100) : 0;
 
+    // Calories burned today: sum calories of completed tasks for today
+    const todayKey = getTodayKey();
+    const walkData = JSON.parse(localStorage.getItem('walkTrackerData') || '{}');
+    const gymData = JSON.parse(localStorage.getItem('gymTrackerData') || '{}');
+    const walkCals = Math.round((walkData[todayKey] || 0) * 0.04);
+    const gymCals = gymData[todayKey] ? parseInt(gymData[todayKey].calories) || 0 : 0;
+    const taskCals = tasks.filter(t => t.done).reduce((sum, t) => sum + (t.calories || 0), 0);
+    const totalCaloriesToday = walkCals + gymCals + taskCals;
+    const summaryTotalCaloriesToday = document.getElementById('summaryTotalCaloriesToday');
+    if(summaryTotalCaloriesToday) summaryTotalCaloriesToday.textContent = `${totalCaloriesToday} kcal`;
+
     if(summaryStreak) summaryStreak.textContent = streak;
     if(summaryTotalCategories) summaryTotalCategories.textContent = totalCategories;
     if(summaryActiveCategories) summaryActiveCategories.textContent = activeCategories;
@@ -626,8 +636,8 @@ function getLoanProgressData(){
     });
 }
 
-function createSavingsChart(){
-    const ctx = document.getElementById('savingsChart');
+function creategrowthChart(){
+    const ctx = document.getElementById('growthChart');
     if(!ctx || !Chart) return;
     const history = getSavingsHistory();
     new Chart(ctx, {
@@ -673,7 +683,7 @@ function createLoanPayoffChart(){
 }
 
 function renderDashboardCharts() {
-    if (document.getElementById('savingsChart')) createSavingsChart();
+    if (document.getElementById('growthChart')) creategrowthChart();
     if (document.getElementById('expensesChart')) createExpensesChart();
     if (document.getElementById('loanPayoffChart')) createLoanPayoffChart();
     if (document.getElementById('caloriesChart')) renderCaloriesChart(); 
@@ -1178,30 +1188,7 @@ function setupWorkoutInterface() {
         });
     }
 }
-function renderCaloriesChart() {
-    const ctx = document.getElementById('caloriesChart');
-    if (!ctx || typeof Chart === 'undefined') return;
-    
-    const walkData = JSON.parse(localStorage.getItem('walkTrackerData')) || {};
-    const gymData = JSON.parse(localStorage.getItem('gymTrackerData')) || {};
-    const labels = [], totals = [];
-    
-    for (let i = 29; i >= 0; i--) {
-        const d = new Date(); d.setDate(d.getDate() - i);
-        const key = d.toISOString().split('T')[0];
-        const wCals = Math.round((walkData[key] || 0) * 0.04);
-        const gCals = gymData[key] ? parseInt(gymData[key].calories) || 0 : 0;
-        labels.push(d.toLocaleDateString());
-        totals.push(wCals + gCals);
-    }
-
-    if (Chart.getChart(ctx)) Chart.getChart(ctx).destroy();
-    new Chart(ctx, { 
-        type: 'line', 
-        data: { labels, datasets: [{ label: 'Total Calories Burned', data: totals, borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.2)', fill: true }] }, 
-        options: { responsive: true, maintainAspectRatio: false } 
-    });
-}
+// (duplicate renderCaloriesChart removed — canonical version is defined above)
 function loadWorkout() {
     const list = document.getElementById("gymChecklist");
     if (!list) return;
@@ -1226,8 +1213,18 @@ function loadWorkout() {
     }
 }
 
-// I-initialize sa DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-    // ... yung existing code mo ...
-    loadWorkout(); // Tawagin ang function na ito
-});
+
+// (duplicate DOMContentLoaded for loadWorkout removed — loadWorkout is already called via setupWorkoutInterface in the main listener above)
+// ipcRenderer is only available inside Electron's renderer process
+let ipcRenderer = null;
+try {
+    if (typeof require !== 'undefined') {
+        ipcRenderer = require('electron').ipcRenderer;
+    }
+} catch(e) { /* not in Electron */ }
+
+async function sendToPython(data) {
+    if (!ipcRenderer) { console.warn('sendToPython: not running in Electron'); return; }
+    const result = await ipcRenderer.invoke('run-python', data);
+    console.log("Python says:", result);
+}

@@ -12,6 +12,7 @@
     "electron": "^37.0.0"
   },
   "dependencies": {
-    "chart.js": "^4.5.1"
+    "chart.js": "^4.5.1",
+    "python-shell": "^5.0.0"
   }
 }

@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fitness — Daily Life Tracking</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        /* ── Page Shell ── */
+        .page-header {
+            display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap;
+            gap: 16px; margin-bottom: 28px;
+        }
+        .page-header h1 { font-size: 32px; font-weight: 800; color: #0f172a; margin: 0; }
+        .header-sub { color: #64748b; font-size: 14px; margin-top: 4px; }
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        /* ── Buttons ── */
+        .btn { padding: 10px 18px; border-radius: 12px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #7c3aed; color: #fff; }
+        .btn-primary:hover { background: #5b21b6; }
+        .btn-green { background: #22c55e; color: #fff; }
+        .btn-green:hover { background: #16a34a; }
+        .btn-outline { background: #fff; color: #0f172a; border: 1px solid rgba(148,163,184,0.3); }
+        .btn-outline:hover { background: #f1f5f9; }
+        .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 10px; }
+
+        /* ── Section Divider ── */
+        .section-title {
+            display: flex; align-items: center; gap: 12px;
+            margin: 40px 0 20px;
+        }
+        .section-title h2 {
+            font-size: 22px; font-weight: 800; color: #0f172a; margin: 0;
+            white-space: nowrap;
+        }
+        .section-title-line {
+            flex: 1; height: 1px;
+            background: rgba(148,163,184,0.2);
+        }
+
+        /* ── Summary Banner ── */
+        .calorie-banner {
+            background: linear-gradient(135deg, #7c3aed 0%, #22c55e 100%);
+            border-radius: 24px;
+            padding: 24px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 28px;
+            box-shadow: 0 12px 32px rgba(124,58,237,0.18);
+        }
+        .banner-item { text-align: center; }
+        .banner-label { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.75); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+        .banner-value { font-size: 32px; font-weight: 800; color: #fff; line-height: 1; }
+        .banner-sub { font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 4px; }
+        .banner-divider { width: 1px; height: 60px; background: rgba(255,255,255,0.25); }
+        @media (max-width: 700px) { .banner-divider { display: none; } .banner-item { flex: 1 1 120px; } }
+
+        /* ── Stat Cards ── */
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .stat-card { background: #fff; border: 1px solid rgba(148,163,184,0.18); border-radius: 20px; padding: 18px 20px; box-shadow: 0 6px 16px rgba(15,23,42,0.05); }
+        .stat-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+        .stat-value { font-size: 24px; font-weight: 800; color: #0f172a; }
+        .stat-value.green { color: #16a34a; }
+        .stat-value.purple { color: #7c3aed; }
+        .stat-value.orange { color: #f97316; }
+
+        /* ── Panels ── */
+        .panel { background: #fff; border: 1px solid rgba(148,163,184,0.18); border-radius: 24px; padding: 24px; box-shadow: 0 10px 24px rgba(15,23,42,0.06); }
+        .panel + .panel { margin-top: 24px; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .panel-header h3 { font-size: 18px; font-weight: 700; color: #0f172a; margin: 0; }
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+        @media (max-width: 860px) { .two-col { grid-template-columns: 1fr; } }
+
+        /* ── Day Tabs ── */
+        .day-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+        .day-tab { padding: 7px 14px; border-radius: 10px; border: 1.5px solid rgba(148,163,184,0.25); background: #f8fafc; font-size: 12px; font-weight: 700; cursor: pointer; color: #64748b; transition: all 0.2s; }
+        .day-tab.active { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+        .day-tab.completed { border-color: #22c55e; color: #16a34a; background: #f0fdf4; }
+        .day-tab.active.completed { background: #22c55e; border-color: #22c55e; color: #fff; }
+
+        /* ── Exercise List ── */
+        .exercise-list { display: flex; flex-direction: column; gap: 8px; max-height: 460px; overflow-y: auto; padding-right: 2px; }
+        .exercise-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #f8fafc; border: 1px solid rgba(148,163,184,0.16); border-radius: 14px; transition: background 0.2s, border-color 0.2s; }
+        .exercise-item.checked { background: #f0fdf4; border-color: rgba(34,197,94,0.3); }
+        .exercise-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #22c55e; flex-shrink: 0; cursor: pointer; }
+        .exercise-item label { flex: 1; font-size: 14px; color: #0f172a; cursor: pointer; line-height: 1.4; }
+        .exercise-item.checked label { text-decoration: line-through; color: #94a3b8; }
+        .cal-pill { font-size: 11px; font-weight: 700; color: #f97316; background: #fff7ed; padding: 3px 9px; border-radius: 999px; flex-shrink: 0; }
+        .rest-card { text-align: center; padding: 48px 20px; color: #64748b; }
+        .rest-card .rest-icon { font-size: 52px; display: block; margin-bottom: 14px; }
+        .rest-card p { font-size: 15px; font-weight: 600; }
+
+        /* ── Progress Bar ── */
+        .progress-block { margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(148,163,184,0.12); }
+        .progress-row { display: flex; justify-content: space-between; font-size: 13px; color: #475569; margin-bottom: 8px; font-weight: 600; }
+        .prog-bar { height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+        .prog-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #7c3aed, #22c55e); transition: width 0.4s ease; }
+
+        /* ── Calorie Log (right column) ── */
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: #475569; }
+        .form-group input, .form-group select { padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.3); background: #f8fafc; font-size: 14px; color: #0f172a; outline: none; width: 100%; }
+        .form-group input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.08); }
+        .two-input { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* ── Calorie Chart ── */
+        .chart-wrap { height: 240px; position: relative; }
+
+        /* ── Walk Section ── */
+        .walk-hero {
+            background: #f0fdf4;
+            border: 1px solid rgba(34,197,94,0.2);
+            border-radius: 24px;
+            padding: 28px;
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .step-ring-wrap { flex-shrink: 0; position: relative; width: 140px; height: 140px; }
+        .step-ring-wrap svg { transform: rotate(-90deg); }
+        .ring-bg { fill: none; stroke: #dcfce7; stroke-width: 12; }
+        .ring-fill { fill: none; stroke: #22c55e; stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+        .ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .ring-steps { font-size: 22px; font-weight: 800; color: #0f172a; line-height: 1; }
+        .ring-goal { font-size: 11px; color: #64748b; font-weight: 600; margin-top: 4px; }
+        .ring-pct { font-size: 13px; font-weight: 800; color: #16a34a; margin-top: 2px; }
+        .walk-info { flex: 1; min-width: 200px; }
+        .walk-info h3 { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 6px; }
+        .walk-info p { color: #64748b; font-size: 14px; margin: 0 0 16px; }
+        .walk-stats { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; }
+        .walk-stat { display: flex; flex-direction: column; gap: 2px; }
+        .walk-stat-val { font-size: 20px; font-weight: 800; color: #0f172a; }
+        .walk-stat-lbl { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; }
+        .step-input-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+        .step-input-row input { padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.3); background: #fff; font-size: 14px; color: #0f172a; outline: none; width: 160px; }
+        .step-input-row input:focus { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+
+        .walk-goal-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #475569; margin-top: 10px; font-weight: 600; }
+        .walk-goal-row input { width: 110px; padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(148,163,184,0.3); background: #f8fafc; font-size: 13px; }
+
+        /* ── Walk History ── */
+        .walk-history { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
+        .walk-history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f8fafc; border: 1px solid rgba(148,163,184,0.15); border-radius: 12px; }
+        .wh-left { display: flex; flex-direction: column; gap: 2px; }
+        .wh-date { font-size: 13px; font-weight: 700; color: #0f172a; }
+        .wh-day { font-size: 11px; color: #94a3b8; }
+        .wh-right { display: flex; align-items: center; gap: 14px; }
+        .wh-steps { font-size: 14px; font-weight: 800; color: #0f172a; }
+        .wh-cals { font-size: 12px; font-weight: 700; color: #22c55e; }
+        .wh-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+        .wh-badge.goal-met { background: #dcfce7; color: #16a34a; }
+        .wh-badge.goal-miss { background: #f1f5f9; color: #94a3b8; }
+        .btn-del { background: transparent; border: none; color: #cbd5e1; font-size: 14px; cursor: pointer; padding: 2px 4px; }
+        .btn-del:hover { color: #ef4444; }
+
+        .week-done { text-align: center; padding: 16px; background: #f0fdf4; border-radius: 16px; color: #16a34a; font-weight: 700; font-size: 14px; margin-bottom: 16px; display: none; }
+        .empty-msg { text-align: center; padding: 32px 20px; color: #94a3b8; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <button id="toggleSidebar" class="toggle-sidebar-btn">☰ Menu</button>
+    <div class="app-shell">
+        <div id="sidebar" class="sidebar-container"></div>
+        <main class="main-content">
+            <div class="container" style="padding-top: 0;">
+
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div>
+                        <h1>🏃 Fitness</h1>
+                        <p class="header-sub" id="todayLabel"></p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="exportCSV()">⬇ Export CSV</button>
+                    </div>
+                </div>
+
+                <!-- Combined Calorie Banner -->
+                <div class="calorie-banner">
+                    <div class="banner-item">
+                        <div class="banner-label">Total Burned Today</div>
+                        <div class="banner-value" id="bannerTotal">0</div>
+                        <div class="banner-sub">kcal</div>
+                    </div>
+                    <div class="banner-divider"></div>
+                    <div class="banner-item">
+                        <div class="banner-label">From Workout</div>
+                        <div class="banner-value" id="bannerWorkout">0</div>
+                        <div class="banner-sub">kcal</div>
+                    </div>
+                    <div class="banner-divider"></div>
+                    <div class="banner-item">
+                        <div class="banner-label">From Walk</div>
+                        <div class="banner-value" id="bannerWalk">0</div>
+                        <div class="banner-sub">kcal</div>
+                    </div>
+                    <div class="banner-divider"></div>
+                    <div class="banner-item">
+                        <div class="banner-label">Steps Today</div>
+                        <div class="banner-value" id="bannerSteps">0</div>
+                        <div class="banner-sub">steps</div>
+                    </div>
+                    <div class="banner-divider"></div>
+                    <div class="banner-item">
+                        <div class="banner-label">Week Streak</div>
+                        <div class="banner-value" id="bannerStreak">0</div>
+                        <div class="banner-sub">🔥 days</div>
+                    </div>
+                </div>
+
+                <!-- Overall Stats -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Workouts</div>
+                        <div class="stat-value purple" id="statWorkouts">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Walk Days</div>
+                        <div class="stat-value green" id="statWalkDays">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Steps (All Time)</div>
+                        <div class="stat-value" id="statTotalSteps">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Calories Burned</div>
+                        <div class="stat-value orange" id="statTotalCals">0 kcal</div>
+                    </div>
+                </div>
+
+                <!-- 30-Day Calorie Chart -->
+                <div class="panel" style="margin-bottom: 24px;">
+                    <div class="panel-header">
+                        <h3>Calories Burned — Last 30 Days</h3>
+                        <span style="font-size:13px; color:#64748b; font-weight:600;">Workout + Walk combined</span>
+                    </div>
+                    <div class="chart-wrap"><canvas id="calsChart"></canvas></div>
+                </div>
+
+                <!-- ════════════════════════════════════ -->
+                <!-- WORKOUT SECTION                      -->
+                <!-- ════════════════════════════════════ -->
+                <div class="section-title">
+                    <h2>🏋 Workout</h2>
+                    <div class="section-title-line"></div>
+                    <button class="btn btn-outline btn-sm" onclick="resetTodayWorkout()">↺ Reset Today</button>
+                </div>
+
+                <div class="two-col">
+                    <!-- Checklist -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3 id="checklistTitle">Today's Exercises</h3>
+                            <span id="checklistCount" style="font-size:13px; color:#64748b; font-weight:600;"></span>
+                        </div>
+                        <div class="day-tabs" id="dayTabs"></div>
+                        <div class="week-done" id="weekDone">🎉 Full week complete! Great job!</div>
+                        <div class="exercise-list" id="exerciseList"></div>
+                        <div class="progress-block">
+                            <div class="progress-row">
+                                <span id="progText">0 / 0 exercises</span>
+                                <strong id="progPct">0%</strong>
+                            </div>
+                            <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- Manual Calorie Log + History -->
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>Log Workout Calories</h3>
+                            <span style="font-size:13px; color:#94a3b8;">Auto-logs from checkboxes too</span>
+                        </div>
+                        <div class="two-input">
+                            <div class="form-group">
+                                <label>Calories Burned</label>
+                                <input id="wCalInput" type="number" min="0" placeholder="e.g. 350" />
+                            </div>
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input id="wCalDate" type="date" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Note (optional)</label>
+                            <input id="wCalNote" type="text" placeholder="e.g. Chest + Shoulders" />
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;" onclick="logWorkoutCals()">Log Calories</button>
+
+                        <div style="margin-top: 20px;">
+                            <p style="font-size:13px; font-weight:700; color:#475569; margin-bottom:10px;">Recent Workout Logs</p>
+                            <div class="walk-history" id="workoutHistory">
+                                <div class="empty-msg">No logs yet.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ════════════════════════════════════ -->
+                <!-- WALK SECTION                         -->
+                <!-- ════════════════════════════════════ -->
+                <div class="section-title">
+                    <h2>🚶 Daily Walk</h2>
+                    <div class="section-title-line"></div>
+                </div>
+
+                <!-- Walk Hero -->
+                <div class="walk-hero">
+                    <!-- Step Ring -->
+                    <div class="step-ring-wrap">
+                        <svg width="140" height="140" viewBox="0 0 140 140">
+                            <circle class="ring-bg" cx="70" cy="70" r="58"/>
+                            <circle class="ring-fill" id="ringFill" cx="70" cy="70" r="58"
+                                stroke-dasharray="364.4"
+                                stroke-dashoffset="364.4"/>
+                        </svg>
+                        <div class="ring-label">
+                            <div class="ring-steps" id="ringSteps">0</div>
+                            <div class="ring-goal" id="ringGoal">/ 10,000</div>
+                            <div class="ring-pct" id="ringPct">0%</div>
+                        </div>
+                    </div>
+
+                    <!-- Walk Info + Input -->
+                    <div class="walk-info">
+                        <h3>Today's Steps</h3>
+                        <p id="walkMotivation">Start walking — every step counts! 💪</p>
+                        <div class="walk-stats">
+                            <div class="walk-stat">
+                                <div class="walk-stat-val" id="walkCalsToday">0 kcal</div>
+                                <div class="walk-stat-lbl">Burned</div>
+                            </div>
+                            <div class="walk-stat">
+                                <div class="walk-stat-val" id="walkKmToday">0.00 km</div>
+                                <div class="walk-stat-lbl">Distance est.</div>
+                            </div>
+                            <div class="walk-stat">
+                                <div class="walk-stat-val" id="walkPctToday">0%</div>
+                                <div class="walk-stat-lbl">Goal</div>
+                            </div>
+                        </div>
+                        <div class="step-input-row">
+                            <input id="stepInput" type="number" min="0" placeholder="Enter steps (e.g. 8500)" />
+                            <button class="btn btn-green" onclick="logSteps()">Log Steps</button>
+                        </div>
+                        <div class="walk-goal-row">
+                            Daily goal:
+                            <input id="stepGoalInput" type="number" min="1000" step="500" />
+                            <button class="btn btn-outline btn-sm" onclick="saveGoal()">Save</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Walk History + Chart -->
+                <div class="two-col">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h3>Step History</h3>
+                            <button class="btn btn-outline btn-sm" onclick="clearWalkDay()">Clear Today</button>
+                        </div>
+                        <div class="walk-history" id="walkHistory">
+                            <div class="empty-msg">No walk history yet.</div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h3 style="margin-bottom:16px;">Steps — Last 14 Days</h3>
+                        <div class="chart-wrap"><canvas id="stepsChart"></canvas></div>
+                    </div>
+                </div>
+
+            </div><!-- /container -->
+        </main>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+    // ── Storage Keys ──────────────────────────────────────────
+    const GYM_KEY   = 'gymTrackerData';    // { 'YYYY-MM-DD': { calories, manualCals, note } }
+    const WALK_KEY  = 'walkTrackerData';   // { 'YYYY-MM-DD': steps }
+    const CHECK_KEY = 'workoutChecks';     // { 'YYYY-MM-DD_DAY': { idx: bool } }
+    const GOAL_KEY  = 'walkStepGoal';
+
+    const DAYS = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+
+    // ── Workout Plan ──────────────────────────────────────────
+    const PLAN = {
+        MONDAY: [
+            { text: 'Machine Incline Press – 4×6-10',     cals: 40 },
+            { text: 'Machine Chest Press – 3×8-12',       cals: 35 },
+            { text: 'Machine Shoulder Press – 2×8-12',    cals: 30 },
+            { text: 'Cable Lateral Raise – 3×15-20',      cals: 20 },
+            { text: 'Machine Lateral Raise – 5×12-20',    cals: 20 },
+            { text: 'Cable / Rope Pushdown – 3×12',       cals: 25 },
+            { text: 'Overhead Tricep Extension – 3×12',   cals: 25 },
+            { text: 'Incline Walk – 20 mins',              cals: 100 },
+        ],
+        TUESDAY: [
+            { text: 'Assisted Pull-Up Machine – 4×6-10',     cals: 40 },
+            { text: 'Lat Pulldown Machine – 4×8-12',         cals: 35 },
+            { text: 'Single Arm Lat Pulldown – 3×10-12',     cals: 35 },
+            { text: 'Chest Supported Row Machine – 3×8-12',  cals: 35 },
+            { text: 'Straight Arm Pulldown – 3×15',          cals: 25 },
+            { text: 'Rear Delt Fly – 3×15',                  cals: 20 },
+            { text: 'Machine Preacher Curl – 3×10-12',       cals: 25 },
+            { text: 'Incline Walk – 15 mins',                 cals: 90 },
+        ],
+        WEDNESDAY: [
+            { text: 'Leg Press – 4×6-8',                  cals: 45 },
+            { text: 'Romanian Deadlift – 3×10',           cals: 45 },
+            { text: 'Walking Lunges – 3×12 each',         cals: 40 },
+            { text: 'Leg Curl Machine – 3×10-15',         cals: 30 },
+            { text: 'Leg Extension Machine – 3×12-15',    cals: 30 },
+            { text: 'Standing Calf Raise – 4×12-20',      cals: 20 },
+            { text: 'Plank – 3×1 min',                    cals: 20 },
+            { text: 'Leg Raises – 3×12',                  cals: 20 },
+        ],
+        THURSDAY: [
+            { text: '10k steps',                              cals: 120 },
+            { text: 'Stretching',                            cals: 30  },
+            { text: 'Dead hang – 3× max',                    cals: 20  },
+            { text: '15 min HIIT (bike / jog intervals)',     cals: 180 },
+        ],
+        FRIDAY: [
+            { text: 'Machine Lateral Raise – 5×12-20',       cals: 20  },
+            { text: 'Cable Lateral Raise – 3×15-20',         cals: 20  },
+            { text: 'Single Arm Lat Pulldown – 4×10-12',     cals: 35  },
+            { text: 'Lat Pulldown Machine – 3×10-12',        cals: 35  },
+            { text: 'Chest Supported Row Machine – 3×10-12', cals: 35  },
+            { text: 'Rear Delt Machine – 4×15-20',           cals: 20  },
+            { text: 'Machine Incline Press – 3×10-12',       cals: 35  },
+            { text: 'DB Curl – 3×12',                        cals: 25  },
+            { text: '20 min incline walk',                   cals: 100 },
+        ],
+        SATURDAY: [
+            { text: 'Leg Press – 3×15',          cals: 40  },
+            { text: 'RDL – 3×12',               cals: 40  },
+            { text: 'Leg Curl – 3×15',          cals: 30  },
+            { text: 'Leg Extension – 3×15',     cals: 30  },
+            { text: "Farmer's Walk – 3 rounds", cals: 35  },
+            { text: 'Incline Walk – 30 min',    cals: 130 },
+        ],
+        SUNDAY: null
+    };
+
+    // ── State ─────────────────────────────────────────────────
+    let gymData  = {};
+    let walkData = {};
+    let checks   = {};
+    let stepGoal = 10000;
+    let activeDay = DAYS[new Date().getDay()];
+    let calsChartInst = null, stepsChartInst = null;
+
+    // ── Helpers ───────────────────────────────────────────────
+    function todayKey() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function fmtKey(date) {
+        return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+    }
+    function stepsToKcal(steps) { return Math.round(steps * 0.04); }
+    function stepsToKm(steps)   { return (steps * 0.000762).toFixed(2); }
+
+    function load() {
+        try { gymData  = JSON.parse(localStorage.getItem(GYM_KEY))   || {}; } catch { gymData  = {}; }
+        try { walkData = JSON.parse(localStorage.getItem(WALK_KEY))  || {}; } catch { walkData = {}; }
+        try { checks   = JSON.parse(localStorage.getItem(CHECK_KEY)) || {}; } catch { checks   = {}; }
+        stepGoal = parseInt(localStorage.getItem(GOAL_KEY)) || 10000;
+    }
+    function saveGym()   { localStorage.setItem(GYM_KEY,   JSON.stringify(gymData));  }
+    function saveWalk()  { localStorage.setItem(WALK_KEY,  JSON.stringify(walkData)); }
+    function saveChecks(){ localStorage.setItem(CHECK_KEY, JSON.stringify(checks));   }
+
+    function getCheckKey(day) { return `${todayKey()}_${day}`; }
+    function getDayChecks(day){ return checks[getCheckKey(day)] || {}; }
+
+    // ── Banner + Stats ────────────────────────────────────────
+    function updateBannerAndStats() {
+        const tk = todayKey();
+
+        // Today's workout cals
+        const wCals = gymData[tk] ? (parseInt(gymData[tk].calories) || 0) : 0;
+
+        // Today's walk cals
+        const todaySteps = walkData[tk] || 0;
+        const wkCals = stepsToKcal(todaySteps);
+
+        const total = wCals + wkCals;
+
+        document.getElementById('bannerTotal').textContent   = total;
+        document.getElementById('bannerWorkout').textContent = wCals;
+        document.getElementById('bannerWalk').textContent    = wkCals;
+        document.getElementById('bannerSteps').textContent   = todaySteps.toLocaleString();
+
+        // Streak: consecutive days with any activity
+        const allDates = new Set([...Object.keys(gymData), ...Object.keys(walkData)]);
+        let streak = 0, check = new Date();
+        for (let i = 0; i < 365; i++) {
+            const k = fmtKey(check);
+            const hasActivity = (gymData[k] && gymData[k].calories > 0) || (walkData[k] && walkData[k] > 0);
+            if (hasActivity) { streak++; check.setDate(check.getDate() - 1); }
+            else if (i === 0) { check.setDate(check.getDate() - 1); } // allow today to be empty
+            else break;
+        }
+        document.getElementById('bannerStreak').textContent = streak;
+
+        // Overall stats
+        const workoutDays  = Object.values(gymData).filter(v => v && v.calories > 0).length;
+        const walkDays     = Object.values(walkData).filter(v => v > 0).length;
+        const totalSteps   = Object.values(walkData).reduce((s, v) => s + (v || 0), 0);
+        const totalGymCals = Object.values(gymData).reduce((s, v) => s + (v ? parseInt(v.calories)||0 : 0), 0);
+        const totalWkCals  = Object.values(walkData).reduce((s, v) => s + stepsToKcal(v||0), 0);
+
+        document.getElementById('statWorkouts').textContent   = workoutDays;
+        document.getElementById('statWalkDays').textContent   = walkDays;
+        document.getElementById('statTotalSteps').textContent = totalSteps.toLocaleString();
+        document.getElementById('statTotalCals').textContent  = (totalGymCals + totalWkCals).toLocaleString() + ' kcal';
+    }
+
+    // ── WORKOUT — Tabs ────────────────────────────────────────
+    function renderTabs() {
+        document.getElementById('dayTabs').innerHTML = DAYS.map(day => {
+            const plan = PLAN[day];
+            const dc   = getDayChecks(day);
+            const done = plan ? plan.filter((_, i) => dc[i]).length : 0;
+            const full = plan && done === plan.length;
+            const isActive = day === activeDay;
+            return `<button class="day-tab ${isActive ? 'active' : ''} ${full ? 'completed' : ''}"
+                        onclick="setDay('${day}')">${day.slice(0,3)}${full ? ' ✓' : ''}</button>`;
+        }).join('');
+
+        // Week complete banner
+        const allFull = DAYS.filter(d => PLAN[d]).every(d => {
+            const plan = PLAN[d], dc = getDayChecks(d);
+            return plan.every((_, i) => dc[i]);
+        });
+        document.getElementById('weekDone').style.display = allFull ? 'block' : 'none';
+    }
+
+    function setDay(day) { activeDay = day; renderTabs(); renderChecklist(); }
+
+    // ── WORKOUT — Checklist ───────────────────────────────────
+    function renderChecklist() {
+        const plan   = PLAN[activeDay];
+        const listEl = document.getElementById('exerciseList');
+        document.getElementById('checklistTitle').textContent = `${activeDay} Workout`;
+
+        if (!plan) {
+            listEl.innerHTML = '<div class="rest-card"><span class="rest-icon">😴</span><p>Rest Day — recover and recharge!</p></div>';
+            document.getElementById('checklistCount').textContent = '';
+            document.getElementById('progText').textContent = '— Rest Day';
+            document.getElementById('progPct').textContent  = '';
+            document.getElementById('progFill').style.width = '0%';
+            return;
+        }
+
+        const dc   = getDayChecks(activeDay);
+        const done = plan.filter((_, i) => dc[i]).length;
+        const pct  = Math.round((done / plan.length) * 100);
+
+        listEl.innerHTML = plan.map((ex, i) => `
+            <div class="exercise-item ${dc[i] ? 'checked' : ''}">
+                <input type="checkbox" id="ex_${i}" ${dc[i] ? 'checked' : ''} onchange="toggleEx(${i})"/>
+                <label for="ex_${i}">${ex.text}</label>
+                <span class="cal-pill">~${ex.cals} kcal</span>
+            </div>`).join('');
+
+        document.getElementById('checklistCount').textContent = `${done}/${plan.length}`;
+        document.getElementById('progText').textContent = `${done} / ${plan.length} exercises`;
+        document.getElementById('progPct').textContent  = `${pct}%`;
+        document.getElementById('progFill').style.width = `${pct}%`;
+    }
+
+    function toggleEx(idx) {
+        const key = getCheckKey(activeDay);
+        if (!checks[key]) checks[key] = {};
+        checks[key][idx] = !checks[key][idx];
+        saveChecks();
+        autoCalcWorkoutCals();
+        renderTabs();
+        renderChecklist();
+        renderCombinedChart();
+        updateBannerAndStats();
+    }
+
+    function autoCalcWorkoutCals() {
+        // Sum calories from today's checked exercises
+        const todayDayName = DAYS[new Date().getDay()];
+        const plan = PLAN[todayDayName];
+        if (!plan) return;
+        const dc   = getDayChecks(todayDayName);
+        const auto = plan.reduce((s, ex, i) => s + (dc[i] ? ex.cals : 0), 0);
+        const tk   = todayKey();
+        const existing = gymData[tk] || {};
+        gymData[tk] = { ...existing, calories: auto + (existing.manualCals || 0), autoCheckCals: auto };
+        saveGym();
+    }
+
+    function resetTodayWorkout() {
+        if (!confirm('Reset today\'s workout checklist?')) return;
+        delete checks[getCheckKey(activeDay)];
+        saveChecks();
+        autoCalcWorkoutCals();
+        renderTabs(); renderChecklist(); renderCombinedChart(); updateBannerAndStats(); renderWorkoutHistory();
+    }
+
+    // ── WORKOUT — Manual Log ──────────────────────────────────
+    function logWorkoutCals() {
+        const cals = parseInt(document.getElementById('wCalInput').value);
+        const date = document.getElementById('wCalDate').value;
+        const note = document.getElementById('wCalNote').value.trim();
+        if (!cals || cals <= 0 || !date) { alert('Please enter calories and a date.'); return; }
+
+        const existing = gymData[date] || { autoCheckCals: 0 };
+        const manual   = (existing.manualCals || 0) + cals;
+        gymData[date]  = { ...existing, calories: (existing.autoCheckCals || 0) + manual, manualCals: manual, note };
+        saveGym();
+
+        document.getElementById('wCalInput').value = '';
+        document.getElementById('wCalNote').value  = '';
+        renderWorkoutHistory(); renderCombinedChart(); updateBannerAndStats();
+    }
+
+    function renderWorkoutHistory() {
+        const el = document.getElementById('workoutHistory');
+        const entries = Object.entries(gymData)
+            .filter(([, v]) => v && v.calories > 0)
+            .sort((a, b) => b[0].localeCompare(a[0]))
+            .slice(0, 15);
+
+        if (!entries.length) { el.innerHTML = '<div class="empty-msg">No workout logs yet.</div>'; return; }
+        el.innerHTML = entries.map(([date, v]) => {
+            const d = new Date(date + 'T00:00:00');
+            return `<div class="walk-history-item">
+                <div class="wh-left">
+                    <div class="wh-date">${date}</div>
+                    <div class="wh-day">${DAYS[d.getDay()]}</div>
+                </div>
+                <div class="wh-right">
+                    ${v.note ? `<span style="font-size:12px;color:#94a3b8;">${v.note}</span>` : ''}
+                    <span class="wh-steps" style="color:#7c3aed;">${parseInt(v.calories)||0} kcal</span>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── WALK — Hero ───────────────────────────────────────────
+    function updateWalkHero() {
+        const tk     = todayKey();
+        const steps  = walkData[tk] || 0;
+        const pct    = Math.min(100, Math.round((steps / stepGoal) * 100));
+        const cals   = stepsToKcal(steps);
+        const km     = stepsToKm(steps);
+        const circumference = 2 * Math.PI * 58; // r=58
+
+        document.getElementById('ringSteps').textContent    = steps.toLocaleString();
+        document.getElementById('ringGoal').textContent     = `/ ${stepGoal.toLocaleString()}`;
+        document.getElementById('ringPct').textContent      = `${pct}%`;
+        document.getElementById('walkCalsToday').textContent = `${cals} kcal`;
+        document.getElementById('walkKmToday').textContent  = `${km} km`;
+        document.getElementById('walkPctToday').textContent = `${pct}%`;
+        document.getElementById('stepGoalInput').value      = stepGoal;
+
+        // Animate ring
+        const offset = circumference - (pct / 100) * circumference;
+        const ring   = document.getElementById('ringFill');
+        ring.style.strokeDasharray  = circumference;
+        ring.style.strokeDashoffset = offset;
+
+        // Motivation text
+        const msgs = [
+            [0,    "Start walking — every step counts! 💪"],
+            [2000, "Good start! Keep it going 🚶"],
+            [5000, "Halfway there! You're doing great 🔥"],
+            [7500, "Almost at your goal — push it! 💨"],
+            [stepGoal, "🎉 Goal reached! Amazing work today!"],
+        ];
+        const msg = [...msgs].reverse().find(([threshold]) => steps >= threshold);
+        document.getElementById('walkMotivation').textContent = msg ? msg[1] : msgs[0][1];
+    }
+
+    function logSteps() {
+        const steps = parseInt(document.getElementById('stepInput').value);
+        if (!steps || steps <= 0) { alert('Please enter a valid step count.'); return; }
+        const tk = todayKey();
+        walkData[tk] = steps;
+        saveWalk();
+        document.getElementById('stepInput').value = '';
+        updateWalkHero();
+        renderWalkHistory();
+        renderStepsChart();
+        renderCombinedChart();
+        updateBannerAndStats();
+    }
+
+    function saveGoal() {
+        const g = parseInt(document.getElementById('stepGoalInput').value);
+        if (!g || g < 100) { alert('Please enter a valid goal.'); return; }
+        stepGoal = g;
+        localStorage.setItem(GOAL_KEY, g);
+        updateWalkHero();
+        renderStepsChart();
+    }
+
+    function clearWalkDay() {
+        if (!confirm('Clear today\'s step count?')) return;
+        delete walkData[todayKey()];
+        saveWalk();
+        updateWalkHero(); renderWalkHistory(); renderStepsChart(); renderCombinedChart(); updateBannerAndStats();
+    }
+
+    // ── WALK — History ────────────────────────────────────────
+    function renderWalkHistory() {
+        const el = document.getElementById('walkHistory');
+        const entries = Object.entries(walkData)
+            .filter(([, v]) => v > 0)
+            .sort((a, b) => b[0].localeCompare(a[0]))
+            .slice(0, 20);
+
+        if (!entries.length) { el.innerHTML = '<div class="empty-msg">No walk history yet.</div>'; return; }
+        el.innerHTML = entries.map(([date, steps]) => {
+            const d    = new Date(date + 'T00:00:00');
+            const cals = stepsToKcal(steps);
+            const met  = steps >= stepGoal;
+            return `<div class="walk-history-item">
+                <div class="wh-left">
+                    <div class="wh-date">${date}</div>
+                    <div class="wh-day">${DAYS[d.getDay()]}</div>
+                </div>
+                <div class="wh-right">
+                    <span class="wh-badge ${met ? 'goal-met' : 'goal-miss'}">${met ? '✓ Goal' : `${Math.round((steps/stepGoal)*100)}%`}</span>
+                    <span class="wh-steps">${Number(steps).toLocaleString()}</span>
+                    <span class="wh-cals">~${cals} kcal</span>
+                    <button class="btn-del" onclick="deleteWalkDay('${date}')">✕</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function deleteWalkDay(date) {
+        delete walkData[date];
+        saveWalk();
+        updateWalkHero(); renderWalkHistory(); renderStepsChart(); renderCombinedChart(); updateBannerAndStats();
+    }
+
+    // ── CHARTS ────────────────────────────────────────────────
+    function renderCombinedChart() {
+        const ctx = document.getElementById('calsChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+        if (calsChartInst) calsChartInst.destroy();
+
+        const labels = [], gymSeries = [], walkSeries = [];
+        for (let i = 29; i >= 0; i--) {
+            const d   = new Date(); d.setDate(d.getDate() - i);
+            const key = fmtKey(d);
+            labels.push(d.toLocaleDateString('en', { month: 'short', day: 'numeric' }));
+            gymSeries.push(gymData[key]  ? parseInt(gymData[key].calories) || 0 : 0);
+            walkSeries.push(walkData[key] ? stepsToKcal(walkData[key]) : 0);
+        }
+
+        calsChartInst = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Workout', data: gymSeries,  backgroundColor: 'rgba(124,58,237,0.7)',  borderRadius: 5, maxBarThickness: 18 },
+                    { label: 'Walk',    data: walkSeries, backgroundColor: 'rgba(34,197,94,0.7)',   borderRadius: 5, maxBarThickness: 18 },
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    x: { stacked: true, grid: { display: false }, ticks: { maxTicksLimit: 10, font: { size: 11 } } },
+                    y: { stacked: true, beginAtZero: true, ticks: { callback: v => v + ' kcal' } }
+                }
+            }
+        });
+    }
+
+    function renderStepsChart() {
+        const ctx = document.getElementById('stepsChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+        if (stepsChartInst) stepsChartInst.destroy();
+
+        const labels = [], data = [];
+        for (let i = 13; i >= 0; i--) {
+            const d   = new Date(); d.setDate(d.getDate() - i);
+            const key = fmtKey(d);
+            labels.push(d.toLocaleDateString('en', { month: 'short', day: 'numeric' }));
+            data.push(walkData[key] || 0);
+        }
+
+        stepsChartInst = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Steps',
+                    data,
+                    backgroundColor: data.map(v => v >= stepGoal ? 'rgba(34,197,94,0.75)' : 'rgba(148,163,184,0.45)'),
+                    borderRadius: 6,
+                    maxBarThickness: 22
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: v => v.toLocaleString() },
+                        // Goal line
+                        afterDraw(chart) {
+                            const { ctx, scales: { y, x } } = chart;
+                            const yPos = y.getPixelForValue(stepGoal);
+                            ctx.save();
+                            ctx.beginPath();
+                            ctx.moveTo(x.left, yPos); ctx.lineTo(x.right, yPos);
+                            ctx.strokeStyle = 'rgba(34,197,94,0.5)';
+                            ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
+                            ctx.stroke(); ctx.restore();
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // ── Export ────────────────────────────────────────────────
+    function exportCSV() {
+        const allDates = new Set([...Object.keys(gymData), ...Object.keys(walkData)]);
+        const rows = [...allDates].sort().reverse().map(date => {
+            const gym   = gymData[date]  || {};
+            const steps = walkData[date] || 0;
+            const d     = new Date(date + 'T00:00:00');
+            return `${date},${DAYS[d.getDay()]},${parseInt(gym.calories)||0},"${gym.note||''}",${steps},${stepsToKcal(steps)}`;
+        });
+        if (!rows.length) { alert('No data to export.'); return; }
+        const csv = ['Date,Day,WorkoutCals,Note,Steps,WalkCals', ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = `fitness_export_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+    }
+
+    // ── Init ──────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        load();
+        document.getElementById('todayLabel').textContent = new Date().toDateString();
+        document.getElementById('wCalDate').value = new Date().toISOString().split('T')[0];
+
+        renderTabs();
+        renderChecklist();
+        renderWorkoutHistory();
+        updateWalkHero();
+        renderWalkHistory();
+        renderCombinedChart();
+        renderStepsChart();
+        updateBannerAndStats();
+    });
+    </script>
+</body>
+</html>

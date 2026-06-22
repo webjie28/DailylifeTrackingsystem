@@ -2,35 +2,439 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>Daily Life Tracking System</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance — Daily Life Tracking</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .finance-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
+        .finance-header h1 { font-size: 32px; font-weight: 800; color: #0f172a; margin: 0; }
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .btn { padding: 10px 18px; border-radius: 12px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #7c3aed; color: #fff; }
+        .btn-primary:hover { background: #5b21b6; }
+        .btn-outline { background: #fff; color: #0f172a; border: 1px solid rgba(148,163,184,0.3); }
+        .btn-outline:hover { background: #f1f5f9; }
+        .btn-danger { background: transparent; color: #ef4444; border: none; font-weight: 700; cursor: pointer; font-size: 13px; }
+        .btn-edit { background: transparent; color: #7c3aed; border: none; font-weight: 700; cursor: pointer; font-size: 13px; }
+
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .stat-card { background: #fff; border: 1px solid rgba(148,163,184,0.18); border-radius: 20px; padding: 20px 22px; box-shadow: 0 8px 20px rgba(15,23,42,0.06); }
+        .stat-label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        .stat-value { font-size: 28px; font-weight: 800; color: #0f172a; }
+        .stat-value.income { color: #16a34a; }
+        .stat-value.expense { color: #dc2626; }
+        .stat-value.balance-pos { color: #7c3aed; }
+        .stat-value.balance-neg { color: #dc2626; }
+
+        .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }
+        @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } }
+
+        .panel { background: #fff; border: 1px solid rgba(148,163,184,0.18); border-radius: 24px; padding: 24px; box-shadow: 0 10px 24px rgba(15,23,42,0.06); }
+        .panel h3 { font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 20px; }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: #475569; }
+        .form-group input, .form-group select { padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.3); background: #f8fafc; font-size: 14px; color: #0f172a; outline: none; }
+        .form-group input:focus, .form-group select:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.08); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .type-toggle { display: flex; gap: 8px; }
+        .type-btn { flex: 1; padding: 10px; border-radius: 12px; border: 2px solid rgba(148,163,184,0.2); background: #f8fafc; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; color: #64748b; }
+        .type-btn.active-income { background: #f0fdf4; border-color: #22c55e; color: #16a34a; }
+        .type-btn.active-expense { background: #fef2f2; border-color: #ef4444; color: #dc2626; }
+
+        .transaction-list { display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
+        .transaction-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: #f8fafc; border: 1px solid rgba(148,163,184,0.16); }
+        .tx-icon { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .tx-icon.income { background: #f0fdf4; }
+        .tx-icon.expense { background: #fef2f2; }
+        .tx-info { flex: 1; min-width: 0; }
+        .tx-name { font-size: 14px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .tx-meta { font-size: 12px; color: #64748b; margin-top: 2px; }
+        .tx-amount { font-size: 15px; font-weight: 800; flex-shrink: 0; }
+        .tx-amount.income { color: #16a34a; }
+        .tx-amount.expense { color: #dc2626; }
+        .tx-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+        .chart-wrap { position: relative; height: 260px; }
+        .empty-msg { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 14px; }
+
+        .filter-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; align-items: center; }
+        .filter-bar select, .filter-bar input { padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(148,163,184,0.3); background: #f8fafc; font-size: 13px; color: #0f172a; }
+        .category-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #eef2ff; color: #3730a3; margin-top: 3px; }
+
+        .full-panel { background: #fff; border: 1px solid rgba(148,163,184,0.18); border-radius: 24px; padding: 24px; box-shadow: 0 10px 24px rgba(15,23,42,0.06); margin-bottom: 28px; }
+        .full-panel h3 { font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 16px; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Daily Life Tracking System</h1>
-            <p id="today"></p>
-        </header>
-
+    <button id="toggleSidebar" class="toggle-sidebar-btn">☰ Menu</button>
+    <div class="app-shell">
         <div id="sidebar" class="sidebar-container"></div>
+        <main class="main-content">
+            <div class="container" style="padding-top: 0;">
 
-        <section class="charts-grid">
-            <article class="card chart-card">
-                <h3>Savings Growth</h3>
-                <canvas id="savingsChart" aria-label="Savings Growth chart" role="img"></canvas>
-            </article>
-            <article class="card chart-card">
-                <h3>Expenses by Category</h3>
-                <canvas id="expensesChart" aria-label="Expenses by Category chart" role="img"></canvas>
-            </article>
-            <article class="card chart-card">
-                <h3>Loan Payoff Progress</h3>
-                <canvas id="loanPayoffChart" aria-label="Loan Payoff Progress chart" role="img"></canvas>
-            </article>
-        </section>
+                <div class="finance-header">
+                    <div>
+                        <h1>💰 Finance</h1>
+                        <p style="color:#64748b; margin-top:4px; font-size:14px;" id="todayLabel"></p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-outline" onclick="exportCSV()">⬇ Export CSV</button>
+                        <button class="btn btn-outline" onclick="clearAll()">🗑 Clear All</button>
+                    </div>
+                </div>
+
+                <!-- Summary Stats -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Income</div>
+                        <div class="stat-value income" id="statIncome">₱0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Expenses</div>
+                        <div class="stat-value expense" id="statExpense">₱0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Net Balance</div>
+                        <div class="stat-value" id="statBalance">₱0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">This Month</div>
+                        <div class="stat-value" id="statMonth">₱0</div>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="content-grid">
+                    <div class="panel">
+                        <h3>Expenses by Category</h3>
+                        <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+                    </div>
+                    <div class="panel">
+                        <h3>Monthly Overview</h3>
+                        <div class="chart-wrap"><canvas id="monthlyChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Add Transaction + Recent List -->
+                <div class="content-grid">
+                    <div class="panel">
+                        <h3 id="formTitle">Add Transaction</h3>
+                        <div class="type-toggle" style="margin-bottom:16px;">
+                            <button class="type-btn active-expense" id="btnExpense" onclick="setType('expense')">▼ Expense</button>
+                            <button class="type-btn" id="btnIncome" onclick="setType('income')">▲ Income</button>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Description</label>
+                                <input id="txDesc" type="text" placeholder="e.g. Groceries" />
+                            </div>
+                            <div class="form-group">
+                                <label>Amount (₱)</label>
+                                <input id="txAmount" type="number" min="0" placeholder="0.00" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select id="txCategory">
+                                    <option value="Food">🍔 Food</option>
+                                    <option value="Transport">🚗 Transport</option>
+                                    <option value="Bills">💡 Bills</option>
+                                    <option value="Shopping">🛍 Shopping</option>
+                                    <option value="Health">💊 Health</option>
+                                    <option value="Entertainment">🎮 Entertainment</option>
+                                    <option value="Gym">🏋 Gym</option>
+                                    <option value="Salary">💼 Salary</option>
+                                    <option value="Freelance">💻 Freelance</option>
+                                    <option value="Other">📦 Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input id="txDate" type="date" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Note (optional)</label>
+                            <input id="txNote" type="text" placeholder="Extra details..." />
+                        </div>
+                        <input type="hidden" id="editId" value="" />
+                        <button class="btn btn-primary" style="width:100%; margin-top:4px;" onclick="saveTransaction()">Save Transaction</button>
+                        <button class="btn btn-outline" style="width:100%; margin-top:8px; display:none;" id="cancelEditBtn" onclick="cancelEdit()">Cancel Edit</button>
+                    </div>
+
+                    <div class="panel">
+                        <h3>Recent Transactions</h3>
+                        <div class="filter-bar">
+                            <select id="filterType" onchange="renderTransactions()">
+                                <option value="all">All</option>
+                                <option value="income">Income</option>
+                                <option value="expense">Expense</option>
+                            </select>
+                            <select id="filterCat" onchange="renderTransactions()">
+                                <option value="all">All Categories</option>
+                            </select>
+                            <input type="month" id="filterMonth" onchange="renderTransactions()" />
+                        </div>
+                        <div class="transaction-list" id="transactionList">
+                            <div class="empty-msg">No transactions yet. Add one to get started!</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
     </div>
 
     <script src="../script.js"></script>
+    <script>
+    // ── Storage ──────────────────────────────────────────────
+    const STORE_KEY = 'financeTransactions';
+    let transactions = [];
+    let currentType = 'expense';
+    let editingId = null;
+
+    const CATEGORY_ICONS = {
+        Food:'🍔', Transport:'🚗', Bills:'💡', Shopping:'🛍',
+        Health:'💊', Entertainment:'🎮', Gym:'🏋', Salary:'💼',
+        Freelance:'💻', Other:'📦'
+    };
+
+    function load() {
+        try { transactions = JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch { transactions = []; }
+    }
+    function save() { localStorage.setItem(STORE_KEY, JSON.stringify(transactions)); }
+    function genId() { return Date.now() + '_' + Math.random().toString(36).slice(2); }
+
+    // ── Type toggle ──────────────────────────────────────────
+    function setType(type) {
+        currentType = type;
+        document.getElementById('btnExpense').className = 'type-btn' + (type === 'expense' ? ' active-expense' : '');
+        document.getElementById('btnIncome').className = 'type-btn' + (type === 'income' ? ' active-income' : '');
+        updateCategoryOptions();
+    }
+
+    function updateCategoryOptions() {
+        const sel = document.getElementById('txCategory');
+        const incomeOpts = ['Salary','Freelance','Other'];
+        const expenseOpts = ['Food','Transport','Bills','Shopping','Health','Entertainment','Gym','Other'];
+        const opts = currentType === 'income' ? incomeOpts : expenseOpts;
+        sel.innerHTML = opts.map(o => `<option value="${o}">${CATEGORY_ICONS[o] || '📦'} ${o}</option>`).join('');
+    }
+
+    // ── Save / Edit ──────────────────────────────────────────
+    function saveTransaction() {
+        const desc = document.getElementById('txDesc').value.trim();
+        const amount = parseFloat(document.getElementById('txAmount').value);
+        const category = document.getElementById('txCategory').value;
+        const date = document.getElementById('txDate').value;
+        const note = document.getElementById('txNote').value.trim();
+
+        if (!desc || !amount || amount <= 0 || !date) { alert('Please fill in description, amount, and date.'); return; }
+
+        if (editingId) {
+            const idx = transactions.findIndex(t => t.id === editingId);
+            if (idx !== -1) transactions[idx] = { ...transactions[idx], desc, amount, category, date, note, type: currentType };
+            cancelEdit();
+        } else {
+            transactions.unshift({ id: genId(), desc, amount, category, date, note, type: currentType });
+        }
+
+        save(); resetForm(); refresh();
+    }
+
+    function editTransaction(id) {
+        const tx = transactions.find(t => t.id === id);
+        if (!tx) return;
+        editingId = id;
+        setType(tx.type);
+        document.getElementById('txDesc').value = tx.desc;
+        document.getElementById('txAmount').value = tx.amount;
+        document.getElementById('txCategory').value = tx.category;
+        document.getElementById('txDate').value = tx.date;
+        document.getElementById('txNote').value = tx.note || '';
+        document.getElementById('editId').value = id;
+        document.getElementById('formTitle').textContent = 'Edit Transaction';
+        document.getElementById('cancelEditBtn').style.display = 'block';
+        document.getElementById('txDesc').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function deleteTransaction(id) {
+        if (!confirm('Delete this transaction?')) return;
+        transactions = transactions.filter(t => t.id !== id);
+        save(); refresh();
+    }
+
+    function cancelEdit() {
+        editingId = null;
+        document.getElementById('editId').value = '';
+        document.getElementById('formTitle').textContent = 'Add Transaction';
+        document.getElementById('cancelEditBtn').style.display = 'none';
+        resetForm();
+    }
+
+    function resetForm() {
+        document.getElementById('txDesc').value = '';
+        document.getElementById('txAmount').value = '';
+        document.getElementById('txNote').value = '';
+        document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+    }
+
+    function clearAll() {
+        if (!confirm('Clear ALL transactions? This cannot be undone.')) return;
+        transactions = []; save(); refresh();
+    }
+
+    // ── Render Transactions ───────────────────────────────────
+    function renderTransactions() {
+        const typeFilter = document.getElementById('filterType').value;
+        const catFilter = document.getElementById('filterCat').value;
+        const monthFilter = document.getElementById('filterMonth').value;
+        const list = document.getElementById('transactionList');
+
+        let filtered = transactions;
+        if (typeFilter !== 'all') filtered = filtered.filter(t => t.type === typeFilter);
+        if (catFilter !== 'all') filtered = filtered.filter(t => t.category === catFilter);
+        if (monthFilter) filtered = filtered.filter(t => t.date && t.date.startsWith(monthFilter));
+
+        if (filtered.length === 0) {
+            list.innerHTML = '<div class="empty-msg">No transactions match your filter.</div>';
+            return;
+        }
+
+        list.innerHTML = filtered.map(tx => `
+            <div class="transaction-item">
+                <div class="tx-icon ${tx.type}">${CATEGORY_ICONS[tx.category] || '📦'}</div>
+                <div class="tx-info">
+                    <div class="tx-name">${tx.desc}</div>
+                    <div class="tx-meta">
+                        ${tx.date} · <span class="category-badge">${tx.category}</span>
+                        ${tx.note ? `· <span style="color:#94a3b8">${tx.note}</span>` : ''}
+                    </div>
+                </div>
+                <div class="tx-amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}₱${Number(tx.amount).toLocaleString('en-PH', {minimumFractionDigits:2})}</div>
+                <div class="tx-actions">
+                    <button class="btn-edit" onclick="editTransaction('${tx.id}')">✏</button>
+                    <button class="btn-danger" onclick="deleteTransaction('${tx.id}')">✕</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function populateFilterCategories() {
+        const cats = [...new Set(transactions.map(t => t.category))];
+        const sel = document.getElementById('filterCat');
+        sel.innerHTML = '<option value="all">All Categories</option>' +
+            cats.map(c => `<option value="${c}">${CATEGORY_ICONS[c] || ''} ${c}</option>`).join('');
+    }
+
+    // ── Stats ─────────────────────────────────────────────────
+    function updateStats() {
+        const income = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+        const expense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+        const balance = income - expense;
+
+        const now = new Date();
+        const thisMonth = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+        const monthNet = transactions
+            .filter(t => t.date && t.date.startsWith(thisMonth))
+            .reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
+
+        const fmt = v => '₱' + Math.abs(v).toLocaleString('en-PH', {minimumFractionDigits:2});
+
+        document.getElementById('statIncome').textContent = fmt(income);
+        document.getElementById('statExpense').textContent = fmt(expense);
+        const balEl = document.getElementById('statBalance');
+        balEl.textContent = (balance < 0 ? '-' : '') + fmt(balance);
+        balEl.className = 'stat-value ' + (balance >= 0 ? 'balance-pos' : 'balance-neg');
+        const mEl = document.getElementById('statMonth');
+        mEl.textContent = (monthNet < 0 ? '-' : '+') + fmt(monthNet);
+        mEl.className = 'stat-value ' + (monthNet >= 0 ? 'balance-pos' : 'balance-neg');
+    }
+
+    // ── Charts ────────────────────────────────────────────────
+    let catChartInst = null, monthChartInst = null;
+
+    function renderCharts() {
+        renderCategoryChart();
+        renderMonthlyChart();
+    }
+
+    function renderCategoryChart() {
+        const ctx = document.getElementById('categoryChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+        if (catChartInst) catChartInst.destroy();
+
+        const expenses = transactions.filter(t => t.type === 'expense');
+        const grouped = {};
+        expenses.forEach(t => { grouped[t.category] = (grouped[t.category] || 0) + t.amount; });
+        const labels = Object.keys(grouped);
+        const data = Object.values(grouped);
+
+        if (labels.length === 0) { ctx.parentElement.innerHTML = '<div class="empty-msg">No expense data yet.</div>'; return; }
+
+        const colors = ['#7c3aed','#22c55e','#f97316','#3b82f6','#ec4899','#14b8a6','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
+        catChartInst = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 12 } } } }
+        });
+    }
+
+    function renderMonthlyChart() {
+        const ctx = document.getElementById('monthlyChart');
+        if (!ctx || typeof Chart === 'undefined') return;
+        if (monthChartInst) monthChartInst.destroy();
+
+        const months = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+        }
+
+        const incomeData = months.map(m => transactions.filter(t => t.type === 'income' && t.date?.startsWith(m)).reduce((s,t)=>s+t.amount,0));
+        const expenseData = months.map(m => transactions.filter(t => t.type === 'expense' && t.date?.startsWith(m)).reduce((s,t)=>s+t.amount,0));
+        const labels = months.map(m => { const [y,mo] = m.split('-'); return new Date(y, mo-1).toLocaleString('en',{month:'short'}); });
+
+        monthChartInst = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Income', data: incomeData, backgroundColor: 'rgba(34,197,94,0.75)', borderRadius: 8, maxBarThickness: 32 },
+                    { label: 'Expense', data: expenseData, backgroundColor: 'rgba(239,68,68,0.75)', borderRadius: 8, maxBarThickness: 32 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, ticks: { callback: v => '₱'+v.toLocaleString() } } } }
+        });
+    }
+
+    // ── Export CSV ────────────────────────────────────────────
+    function exportCSV() {
+        if (transactions.length === 0) { alert('No transactions to export.'); return; }
+        const header = 'Date,Type,Category,Description,Amount,Note';
+        const rows = transactions.map(t => `${t.date},${t.type},${t.category},"${t.desc}",${t.amount},"${t.note||''}"`);
+        const csv = [header, ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url;
+        a.download = `finance_export_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click(); URL.revokeObjectURL(url);
+    }
+
+    // ── Init ──────────────────────────────────────────────────
+    function refresh() { populateFilterCategories(); renderTransactions(); updateStats(); renderCharts(); }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        load();
+        document.getElementById('todayLabel').textContent = new Date().toDateString();
+        document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('filterMonth').value = new Date().toISOString().slice(0,7);
+        setType('expense');
+        refresh();
+    });
+    </script>
 </body>
 </html>

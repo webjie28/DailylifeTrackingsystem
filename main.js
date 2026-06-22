@@ -1,12 +1,36 @@
 const fs = require('fs');
 const path = require('path');
 const { app, BrowserWindow } = require('electron');
+const { PythonShell } = require('python-shell');
 
 const defaultCachePath = path.join(app.getPath('userData'), 'Cache');
 const fallbackCachePath = path.join(app.getPath('temp'), 'daily-life-tracking-system-cache');
 
 app.commandLine.appendSwitch('disk-cache-dir', defaultCachePath);
 app.setPath('cache', defaultCachePath);
+
+function runPythonProcess(data) {
+    let options = {
+        mode: 'json',
+        pythonPath: 'python', // siguraduhing nasa PATH mo ang python
+        scriptPath: './',
+    };
+
+    let pyshell = new PythonShell('processor.py', options);
+
+    // Ipadala ang data sa Python
+    pyshell.send(data);
+
+    // Kunin ang result mula sa Python
+    pyshell.on('message', function (message) {
+        console.log("Result from Python:", message);
+    });
+
+    pyshell.end(function (err) {
+        if (err) throw err;
+        console.log('Finished');
+    });
+}
 
 function ensureCachePath(dir) {
     try {
@@ -53,4 +77,15 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
     }
+});
+const { ipcMain } = require('electron');
+
+// Listener para tumanggap ng request mula sa renderer (script.js)
+ipcMain.handle('run-python', async (event, data) => {
+    return new Promise((resolve, reject) => {
+        let pyshell = new PythonShell('processor.py', { mode: 'json' });
+        pyshell.send(data);
+        pyshell.on('message', (msg) => resolve(msg));
+        pyshell.on('error', (err) => reject(err));
+    });
 });
