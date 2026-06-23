@@ -240,6 +240,386 @@
     --nav-active-color: #a78bfa;
 }
 
+/* ── Time-of-Day Palette Transitions ──────────────────────────── */
+/* Smooth transition when palette changes */
+*, *::before, *::after {
+    transition-property: background-color, background, border-color, color, box-shadow;
+    transition-duration: 1.2s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Override — keep interaction transitions snappy */
+button, a, input, select, .toggle-slider, .card, .sidebar-container {
+    transition-duration: 0.25s;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   TIME-OF-DAY PALETTES  (light + dark variants for each period)
+   Applied via data-time="night|dawn|morning|afternoon|evening"
+   on <html>, combined with data-theme="light|dark"
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── 🌙 NIGHT — Light ────────────────────────────────────────── */
+[data-time="night"]:not([data-theme="dark"]) {
+    --bg-primary: #eef0f7;
+    --bg-card: #f5f6fc;
+    --bg-subtle: #e8eaf3;
+    --bg-body: linear-gradient(180deg, #dde0f0 0%, #e8eaf6 50%, #eef0f7 100%);
+    --bg-hover: #dfe2f2;
+    --text-primary: #1a1c3a;
+    --text-secondary: #3d4172;
+    --text-heading: #0f1128;
+    --text-body: #252850;
+    --text-label: #3a3d68;
+    --text-muted: #5a5e8a;
+    --accent-purple: #5b4fcf;
+    --accent-purple-hover: #4338ca;
+    --accent-purple-light: #e0dbff;
+    --accent-purple-bg: #ede9ff;
+    --accent-green: #10b981;
+    --accent-blue: #4f6fd4;
+    --accent-red: #e05b5b;
+    --card-bg: #f5f6fc;
+    --card-border: rgba(80, 90, 160, 0.14);
+    --border-color: rgba(80, 90, 160, 0.14);
+    --border-color-strong: rgba(80, 90, 160, 0.25);
+    --input-bg: #eceef8;
+    --sidebar-bg: #eef0f9;
+    --sidebar-hover: #e2e5f5;
+    --nav-active-bg: #ddd9ff;
+    --nav-active-color: #4338ca;
+    --shadow-sm: 0 4px 10px rgba(60, 70, 150, 0.1);
+    --shadow-md: 0 10px 24px rgba(60, 70, 150, 0.1);
+    --progress-fill: linear-gradient(90deg, #5b4fcf 0%, #38bdf8 100%);
+}
+
+/* ── 🌙 NIGHT — Dark ─────────────────────────────────────────── */
+[data-time="night"][data-theme="dark"] {
+    --bg-primary: #080b18;
+    --bg-card: #0e1128;
+    --bg-subtle: #141830;
+    --bg-body: linear-gradient(180deg, #060810 0%, #0a0d1e 50%, #0e1228 100%);
+    --bg-hover: #1a1e38;
+    --text-primary: #c8cef5;
+    --text-secondary: #8890c4;
+    --text-heading: #e8ecff;
+    --text-body: #b8bde8;
+    --text-label: #9aa0d0;
+    --text-muted: #606890;
+    --accent-purple: #9d8fff;
+    --accent-purple-hover: #7c6fef;
+    --accent-purple-light: rgba(157, 143, 255, 0.18);
+    --accent-purple-bg: rgba(157, 143, 255, 0.12);
+    --accent-green: #34d399;
+    --accent-blue: #7ba7ff;
+    --accent-red: #f87171;
+    --card-bg: #0e1128;
+    --card-border: rgba(100, 115, 200, 0.12);
+    --border-color: rgba(100, 115, 200, 0.1);
+    --border-color-strong: rgba(100, 115, 200, 0.2);
+    --input-bg: #141830;
+    --modal-bg: #0e1128;
+    --sidebar-bg: #09102a;
+    --sidebar-hover: #141830;
+    --nav-active-bg: rgba(157, 143, 255, 0.15);
+    --nav-active-color: #9d8fff;
+    --shadow-sm: 0 4px 10px rgba(0, 0, 30, 0.5);
+    --shadow-md: 0 10px 24px rgba(0, 0, 30, 0.45);
+    --progress-fill: linear-gradient(90deg, #9d8fff 0%, #38bdf8 100%);
+}
+
+/* ── 🌅 DAWN — Light ─────────────────────────────────────────── */
+[data-time="dawn"]:not([data-theme="dark"]) {
+    --bg-primary: #fff4f0;
+    --bg-card: #fff9f7;
+    --bg-subtle: #fde8e0;
+    --bg-body: linear-gradient(180deg, #ffe8e0 0%, #fff0e8 50%, #fff4f0 100%);
+    --bg-hover: #fde0d5;
+    --text-primary: #3a1810;
+    --text-secondary: #7a3520;
+    --text-heading: #2a0e08;
+    --text-body: #4a2218;
+    --text-label: #5a2a18;
+    --text-muted: #8a4a38;
+    --accent-purple: #c2410c;
+    --accent-purple-hover: #9a3408;
+    --accent-purple-light: #ffe0d4;
+    --accent-purple-bg: #ffe8de;
+    --accent-green: #16a34a;
+    --accent-blue: #e05b8a;
+    --accent-orange: #ea580c;
+    --accent-red: #dc2626;
+    --card-bg: #fff9f7;
+    --card-border: rgba(180, 80, 40, 0.14);
+    --border-color: rgba(180, 80, 40, 0.12);
+    --border-color-strong: rgba(180, 80, 40, 0.22);
+    --input-bg: #fdeee8;
+    --sidebar-bg: #fff4f0;
+    --sidebar-hover: #fde4d8;
+    --nav-active-bg: #ffd5c5;
+    --nav-active-color: #9a3408;
+    --shadow-sm: 0 4px 10px rgba(180, 80, 40, 0.1);
+    --shadow-md: 0 10px 24px rgba(180, 80, 40, 0.1);
+    --progress-fill: linear-gradient(90deg, #ea580c 0%, #f59e0b 100%);
+}
+
+/* ── 🌅 DAWN — Dark ──────────────────────────────────────────── */
+[data-time="dawn"][data-theme="dark"] {
+    --bg-primary: #160800;
+    --bg-card: #221008;
+    --bg-subtle: #2e1810;
+    --bg-body: linear-gradient(180deg, #100400 0%, #1c0c06 50%, #221008 100%);
+    --bg-hover: #3a2018;
+    --text-primary: #f5d0b8;
+    --text-secondary: #c88060;
+    --text-heading: #ffe8d0;
+    --text-body: #e8b898;
+    --text-label: #d0a080;
+    --text-muted: #906040;
+    --accent-purple: #fb923c;
+    --accent-purple-hover: #f97316;
+    --accent-purple-light: rgba(251, 146, 60, 0.18);
+    --accent-purple-bg: rgba(251, 146, 60, 0.12);
+    --accent-green: #4ade80;
+    --accent-blue: #f472b6;
+    --accent-orange: #fb923c;
+    --accent-red: #f87171;
+    --card-bg: #221008;
+    --card-border: rgba(200, 100, 40, 0.14);
+    --border-color: rgba(200, 100, 40, 0.1);
+    --border-color-strong: rgba(200, 100, 40, 0.22);
+    --input-bg: #2e1810;
+    --modal-bg: #221008;
+    --sidebar-bg: #180a02;
+    --sidebar-hover: #2e1810;
+    --nav-active-bg: rgba(251, 146, 60, 0.15);
+    --nav-active-color: #fb923c;
+    --shadow-sm: 0 4px 10px rgba(60, 20, 0, 0.6);
+    --shadow-md: 0 10px 24px rgba(60, 20, 0, 0.5);
+    --progress-fill: linear-gradient(90deg, #fb923c 0%, #fbbf24 100%);
+}
+
+/* ── ☀️ MORNING — Light ──────────────────────────────────────── */
+[data-time="morning"]:not([data-theme="dark"]) {
+    --bg-primary: #f0f9ff;
+    --bg-card: #ffffff;
+    --bg-subtle: #e0f2fe;
+    --bg-body: linear-gradient(180deg, #bae6fd 0%, #e0f2fe 50%, #f0f9ff 100%);
+    --bg-hover: #d4edfd;
+    --text-primary: #0a2540;
+    --text-secondary: #1e6a9a;
+    --text-heading: #061828;
+    --text-body: #164060;
+    --text-label: #1a5280;
+    --text-muted: #3a7aa0;
+    --accent-purple: #0284c7;
+    --accent-purple-hover: #0369a1;
+    --accent-purple-light: #bae6fd;
+    --accent-purple-bg: #e0f2fe;
+    --accent-green: #059669;
+    --accent-blue: #0284c7;
+    --accent-orange: #f59e0b;
+    --accent-red: #e11d48;
+    --card-bg: #ffffff;
+    --card-border: rgba(2, 132, 199, 0.15);
+    --border-color: rgba(2, 132, 199, 0.14);
+    --border-color-strong: rgba(2, 132, 199, 0.28);
+    --input-bg: #e8f5fe;
+    --sidebar-bg: #f0f9ff;
+    --sidebar-hover: #dbeeff;
+    --nav-active-bg: #bae6fd;
+    --nav-active-color: #0369a1;
+    --shadow-sm: 0 4px 10px rgba(2, 132, 199, 0.1);
+    --shadow-md: 0 10px 24px rgba(2, 132, 199, 0.12);
+    --shadow-btn: 0 10px 24px rgba(2, 132, 199, 0.2);
+    --progress-fill: linear-gradient(90deg, #0284c7 0%, #34d399 100%);
+    --checkbox-accent: #0284c7;
+}
+
+/* ── ☀️ MORNING — Dark ───────────────────────────────────────── */
+[data-time="morning"][data-theme="dark"] {
+    --bg-primary: #011524;
+    --bg-card: #041e30;
+    --bg-subtle: #072a40;
+    --bg-body: linear-gradient(180deg, #010d18 0%, #031828 50%, #041e30 100%);
+    --bg-hover: #0a3050;
+    --text-primary: #b8e4ff;
+    --text-secondary: #60a8d8;
+    --text-heading: #daf0ff;
+    --text-body: #90c8f0;
+    --text-label: #70b8e8;
+    --text-muted: #4080a8;
+    --accent-purple: #38bdf8;
+    --accent-purple-hover: #0ea5e9;
+    --accent-purple-light: rgba(56, 189, 248, 0.18);
+    --accent-purple-bg: rgba(56, 189, 248, 0.12);
+    --accent-green: #34d399;
+    --accent-blue: #38bdf8;
+    --accent-orange: #fbbf24;
+    --accent-red: #f87171;
+    --card-bg: #041e30;
+    --card-border: rgba(56, 189, 248, 0.12);
+    --border-color: rgba(56, 189, 248, 0.1);
+    --border-color-strong: rgba(56, 189, 248, 0.2);
+    --input-bg: #072a40;
+    --modal-bg: #041e30;
+    --sidebar-bg: #021020;
+    --sidebar-hover: #072a40;
+    --nav-active-bg: rgba(56, 189, 248, 0.15);
+    --nav-active-color: #38bdf8;
+    --shadow-sm: 0 4px 10px rgba(0, 20, 40, 0.6);
+    --shadow-md: 0 10px 24px rgba(0, 20, 40, 0.5);
+    --progress-fill: linear-gradient(90deg, #38bdf8 0%, #34d399 100%);
+    --checkbox-accent: #38bdf8;
+}
+
+/* ── 🌤️ AFTERNOON — Light ────────────────────────────────────── */
+[data-time="afternoon"]:not([data-theme="dark"]) {
+    --bg-primary: #fffbeb;
+    --bg-card: #ffffff;
+    --bg-subtle: #fef3c7;
+    --bg-body: linear-gradient(180deg, #fde68a 0%, #fef3c7 50%, #fffbeb 100%);
+    --bg-hover: #fde9a0;
+    --text-primary: #1c1200;
+    --text-secondary: #6b4a00;
+    --text-heading: #0f0a00;
+    --text-body: #2a1c00;
+    --text-label: #4a3000;
+    --text-muted: #7a5a10;
+    --accent-purple: #d97706;
+    --accent-purple-hover: #b45309;
+    --accent-purple-light: #fde68a;
+    --accent-purple-bg: #fef3c7;
+    --accent-green: #059669;
+    --accent-blue: #0284c7;
+    --accent-orange: #d97706;
+    --accent-red: #dc2626;
+    --card-bg: #ffffff;
+    --card-border: rgba(180, 120, 0, 0.16);
+    --border-color: rgba(180, 120, 0, 0.14);
+    --border-color-strong: rgba(180, 120, 0, 0.28);
+    --input-bg: #fef5d4;
+    --sidebar-bg: #fffcf0;
+    --sidebar-hover: #fef0c0;
+    --nav-active-bg: #fde68a;
+    --nav-active-color: #b45309;
+    --shadow-sm: 0 4px 10px rgba(180, 120, 0, 0.1);
+    --shadow-md: 0 10px 24px rgba(180, 120, 0, 0.12);
+    --shadow-btn: 0 10px 24px rgba(217, 119, 6, 0.2);
+    --progress-fill: linear-gradient(90deg, #f59e0b 0%, #10b981 100%);
+    --checkbox-accent: #d97706;
+}
+
+/* ── 🌤️ AFTERNOON — Dark ─────────────────────────────────────── */
+[data-time="afternoon"][data-theme="dark"] {
+    --bg-primary: #140e00;
+    --bg-card: #1e1600;
+    --bg-subtle: #2a2000;
+    --bg-body: linear-gradient(180deg, #0c0800 0%, #161000 50%, #1e1600 100%);
+    --bg-hover: #342800;
+    --text-primary: #f5e0a0;
+    --text-secondary: #c8a840;
+    --text-heading: #ffe8a8;
+    --text-body: #e8cc80;
+    --text-label: #d0b060;
+    --text-muted: #907030;
+    --accent-purple: #fbbf24;
+    --accent-purple-hover: #f59e0b;
+    --accent-purple-light: rgba(251, 191, 36, 0.18);
+    --accent-purple-bg: rgba(251, 191, 36, 0.12);
+    --accent-green: #4ade80;
+    --accent-blue: #60a5fa;
+    --accent-orange: #fbbf24;
+    --accent-red: #f87171;
+    --card-bg: #1e1600;
+    --card-border: rgba(200, 150, 0, 0.14);
+    --border-color: rgba(200, 150, 0, 0.1);
+    --border-color-strong: rgba(200, 150, 0, 0.22);
+    --input-bg: #2a2000;
+    --modal-bg: #1e1600;
+    --sidebar-bg: #100c00;
+    --sidebar-hover: #2a2000;
+    --nav-active-bg: rgba(251, 191, 36, 0.15);
+    --nav-active-color: #fbbf24;
+    --shadow-sm: 0 4px 10px rgba(40, 30, 0, 0.6);
+    --shadow-md: 0 10px 24px rgba(40, 30, 0, 0.5);
+    --progress-fill: linear-gradient(90deg, #fbbf24 0%, #4ade80 100%);
+    --checkbox-accent: #fbbf24;
+}
+
+/* ── 🌇 EVENING — Light ──────────────────────────────────────── */
+[data-time="evening"]:not([data-theme="dark"]) {
+    --bg-primary: #fdf2f8;
+    --bg-card: #fff5fb;
+    --bg-subtle: #fce7f3;
+    --bg-body: linear-gradient(180deg, #fbcfe8 0%, #fce7f3 50%, #fdf2f8 100%);
+    --bg-hover: #f9d5e9;
+    --text-primary: #2d0a1e;
+    --text-secondary: #7c2d5c;
+    --text-heading: #1a0512;
+    --text-body: #40162c;
+    --text-label: #5a1e3e;
+    --text-muted: #8a4870;
+    --accent-purple: #be185d;
+    --accent-purple-hover: #9d174d;
+    --accent-purple-light: #fbcfe8;
+    --accent-purple-bg: #fce7f3;
+    --accent-green: #10b981;
+    --accent-blue: #7c3aed;
+    --accent-orange: #ea580c;
+    --accent-red: #e11d48;
+    --card-bg: #fff5fb;
+    --card-border: rgba(190, 24, 93, 0.14);
+    --border-color: rgba(190, 24, 93, 0.12);
+    --border-color-strong: rgba(190, 24, 93, 0.24);
+    --input-bg: #fde8f5;
+    --sidebar-bg: #fdf0fa;
+    --sidebar-hover: #f9d8ee;
+    --nav-active-bg: #fbcfe8;
+    --nav-active-color: #9d174d;
+    --shadow-sm: 0 4px 10px rgba(190, 24, 93, 0.1);
+    --shadow-md: 0 10px 24px rgba(190, 24, 93, 0.1);
+    --shadow-btn: 0 10px 24px rgba(190, 24, 93, 0.2);
+    --progress-fill: linear-gradient(90deg, #be185d 0%, #f97316 100%);
+    --checkbox-accent: #be185d;
+}
+
+/* ── 🌇 EVENING — Dark ───────────────────────────────────────── */
+[data-time="evening"][data-theme="dark"] {
+    --bg-primary: #140510;
+    --bg-card: #200818;
+    --bg-subtle: #2c1022;
+    --bg-body: linear-gradient(180deg, #0c0208 0%, #160410 50%, #200818 100%);
+    --bg-hover: #381630;
+    --text-primary: #f0c0dc;
+    --text-secondary: #c06090;
+    --text-heading: #ffd8ee;
+    --text-body: #e090c0;
+    --text-label: #c870a0;
+    --text-muted: #904870;
+    --accent-purple: #f472b6;
+    --accent-purple-hover: #ec4899;
+    --accent-purple-light: rgba(244, 114, 182, 0.18);
+    --accent-purple-bg: rgba(244, 114, 182, 0.12);
+    --accent-green: #4ade80;
+    --accent-blue: #a78bfa;
+    --accent-orange: #fb923c;
+    --accent-red: #f87171;
+    --card-bg: #200818;
+    --card-border: rgba(220, 80, 140, 0.14);
+    --border-color: rgba(220, 80, 140, 0.1);
+    --border-color-strong: rgba(220, 80, 140, 0.22);
+    --input-bg: #2c1022;
+    --modal-bg: #200818;
+    --sidebar-bg: #100208;
+    --sidebar-hover: #2c1022;
+    --nav-active-bg: rgba(244, 114, 182, 0.15);
+    --nav-active-color: #f472b6;
+    --shadow-sm: 0 4px 10px rgba(60, 0, 30, 0.6);
+    --shadow-md: 0 10px 24px rgba(60, 0, 30, 0.5);
+    --progress-fill: linear-gradient(90deg, #f472b6 0%, #fb923c 100%);
+    --checkbox-accent: #f472b6;
+}
+
 /* ── Animation Keyframes ───────────────────────────────────────── */
 @keyframes fadeInUp {
     from {

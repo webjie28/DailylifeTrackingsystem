@@ -379,9 +379,27 @@
 
         const colors = ['#7c3aed','#22c55e','#f97316','#3b82f6','#ec4899','#14b8a6','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
         catChartInst = new Chart(ctx, {
-            type: 'doughnut',
-            data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 12 } } } }
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Expenses by Category',
+                    data,
+                    backgroundColor: colors.slice(0, labels.length),
+                    borderRadius: 8,
+                    maxBarThickness: 20
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, ticks: { callback: v => '₱'+v.toLocaleString() }, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+                    y: { grid: { display: false } }
+                }
+            }
         });
     }
 

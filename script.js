@@ -684,12 +684,27 @@ function createExpensesChart(){
     if(!ctx || !Chart) return;
     const categoriesData = getExpenseCategoryData();
     new Chart(ctx, {
-        type: 'pie',
+        type: 'bar',
         data: {
             labels: categoriesData.map(item => item.label),
-            datasets: [{ data: categoriesData.map(item => item.value), backgroundColor: ['#7c3aed', '#22c55e', '#f97316'], borderWidth: 0 }]
+            datasets: [{
+                label: 'Expenses',
+                data: categoriesData.map(item => item.value),
+                backgroundColor: ['#7c3aed', '#22c55e', '#f97316', '#3b82f6', '#ec4899', '#14b8a6'],
+                borderRadius: 8,
+                maxBarThickness: 20
+            }]
         },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+                y: { grid: { display: false } }
+            }
+        }
     });
 }
 
