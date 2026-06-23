@@ -1,9 +1,36 @@
-﻿if(!localStorage.getItem("dataResetV2")){
+if(!localStorage.getItem("dataResetV2")){
     localStorage.removeItem("dailyTasks");
     localStorage.removeItem("customCategories");
     localStorage.removeItem("lastGymDay");
     localStorage.setItem("dataResetV2", "true");
 }
+
+// ── Dark Mode ──────────────────────────────────────────────
+function initTheme(){
+    const saved = localStorage.getItem('theme');
+    if(saved){
+        document.documentElement.setAttribute('data-theme', saved);
+    } else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+}
+initTheme();
+
+function toggleDarkMode(){
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    syncDarkModeToggle();
+}
+
+function syncDarkModeToggle(){
+    const toggle = document.getElementById('darkModeToggle');
+    if(toggle){
+        toggle.checked = document.documentElement.getAttribute('data-theme') === 'dark';
+    }
+}
+// ───────────────────────────────────────────────────────────
 
 
 let Chart;
@@ -37,13 +64,9 @@ const paymentDueDate = document.getElementById("paymentDueDate");
 const createPaymentButton = document.getElementById("createPaymentButton");
 const toastMessage = document.getElementById("toastMessage");
 
-const summaryStreak = document.getElementById("summaryStreak");
-const summaryTotalCategories = document.getElementById("summaryTotalCategories");
-const summaryActiveCategories = document.getElementById("summaryActiveCategories");
-const summaryCompletedTasks = document.getElementById("summaryCompletedTasks");
-const summaryLoansRemaining = document.getElementById("summaryLoansRemaining");
-const summaryUpcomingPayments = document.getElementById("summaryUpcomingPayments");
-const summaryOverallProgress = document.getElementById("summaryOverallProgress");
+const summaryTodaySteps = document.getElementById("summaryTodaySteps");
+const summaryMonthlyExpenses = document.getElementById("summaryMonthlyExpenses");
+const summaryTotalSavings = document.getElementById("summaryTotalSavings");
 
 const defaultCategories = [
     {
@@ -340,32 +363,33 @@ function getCategoryCompletion(categoryKey){
 }
 
 function updateSummaryCards(){
-    const streak = updateStreak();
-    const completedTasks = tasks.filter(task => task.done).length;
-    const loansRemaining = categories.filter(category => category.type === "Loan" && !getCategoryCompletion(category.key)).length;
-    const upcomingPayments = categories.filter(category => category.type === "Payment" && !getCategoryCompletion(category.key)).length;
-    const totalCategories = categories.length;
-    const activeCategories = categories.filter(category => !getCategoryCompletion(category.key)).length;
-    const overallProgress = tasks.length ? Math.round((completedTasks / tasks.length) * 100) : 0;
-
-    // Calories burned today: sum calories of completed tasks for today
     const todayKey = getTodayKey();
     const walkData = JSON.parse(localStorage.getItem('walkTrackerData') || '{}');
     const gymData = JSON.parse(localStorage.getItem('gymTrackerData') || '{}');
+    
+    // 1. Calories today
     const walkCals = Math.round((walkData[todayKey] || 0) * 0.04);
     const gymCals = gymData[todayKey] ? parseInt(gymData[todayKey].calories) || 0 : 0;
-    const taskCals = tasks.filter(t => t.done).reduce((sum, t) => sum + (t.calories || 0), 0);
-    const totalCaloriesToday = walkCals + gymCals + taskCals;
+    const totalCaloriesToday = walkCals + gymCals;
     const summaryTotalCaloriesToday = document.getElementById('summaryTotalCaloriesToday');
     if(summaryTotalCaloriesToday) summaryTotalCaloriesToday.textContent = `${totalCaloriesToday} kcal`;
 
-    if(summaryStreak) summaryStreak.textContent = streak;
-    if(summaryTotalCategories) summaryTotalCategories.textContent = totalCategories;
-    if(summaryActiveCategories) summaryActiveCategories.textContent = activeCategories;
-    if(summaryCompletedTasks) summaryCompletedTasks.textContent = completedTasks;
-    if(summaryLoansRemaining) summaryLoansRemaining.textContent = loansRemaining;
-    if(summaryUpcomingPayments) summaryUpcomingPayments.textContent = upcomingPayments;
-    if(summaryOverallProgress) summaryOverallProgress.textContent = `${overallProgress}%`;
+    // 2. Steps today
+    const todaySteps = walkData[todayKey] || 0;
+    if(summaryTodaySteps) summaryTodaySteps.textContent = `${todaySteps.toLocaleString()} steps`;
+
+    // 3. Monthly expenses
+    const financeTransactions = JSON.parse(localStorage.getItem('financeTransactions') || '[]');
+    const currentMonthStr = new Date().toISOString().slice(0, 7); // e.g., "2026-06"
+    const monthlyExpenses = financeTransactions
+        .filter(t => t.type === 'expense' && t.date && t.date.startsWith(currentMonthStr))
+        .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+    if(summaryMonthlyExpenses) summaryMonthlyExpenses.textContent = `₱${monthlyExpenses.toLocaleString()}`;
+
+    // 4. Total savings
+    const savingsContributions = JSON.parse(localStorage.getItem('savingsContributions') || '[]');
+    const totalSavings = savingsContributions.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+    if(summaryTotalSavings) summaryTotalSavings.textContent = `₱${totalSavings.toLocaleString()}`;
 }
 
 function updateStreak(){
@@ -623,16 +647,17 @@ function getExpenseCategoryData(){
     return [ { label: 'Loans', value: loanTotal || 2500 }, { label: 'Payments', value: paymentTotal || 2000 }, { label: 'Other', value: otherTotal || 1800 } ];
 }
 
-function getLoanProgressData(){
-    const loanCategories = categories.filter(category => category.type === 'Loan');
-    if(loanCategories.length === 0){
-        return [ { label: 'Loan A', progress: 55 }, { label: 'Loan B', progress: 32 }, { label: 'Loan C', progress: 72 } ];
+function getGoalsProgressData(){
+    const goals = JSON.parse(localStorage.getItem('savingsGoals') || '[]');
+    const contributions = JSON.parse(localStorage.getItem('savingsContributions') || '[]');
+    if(goals.length === 0){
+        return [];
     }
-    return loanCategories.map(category => {
-        const amount = Number(category.amount) || 0;
-        const monthlyPayment = Number(category.monthlyPayment) || 0;
-        const progress = amount > 0 ? Math.min(100, Math.round((monthlyPayment / amount) * 100)) : 0;
-        return { label: category.label, progress: progress || 10 };
+    return goals.map(g => {
+        const goalContribs = contributions.filter(c => c.goalId === g.id);
+        const totalSaved = goalContribs.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+        const progress = g.target > 0 ? Math.min(100, Math.round((totalSaved / g.target) * 100)) : 0;
+        return { label: g.name, progress: progress };
     });
 }
 
@@ -671,12 +696,12 @@ function createExpensesChart(){
 function createLoanPayoffChart(){
     const ctx = document.getElementById('loanPayoffChart');
     if(!ctx || !Chart) return;
-    const loanData = getLoanProgressData();
+    const goalData = getGoalsProgressData();
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: loanData.map(item => item.label),
-            datasets: [{ label: 'Loan Payoff Progress', data: loanData.map(item => item.progress), backgroundColor: '#22c55e', borderRadius: 12, maxBarThickness: 40 }]
+            labels: goalData.map(item => item.label),
+            datasets: [{ label: 'Goal Progress', data: goalData.map(item => item.progress), backgroundColor: '#7c3aed', borderRadius: 12, maxBarThickness: 40 }]
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { beginAtZero: true, max: 100, ticks: { callback: value => `${value}%` }, grid: { color: 'rgba(148, 163, 184, 0.2)' } } } }
     });
@@ -1070,6 +1095,13 @@ function loadSidebar(){
                 const targetFile = resolved.split('/').pop();
                 if(currentFile === targetFile){ a.classList.add('active'); }
             });
+
+            // Sync dark mode toggle after sidebar loads
+            syncDarkModeToggle();
+            const darkToggle = document.getElementById('darkModeToggle');
+            if(darkToggle){
+                darkToggle.addEventListener('change', toggleDarkMode);
+            }
         }).catch(() => {});
     } catch (e) {}
 }

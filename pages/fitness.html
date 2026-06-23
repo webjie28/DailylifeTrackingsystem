@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fitness — Daily Life Tracking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
         /* ── Page Shell ── */
@@ -12,8 +15,8 @@
             align-items: center; flex-wrap: wrap;
             gap: 16px; margin-bottom: 28px;
         }
-        .page-header h1 { font-size: 32px; font-weight: 800; color: #0f172a; margin: 0; }
-        .header-sub { color: #64748b; font-size: 14px; margin-top: 4px; }
+        .page-header h1 { font-size: 32px; font-weight: 800; color: var(--text-primary); margin: 0; }
+        .header-sub { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
         .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
         /* ── Buttons ── */
@@ -22,8 +25,8 @@
         .btn-primary:hover { background: #5b21b6; }
         .btn-green { background: #22c55e; color: #fff; }
         .btn-green:hover { background: #16a34a; }
-        .btn-outline { background: #fff; color: #0f172a; border: 1px solid rgba(148,163,184,0.3); }
-        .btn-outline:hover { background: #f1f5f9; }
+        .btn-outline { background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color-strong); }
+        .btn-outline:hover { background: var(--bg-subtle); }
         .btn-sm { padding: 6px 14px; font-size: 13px; border-radius: 10px; }
 
         /* ── Section Divider ── */
@@ -32,12 +35,12 @@
             margin: 40px 0 20px;
         }
         .section-title h2 {
-            font-size: 22px; font-weight: 800; color: #0f172a; margin: 0;
+            font-size: 22px; font-weight: 800; color: var(--text-heading); margin: 0;
             white-space: nowrap;
         }
         .section-title-line {
             flex: 1; height: 1px;
-            background: rgba(148,163,184,0.2);
+            background: var(--border-color);
         }
 
         /* ── Summary Banner ── */
@@ -62,50 +65,50 @@
 
         /* ── Stat Cards ── */
         .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 28px; }
-        .stat-card { background: #fff; border: 1px solid rgba(148,163,184,0.18); border-radius: 20px; padding: 18px 20px; box-shadow: 0 6px 16px rgba(15,23,42,0.05); }
-        .stat-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
-        .stat-value { font-size: 24px; font-weight: 800; color: #0f172a; }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 18px 20px; box-shadow: var(--shadow-sm); }
+        .stat-label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+        .stat-value { font-size: 24px; font-weight: 800; color: var(--text-primary); }
         .stat-value.green { color: #16a34a; }
         .stat-value.purple { color: #7c3aed; }
         .stat-value.orange { color: #f97316; }
 
         /* ── Panels ── */
-        .panel { background: #fff; border: 1px solid rgba(148,163,184,0.18); border-radius: 24px; padding: 24px; box-shadow: 0 10px 24px rgba(15,23,42,0.06); }
+        .panel { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; padding: 24px; box-shadow: var(--shadow-md); }
         .panel + .panel { margin-top: 24px; }
         .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        .panel-header h3 { font-size: 18px; font-weight: 700; color: #0f172a; margin: 0; }
+        .panel-header h3 { font-size: 18px; font-weight: 700; color: var(--text-heading); margin: 0; }
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
         @media (max-width: 860px) { .two-col { grid-template-columns: 1fr; } }
 
         /* ── Day Tabs ── */
         .day-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
-        .day-tab { padding: 7px 14px; border-radius: 10px; border: 1.5px solid rgba(148,163,184,0.25); background: #f8fafc; font-size: 12px; font-weight: 700; cursor: pointer; color: #64748b; transition: all 0.2s; }
+        .day-tab { padding: 7px 14px; border-radius: 10px; border: 1.5px solid var(--border-color); background: var(--bg-subtle); font-size: 12px; font-weight: 700; cursor: pointer; color: var(--text-secondary); transition: all 0.2s; }
         .day-tab.active { background: #7c3aed; color: #fff; border-color: #7c3aed; }
-        .day-tab.completed { border-color: #22c55e; color: #16a34a; background: #f0fdf4; }
+        .day-tab.completed { border-color: #22c55e; color: #16a34a; background: var(--accent-green-light); }
         .day-tab.active.completed { background: #22c55e; border-color: #22c55e; color: #fff; }
 
         /* ── Exercise List ── */
         .exercise-list { display: flex; flex-direction: column; gap: 8px; max-height: 460px; overflow-y: auto; padding-right: 2px; }
-        .exercise-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #f8fafc; border: 1px solid rgba(148,163,184,0.16); border-radius: 14px; transition: background 0.2s, border-color 0.2s; }
-        .exercise-item.checked { background: #f0fdf4; border-color: rgba(34,197,94,0.3); }
+        .exercise-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 14px; transition: background 0.2s, border-color 0.2s; }
+        .exercise-item.checked { background: var(--accent-green-light); border-color: rgba(34,197,94,0.3); }
         .exercise-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #22c55e; flex-shrink: 0; cursor: pointer; }
-        .exercise-item label { flex: 1; font-size: 14px; color: #0f172a; cursor: pointer; line-height: 1.4; }
-        .exercise-item.checked label { text-decoration: line-through; color: #94a3b8; }
-        .cal-pill { font-size: 11px; font-weight: 700; color: #f97316; background: #fff7ed; padding: 3px 9px; border-radius: 999px; flex-shrink: 0; }
-        .rest-card { text-align: center; padding: 48px 20px; color: #64748b; }
+        .exercise-item label { flex: 1; font-size: 14px; color: var(--text-primary); cursor: pointer; line-height: 1.4; }
+        .exercise-item.checked label { text-decoration: line-through; color: var(--text-secondary); }
+        .cal-pill { font-size: 11px; font-weight: 700; color: #f97316; background: rgba(249,115,22,0.1); padding: 3px 9px; border-radius: 999px; flex-shrink: 0; }
+        .rest-card { text-align: center; padding: 48px 20px; color: var(--text-secondary); }
         .rest-card .rest-icon { font-size: 52px; display: block; margin-bottom: 14px; }
         .rest-card p { font-size: 15px; font-weight: 600; }
 
         /* ── Progress Bar ── */
-        .progress-block { margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(148,163,184,0.12); }
-        .progress-row { display: flex; justify-content: space-between; font-size: 13px; color: #475569; margin-bottom: 8px; font-weight: 600; }
-        .prog-bar { height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+        .progress-block { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border-color); }
+        .progress-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; }
+        .prog-bar { height: 10px; background: var(--bg-subtle); border-radius: 999px; overflow: hidden; }
         .prog-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #7c3aed, #22c55e); transition: width 0.4s ease; }
 
         /* ── Calorie Log (right column) ── */
         .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-        .form-group label { font-size: 13px; font-weight: 600; color: #475569; }
-        .form-group input, .form-group select { padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.3); background: #f8fafc; font-size: 14px; color: #0f172a; outline: none; width: 100%; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+        .form-group input, .form-group select { padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); font-size: 14px; color: var(--text-primary); outline: none; width: 100%; }
         .form-group input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.08); }
         .two-input { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
@@ -114,8 +117,8 @@
 
         /* ── Walk Section ── */
         .walk-hero {
-            background: #f0fdf4;
-            border: 1px solid rgba(34,197,94,0.2);
+            background: var(--accent-green-light);
+            border: 1px solid var(--border-color);
             border-radius: 24px;
             padding: 28px;
             display: flex;
@@ -126,43 +129,43 @@
         }
         .step-ring-wrap { flex-shrink: 0; position: relative; width: 140px; height: 140px; }
         .step-ring-wrap svg { transform: rotate(-90deg); }
-        .ring-bg { fill: none; stroke: #dcfce7; stroke-width: 12; }
+        .ring-bg { fill: none; stroke: var(--border-color-strong); stroke-width: 12; }
         .ring-fill { fill: none; stroke: #22c55e; stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
         .ring-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .ring-steps { font-size: 22px; font-weight: 800; color: #0f172a; line-height: 1; }
-        .ring-goal { font-size: 11px; color: #64748b; font-weight: 600; margin-top: 4px; }
+        .ring-steps { font-size: 22px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+        .ring-goal { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-top: 4px; }
         .ring-pct { font-size: 13px; font-weight: 800; color: #16a34a; margin-top: 2px; }
         .walk-info { flex: 1; min-width: 200px; }
-        .walk-info h3 { font-size: 20px; font-weight: 800; color: #0f172a; margin: 0 0 6px; }
-        .walk-info p { color: #64748b; font-size: 14px; margin: 0 0 16px; }
+        .walk-info h3 { font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0 0 6px; }
+        .walk-info p { color: var(--text-secondary); font-size: 14px; margin: 0 0 16px; }
         .walk-stats { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 18px; }
         .walk-stat { display: flex; flex-direction: column; gap: 2px; }
-        .walk-stat-val { font-size: 20px; font-weight: 800; color: #0f172a; }
-        .walk-stat-lbl { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; }
+        .walk-stat-val { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+        .walk-stat-lbl { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.08em; }
         .step-input-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
-        .step-input-row input { padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.3); background: #fff; font-size: 14px; color: #0f172a; outline: none; width: 160px; }
+        .step-input-row input { padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); font-size: 14px; color: var(--text-primary); outline: none; width: 160px; }
         .step-input-row input:focus { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
 
-        .walk-goal-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #475569; margin-top: 10px; font-weight: 600; }
-        .walk-goal-row input { width: 110px; padding: 6px 10px; border-radius: 10px; border: 1px solid rgba(148,163,184,0.3); background: #f8fafc; font-size: 13px; }
+        .walk-goal-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary); margin-top: 10px; font-weight: 600; }
+        .walk-goal-row input { width: 110px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--input-bg); font-size: 13px; color: var(--text-primary); }
 
         /* ── Walk History ── */
         .walk-history { display: flex; flex-direction: column; gap: 8px; max-height: 300px; overflow-y: auto; }
-        .walk-history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f8fafc; border: 1px solid rgba(148,163,184,0.15); border-radius: 12px; }
+        .walk-history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 12px; }
         .wh-left { display: flex; flex-direction: column; gap: 2px; }
-        .wh-date { font-size: 13px; font-weight: 700; color: #0f172a; }
-        .wh-day { font-size: 11px; color: #94a3b8; }
+        .wh-date { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+        .wh-day { font-size: 11px; color: var(--text-muted); }
         .wh-right { display: flex; align-items: center; gap: 14px; }
-        .wh-steps { font-size: 14px; font-weight: 800; color: #0f172a; }
+        .wh-steps { font-size: 14px; font-weight: 800; color: var(--text-primary); }
         .wh-cals { font-size: 12px; font-weight: 700; color: #22c55e; }
         .wh-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
-        .wh-badge.goal-met { background: #dcfce7; color: #16a34a; }
-        .wh-badge.goal-miss { background: #f1f5f9; color: #94a3b8; }
-        .btn-del { background: transparent; border: none; color: #cbd5e1; font-size: 14px; cursor: pointer; padding: 2px 4px; }
+        .wh-badge.goal-met { background: var(--accent-green-light); color: #16a34a; }
+        .wh-badge.goal-miss { background: var(--bg-subtle); color: var(--text-muted); border: 1px solid var(--border-color); }
+        .btn-del { background: transparent; border: none; color: var(--text-muted); font-size: 14px; cursor: pointer; padding: 2px 4px; }
         .btn-del:hover { color: #ef4444; }
 
-        .week-done { text-align: center; padding: 16px; background: #f0fdf4; border-radius: 16px; color: #16a34a; font-weight: 700; font-size: 14px; margin-bottom: 16px; display: none; }
-        .empty-msg { text-align: center; padding: 32px 20px; color: #94a3b8; font-size: 14px; }
+        .week-done { text-align: center; padding: 16px; background: var(--accent-green-light); border-radius: 16px; color: #16a34a; font-weight: 700; font-size: 14px; margin-bottom: 16px; display: none; }
+        .empty-msg { text-align: center; padding: 32px 20px; color: var(--text-muted); font-size: 14px; }
     </style>
 </head>
 <body>
@@ -175,7 +178,7 @@
                 <!-- Page Header -->
                 <div class="page-header">
                     <div>
-                        <h1>🏃 Fitness</h1>
+                        <h1>Fitness</h1>
                         <p class="header-sub" id="todayLabel"></p>
                     </div>
                     <div class="header-actions">
@@ -212,7 +215,7 @@
                     <div class="banner-item">
                         <div class="banner-label">Week Streak</div>
                         <div class="banner-value" id="bannerStreak">0</div>
-                        <div class="banner-sub">🔥 days</div>
+                        <div class="banner-sub"> days</div>
                     </div>
                 </div>
 
@@ -249,7 +252,7 @@
                 <!-- WORKOUT SECTION                      -->
                 <!-- ════════════════════════════════════ -->
                 <div class="section-title">
-                    <h2>🏋 Workout</h2>
+                    <h2> Workout</h2>
                     <div class="section-title-line"></div>
                     <button class="btn btn-outline btn-sm" onclick="resetTodayWorkout()">↺ Reset Today</button>
                 </div>
@@ -262,7 +265,7 @@
                             <span id="checklistCount" style="font-size:13px; color:#64748b; font-weight:600;"></span>
                         </div>
                         <div class="day-tabs" id="dayTabs"></div>
-                        <div class="week-done" id="weekDone">🎉 Full week complete! Great job!</div>
+                        <div class="week-done" id="weekDone"> Full week complete! Great job!</div>
                         <div class="exercise-list" id="exerciseList"></div>
                         <div class="progress-block">
                             <div class="progress-row">
@@ -270,6 +273,13 @@
                                 <strong id="progPct">0%</strong>
                             </div>
                             <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+                        </div>
+                        <div class="form-group" style="margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(148,163,184,0.12);">
+                            <label style="font-weight: 700; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-secondary);">
+                                <span> Workout Session Notes</span>
+                                <span id="notesSavedStatus" style="font-size: 11px; color: var(--accent-green); font-weight: 500; display: none;">Saved!</span>
+                            </label>
+                            <textarea id="workoutSessionNotes" placeholder="Write down weight used, reps achieved, set details, or how you felt..." style="width: 100%; min-height: 80px; padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--bg-input-inset); font-family: inherit; font-size: 13px; color: var(--text-primary); resize: vertical; outline: none; margin-top: 6px;"></textarea>
                         </div>
                     </div>
 
@@ -308,7 +318,7 @@
                 <!-- WALK SECTION                         -->
                 <!-- ════════════════════════════════════ -->
                 <div class="section-title">
-                    <h2>🚶 Daily Walk</h2>
+                    <h2> Daily Walk</h2>
                     <div class="section-title-line"></div>
                 </div>
 
@@ -332,7 +342,7 @@
                     <!-- Walk Info + Input -->
                     <div class="walk-info">
                         <h3>Today's Steps</h3>
-                        <p id="walkMotivation">Start walking — every step counts! 💪</p>
+                        <p id="walkMotivation">Start walking — every step counts! </p>
                         <div class="walk-stats">
                             <div class="walk-stat">
                                 <div class="walk-stat-val" id="walkCalsToday">0 kcal</div>
@@ -534,7 +544,7 @@
             const full = plan && done === plan.length;
             const isActive = day === activeDay;
             return `<button class="day-tab ${isActive ? 'active' : ''} ${full ? 'completed' : ''}"
-                        onclick="setDay('${day}')">${day.slice(0,3)}${full ? ' ✓' : ''}</button>`;
+                        onclick="setDay('${day}')">${day.slice(0,3)}${full ? ' ' : ''}</button>`;
         }).join('');
 
         // Week complete banner
@@ -554,7 +564,7 @@
         document.getElementById('checklistTitle').textContent = `${activeDay} Workout`;
 
         if (!plan) {
-            listEl.innerHTML = '<div class="rest-card"><span class="rest-icon">😴</span><p>Rest Day — recover and recharge!</p></div>';
+            listEl.innerHTML = '<div class="rest-card"><span class="rest-icon"></span><p>Rest Day — recover and recharge!</p></div>';
             document.getElementById('checklistCount').textContent = '';
             document.getElementById('progText').textContent = '— Rest Day';
             document.getElementById('progPct').textContent  = '';
@@ -626,6 +636,10 @@
 
         document.getElementById('wCalInput').value = '';
         document.getElementById('wCalNote').value  = '';
+        if (date === todayKey()) {
+            const notesArea = document.getElementById('workoutSessionNotes');
+            if (notesArea) notesArea.value = note;
+        }
         renderWorkoutHistory(); renderCombinedChart(); updateBannerAndStats();
     }
 
@@ -677,11 +691,11 @@
 
         // Motivation text
         const msgs = [
-            [0,    "Start walking — every step counts! 💪"],
-            [2000, "Good start! Keep it going 🚶"],
-            [5000, "Halfway there! You're doing great 🔥"],
-            [7500, "Almost at your goal — push it! 💨"],
-            [stepGoal, "🎉 Goal reached! Amazing work today!"],
+            [0,    "Start walking — every step counts! "],
+            [2000, "Good start! Keep it going "],
+            [5000, "Halfway there! You're doing great "],
+            [7500, "Almost at your goal — push it! "],
+            [stepGoal, " Goal reached! Amazing work today!"],
         ];
         const msg = [...msgs].reverse().find(([threshold]) => steps >= threshold);
         document.getElementById('walkMotivation').textContent = msg ? msg[1] : msgs[0][1];
@@ -736,10 +750,10 @@
                     <div class="wh-day">${DAYS[d.getDay()]}</div>
                 </div>
                 <div class="wh-right">
-                    <span class="wh-badge ${met ? 'goal-met' : 'goal-miss'}">${met ? '✓ Goal' : `${Math.round((steps/stepGoal)*100)}%`}</span>
+                    <span class="wh-badge ${met ? 'goal-met' : 'goal-miss'}">${met ? ' Goal' : `${Math.round((steps/stepGoal)*100)}%`}</span>
                     <span class="wh-steps">${Number(steps).toLocaleString()}</span>
                     <span class="wh-cals">~${cals} kcal</span>
-                    <button class="btn-del" onclick="deleteWalkDay('${date}')">✕</button>
+                    <button class="btn-del" onclick="deleteWalkDay('${date}')"></button>
                 </div>
             </div>`;
         }).join('');
@@ -867,6 +881,31 @@
         renderCombinedChart();
         renderStepsChart();
         updateBannerAndStats();
+
+        // Setup Workout Session Notes
+        const notesArea = document.getElementById('workoutSessionNotes');
+        if (notesArea) {
+            const tk = todayKey();
+            const todayData = gymData[tk] || {};
+            notesArea.value = todayData.note || '';
+
+            notesArea.addEventListener('input', () => {
+                const tk = todayKey();
+                const existing = gymData[tk] || {};
+                gymData[tk] = { ...existing, note: notesArea.value.trim() };
+                saveGym();
+                
+                // Show brief "Saved!" feedback
+                const statusSpan = document.getElementById('notesSavedStatus');
+                if (statusSpan) {
+                    statusSpan.style.display = 'inline';
+                    if (notesArea.saveTimeout) clearTimeout(notesArea.saveTimeout);
+                    notesArea.saveTimeout = setTimeout(() => {
+                        statusSpan.style.display = 'none';
+                    }, 1000);
+                }
+            });
+        }
     });
     </script>
 </body>

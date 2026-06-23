@@ -4,7 +4,7 @@
         <div class="nav-section">
             <div class="nav-section-header">Productivity</div>
             <ul>
-                <li><a href="#" data-href="dashboard.html">Dashboard</a></li>
+                <li><a href="#" data-href="home.html">Dashboard</a></li>
                 <li><a href="#" data-href="pages/study.html">Study &amp; Books</a></li>
             </ul>
         </div>
@@ -15,6 +15,7 @@
             <div class="nav-section-header">Health &amp; Fitness</div>
             <ul>
                 <li><a href="#" data-href="pages/fitness.html">Fitness Tracker</a></li>
+                <li><a href="#" data-href="pages/water.html">Water Intake</a></li>
             </ul>
         </div>
 
@@ -37,6 +38,21 @@
                 <li><a href="#" data-href="pages/events.html">Events</a></li>
                 <li><a href="#" data-href="pages/goals.html">Goals</a></li>
             </ul>
+        </div>
+
+        <div class="nav-divider" aria-hidden="true"></div>
+
+        <div class="nav-section sidebar-bottom" style="margin-top: auto; padding-top: 16px;">
+            <div class="dark-mode-toggle" style="margin-bottom: 12px;">
+                <span class="toggle-label">Dark Mode</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <div style="text-align: center; padding: 4px 12px;">
+                <button onclick="if(confirm('Reset all tracking data? This cannot be undone.')){ localStorage.clear(); window.location.reload(); }" style="background: transparent; border: none; color: var(--accent-red); font-size: 11px; font-weight: 700; cursor: pointer; opacity: 0.6; transition: opacity 0.2s;">Reset Data</button>
+            </div>
         </div>
 
     </nav>

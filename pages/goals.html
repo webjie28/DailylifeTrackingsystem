@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goals Tracker — Daily Life Tracking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        .page-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
+        .page-header h1 { font-size: 32px; font-weight: 800; color: var(--text-primary); margin: 0; }
+        .btn { padding: 10px 18px; border-radius: 12px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: var(--accent-orange); color: #fff; }
+        .btn-primary:hover { background: #d65a0f; }
+        .btn-outline { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color-strong); }
+        .btn-outline:hover { background: var(--bg-subtle); }
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; padding: 20px 22px; box-shadow: var(--shadow-sm); }
+        .stat-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        .stat-value { font-size: 28px; font-weight: 800; color: var(--accent-orange); }
+
+        .panel { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 24px; box-shadow: var(--shadow-sm); }
+        .panel h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 20px; }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+        .form-group input, .form-group select { padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-color-strong); background: var(--bg-input-inset); font-size: 14px; color: var(--text-primary); outline: none; width: 100%; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--accent-orange); box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* Goals Grid */
+        .goals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .goal-card { background: var(--bg-input-inset); border: 1px solid var(--border-color); border-radius: 22px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s; position: relative; }
+        .goal-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--accent-orange); }
+        
+        .goal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .goal-emoji-title { display: flex; gap: 10px; align-items: center; }
+        .goal-emoji { font-size: 24px; }
+        .goal-title { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+        .goal-cat { font-size: 10px; text-transform: uppercase; font-weight: 800; padding: 2px 6px; border-radius: 4px; }
+        
+        .cat-health { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); }
+        .cat-career { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+        .cat-financial { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .cat-personal { background: rgba(124, 58, 237, 0.15); color: var(--accent-purple); }
+        .cat-skills { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+
+        .goal-milestones-box { border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 12px 0; margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
+        .milestone-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); cursor: pointer; }
+        .milestone-item input { cursor: pointer; }
+        .milestone-item.done { text-decoration: line-through; opacity: 0.6; }
+
+        .goal-deadline { font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .goal-bar-wrap { height: 8px; background: var(--border-color-strong); border-radius: 999px; overflow: hidden; margin-bottom: 12px; }
+        .goal-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent-orange), var(--accent-green)); transition: width 0.4s ease; }
+
+        .goal-footer { display: flex; justify-content: space-between; align-items: center; }
+        .goal-pct { font-size: 13px; font-weight: 700; color: var(--accent-orange); }
+        .goal-actions { display: flex; gap: 8px; }
+        
+        .goal-btn-delete { background: transparent; border: none; color: var(--accent-red); font-weight: 700; cursor: pointer; font-size: 12px; }
+
+        .empty-msg { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; grid-column: 1 / -1; }
+    </style>
+</head>
+<body>
+    <button id="toggleSidebar" class="toggle-sidebar-btn">☰ Menu</button>
+    <div class="app-shell">
+        <div id="sidebar" class="sidebar-container"></div>
+        <main class="main-content">
+            <div class="container" style="padding-top: 0;">
+                
+                <header class="page-header">
+                    <div>
+                        <h1>Goals Tracker</h1>
+                        <p class="header-sub">Define milestones, break down objectives, and trace your progress</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="openGoalModal()">+ Add Long-term Goal</button>
+                </header>
+
+                <!-- Stats Row -->
+                <section class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label">Active Goals</div>
+                        <div class="stat-value" id="statActive">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Milestones Checked</div>
+                        <div class="stat-value" id="statMilestones" style="color: var(--accent-purple);">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Completed Goals</div>
+                        <div class="stat-value" id="statCompleted" style="color: var(--accent-green);">0</div>
+                    </div>
+                </section>
+
+                <div class="panel">
+                    <div class="goals-grid" id="goalsGrid">
+                        <div class="empty-msg">No goals tracked yet. Click "+ Add Long-term Goal" to begin.</div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Goal Modal -->
+    <div class="modal-overlay hidden" id="goalModal">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeGoalModal()">×</button>
+            <div class="modal-header">
+                <h3>Add Long-term Goal</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Goal Title</label>
+                    <input type="text" id="goalTitle" placeholder="e.g. Save ₱100,000" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="goalCategory">
+                            <option value="health"> Health &amp; Fitness</option>
+                            <option value="career"> Career &amp; Business</option>
+                            <option value="financial"> Financial</option>
+                            <option value="personal"> Personal</option>
+                            <option value="skills"> Skills &amp; Learning</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Target Deadline</label>
+                        <input type="date" id="goalDeadline" />
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label>Milestones (one per line)</label>
+                    <textarea id="goalMilestones" placeholder="e.g. Save ₱25k&#10;Save ₱50k&#10;Save ₱75k&#10;Save ₱100k" style="min-height: 80px; width: 100%; padding: 10px; border-radius: 12px; border: 1px solid var(--border-color-strong); background: var(--bg-input-inset); color: var(--text-primary); font-family: inherit; font-size: 14px; outline: none;"></textarea>
+                </div>
+                <button class="btn btn-primary" style="width: 100%;" onclick="saveGoal()">Save Goal</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        const STORAGE_KEY = 'longtermGoalsList';
+        let goals = [];
+
+        function loadData() {
+            try {
+                goals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            } catch {
+                goals = [];
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
+            updateStats();
+        }
+
+        function updateStats() {
+            const active = goals.filter(g => g.milestones.some(m => !m.done)).length;
+            const completed = goals.filter(g => g.milestones.length > 0 && g.milestones.every(m => m.done)).length;
+            
+            let milestonesCount = 0;
+            goals.forEach(g => {
+                milestonesCount += g.milestones.filter(m => m.done).length;
+            });
+
+            document.getElementById('statActive').textContent = active;
+            document.getElementById('statMilestones').textContent = milestonesCount;
+            document.getElementById('statCompleted').textContent = completed;
+        }
+
+        function toggleMilestone(goalId, index) {
+            goals = goals.map(g => {
+                if (g.id === goalId) {
+                    const milestones = g.milestones.map((m, idx) => idx === index ? { ...m, done: !m.done } : m);
+                    return { ...g, milestones };
+                }
+                return g;
+            });
+            saveData();
+            renderGoals();
+        }
+
+        function renderGoals() {
+            const gridEl = document.getElementById('goalsGrid');
+            if (goals.length === 0) {
+                gridEl.innerHTML = '<div class="empty-msg">No goals tracked yet. Click "+ Add Long-term Goal" to begin.</div>';
+                return;
+            }
+
+            gridEl.innerHTML = goals.map(g => {
+                const total = g.milestones.length;
+                const done = g.milestones.filter(m => m.done).length;
+                const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+                const milestonesHtml = g.milestones.map((m, idx) => `
+                    <div class="milestone-item ${m.done ? 'done' : ''}" onclick="toggleMilestone('${g.id}', ${idx})">
+                        <input type="checkbox" ${m.done ? 'checked' : ''} />
+                        <span>${m.text}</span>
+                    </div>
+                `).join('');
+
+                // Calculate days remaining
+                let daysLeftText = '';
+                if (g.deadline) {
+                    const today = new Date();
+                    today.setHours(0,0,0,0);
+                    const deadline = new Date(g.deadline + 'T00:00:00');
+                    const diffTime = deadline - today;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays < 0) {
+                        daysLeftText = 'Overdue ⚠️';
+                    } else if (diffDays === 0) {
+                        daysLeftText = 'Deadline today! ⏰';
+                    } else {
+                        daysLeftText = `${diffDays} days left`;
+                    }
+                }
+
+                return `
+                    <div class="goal-card">
+                        <div>
+                            <div class="goal-header">
+                                <div class="goal-emoji-title">
+                                    <span class="goal-emoji">${g.emoji || ''}</span>
+                                    <span class="goal-title">${g.title}</span>
+                                </div>
+                                <span class="goal-cat cat-${g.category}">${g.category}</span>
+                            </div>
+                            <div class="goal-milestones-box">
+                                ${milestonesHtml || '<div style="font-size:12px;color:var(--text-muted);">No milestones defined.</div>'}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="goal-deadline">
+                                <span>${g.deadline || 'No deadline'}</span>
+                                <strong>${daysLeftText}</strong>
+                            </div>
+                            <div class="goal-bar-wrap">
+                                <div class="goal-bar-fill" style="width: ${pct}%"></div>
+                            </div>
+                            <div class="goal-footer">
+                                <span class="goal-pct">${pct}% done</span>
+                                <div class="goal-actions">
+                                    <button class="goal-btn-delete" onclick="deleteGoal('${g.id}')">️ Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openGoalModal() {
+            document.getElementById('goalTitle').value = '';
+            document.getElementById('goalDeadline').value = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // +30 days
+            document.getElementById('goalCategory').value = 'personal';
+            document.getElementById('goalMilestones').value = '';
+            document.getElementById('goalModal').classList.remove('hidden');
+        }
+
+        function closeGoalModal() {
+            document.getElementById('goalModal').classList.add('hidden');
+        }
+
+        function saveGoal() {
+            const title = document.getElementById('goalTitle').value.trim();
+            const category = document.getElementById('goalCategory').value;
+            const deadline = document.getElementById('goalDeadline').value;
+            const emoji = '';
+            const milestonesRaw = document.getElementById('goalMilestones').value.split('\n');
+
+            if (!title) { alert('Please enter a goal title.'); return; }
+
+            const milestones = milestonesRaw
+                .map(m => m.trim())
+                .filter(m => m.length > 0)
+                .map(m => ({ text: m, done: false }));
+
+            goals.push({
+                id: Date.now().toString(),
+                title,
+                category,
+                deadline,
+                emoji,
+                milestones
+            });
+
+            saveData();
+            closeGoalModal();
+            renderGoals();
+        }
+
+        function deleteGoal(id) {
+            if(!confirm('Delete this long-term goal?')) return;
+            goals = goals.filter(g => g.id !== id);
+            saveData();
+            renderGoals();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            updateStats();
+            renderGoals();
+        });
+    </script>
+</body>
+</html>

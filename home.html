@@ -3,43 +3,530 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Daily Life Tracking System — Home</title>
+<title>Daily Life Tracking System — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+    /* Splash Screen Overlay */
+    .splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #0c0e14; /* Deep premium dark background */
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .splash-screen.fade-out {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    .splash-content {
+        text-align: center;
+        animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .splash-title {
+        font-family: 'Inter', sans-serif !important; /* Maintain Inter for branding */
+        font-size: 52px;
+        font-weight: 800 !important;
+        letter-spacing: 0.18em;
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, #a78bfa 0%, #ec4899 50%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-transform: uppercase;
+        display: block;
+    }
+
+    .splash-subtitle {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 13px;
+        font-weight: 500 !important;
+        color: #94a3b8;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        margin-bottom: 40px;
+    }
+
+    .splash-loader {
+        width: 240px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 999px;
+        margin: 0 auto;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .splash-loader-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #a78bfa 0%, #ec4899 50%, #3b82f6 100%);
+        border-radius: 999px;
+        animation: loadBar 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes loadBar {
+        0% { width: 0%; }
+        50% { width: 60%; }
+        100% { width: 100%; }
+    }
+
+    /* Clean Pastel Stats styling inspired by NeuroNest */
+    .stats-pastel-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+    }
+    .stat-pastel-card {
+        border-radius: 20px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 140px;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+    }
+    .stat-pastel-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-md);
+    }
+    .stat-pastel-value {
+        font-size: 30px;
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 4px;
+    }
+    .stat-pastel-label {
+        font-size: 13px;
+        font-weight: 600;
+        opacity: 0.7;
+    }
+
+    /* Pastel colors for light and dark themes */
+    .stat-pastel-green { background-color: #dcfce7 !important; color: #14532d !important; }
+    .stat-pastel-blue { background-color: #e0f2fe !important; color: #0c4a6e !important; }
+    .stat-pastel-yellow { background-color: #fef9c3 !important; color: #713f12 !important; }
+    .stat-pastel-purple { background-color: #f3e8ff !important; color: #581c87 !important; }
+
+    /* Tabbed Chart Styling */
+    .chart-card-tabbed {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: var(--shadow-md);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+    }
+
+    .chart-tab-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 16px;
+    }
+
+    .chart-tab-header h3 {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .chart-tabs {
+        display: flex;
+        gap: 4px;
+        background: var(--bg-subtle);
+        padding: 4px;
+        border-radius: 12px;
+    }
+
+    .chart-tab-btn {
+        background: transparent;
+        border: none;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .chart-tab-btn:hover {
+        color: var(--text-primary);
+    }
+
+    .chart-tab-btn.active {
+        background: var(--card-bg);
+        color: var(--text-primary);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .chart-wrapper {
+        position: relative;
+        height: 320px;
+        width: 100%;
+    }
+
+    .chart-wrapper.hidden {
+        display: none !important;
+    }
+
+    /* Action card and buttons */
+    .actions-minimal-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 32px;
+    }
+
+    .action-minimal-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 24px;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        color: var(--text-primary);
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .action-minimal-btn:hover {
+        background: var(--bg-hover);
+        border-color: var(--accent-purple);
+        transform: translateY(-2px);
+    }
+
+    /* Focus Card simplification */
+    .focus-minimal-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 24px;
+    }
+
+    .focus-minimal-card .focus-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .focus-minimal-card h3 {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .focus-minimal-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-subtle);
+        color: var(--text-primary);
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .focus-minimal-input:focus {
+        border-color: var(--accent-purple);
+        box-shadow: 0 0 0 3px var(--accent-purple-light);
+        background: var(--card-bg);
+    }
+
+    /* Minimal Header */
+    .minimal-header {
+        margin-top: 36px;
+        margin-bottom: 36px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        text-align: center;
+    }
+
+    .minimal-greeting {
+        width: 100%;
+    }
+
+    .minimal-greeting h1 {
+        font-size: 46px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, var(--accent-purple) 0%, #ec4899 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+        display: inline-block;
+    }
+</style>
 </head>
 <body>
-    <!-- Hamburger Button -->
+    <!-- Splash Screen Overlay -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-content">
+            <h1 class="splash-title">DLT</h1>
+            <p class="splash-subtitle">Daily Life Tracker</p>
+            <div class="splash-loader">
+                <div class="splash-loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
     <button id="toggleSidebar" class="toggle-sidebar-btn">☰ Menu</button>
 
     <div class="app-shell">
-        <!-- Naka-'collapsed' agad para tago ang sidebar sa Home -->
+        <!-- Sidebar container starts collapsed on Home page -->
         <div id="sidebar" class="sidebar-container collapsed"></div>
 
         <main class="main-content">
-            <header class="minimal-header">
-                <h1>Daily Life Tracking</h1>
-                <p id="today"></p>
+            <!-- Top Header Section -->
+            <header class="minimal-header animate-in" style="animation: slideInLeft 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;">
+                <div class="minimal-greeting">
+                    <h1 id="greetingText">Good night, Benjie!</h1>
+                </div>
             </header>
 
-            <section class="minimal-cards">
-                <a class="minimal-card" href="dashboard.html">
-                    <h3 style="font-size: 28px; margin-bottom: 5px;">📊</h3>
-                    <h3>Dashboard</h3>
-                    <p>View stats and insights</p>
-                </a>
-                <a class="minimal-card" href="pages/tasks.html">
-                    <h3 style="font-size: 28px; margin-bottom: 5px;">✅</h3>
-                    <h3>Tasks</h3>
-                    <p>Manage daily checklists</p>
-                </a>
-                <a class="minimal-card" href="pages/finance.html">
-                    <h3 style="font-size: 28px; margin-bottom: 5px;">💰</h3>
-                    <h3>Finance</h3>
-                    <p>Track your budget</p>
-                </a>
+            <!-- Today's Focus Card -->
+            <section class="animate-in" style="animation: slideInLeft 0.5s ease both; animation-delay: 0.1s;">
+                <article class="focus-minimal-card">
+                    <div class="focus-header">
+                        <h3>Today's Focus</h3>
+                    </div>
+                    <input type="text" id="todayFocusInput" class="focus-minimal-input" placeholder="What is your #1 priority today?" />
+                </article>
+            </section>
+
+            <!-- Quick Stats Section (Pastel Colored Cards) -->
+            <section class="animate-in">
+                <div class="stats-pastel-grid">
+                    <a href="pages/fitness.html" class="stat-pastel-card stat-pastel-green" style="animation: slideInLeft 0.5s ease both; animation-delay: 0.2s;">
+                        <div>
+                            <div class="stat-pastel-value" id="summaryTotalCaloriesToday">0 kcal</div>
+                            <div class="stat-pastel-label">Calories Today</div>
+                        </div>
+                    </a>
+                    <a href="pages/fitness.html" class="stat-pastel-card stat-pastel-blue" style="animation: slideInLeft 0.5s ease both; animation-delay: 0.3s;">
+                        <div>
+                            <div class="stat-pastel-value" id="summaryTodaySteps">0 steps</div>
+                            <div class="stat-pastel-label">Steps Today</div>
+                        </div>
+                    </a>
+                    <a href="pages/finance.html" class="stat-pastel-card stat-pastel-yellow" style="animation: slideInLeft 0.5s ease both; animation-delay: 0.4s;">
+                        <div>
+                            <div class="stat-pastel-value" id="summaryMonthlyExpenses">₱0</div>
+                            <div class="stat-pastel-label">Expenses (Month)</div>
+                        </div>
+                    </a>
+                    <a href="pages/saving.html" class="stat-pastel-card stat-pastel-purple" style="animation: slideInLeft 0.5s ease both; animation-delay: 0.5s;">
+                        <div>
+                            <div class="stat-pastel-value" id="summaryTotalSavings">₱0</div>
+                            <div class="stat-pastel-label">Total Savings</div>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Quick Actions Card -->
+            <section class="animate-in" style="animation: slideInLeft 0.5s ease both; animation-delay: 0.6s;">
+                <div class="actions-minimal-row">
+                    <a href="pages/finance.html" class="action-minimal-btn">
+                        Log Expense
+                    </a>
+                    <a href="pages/fitness.html" class="action-minimal-btn">
+                        Log Workout
+                    </a>
+                </div>
+            </section>
+
+            <!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
+            <section class="animate-in" style="margin-bottom: 36px; animation: fadeInUp 0.6s ease both; animation-delay: 0.7s;">
+                <article class="chart-card-tabbed">
+                    <div class="chart-tab-header">
+                        <h3 id="activeChartTitle">Savings Growth</h3>
+                        <div class="chart-tabs">
+                            <button class="chart-tab-btn active" data-chart="growth">Savings</button>
+                            <button class="chart-tab-btn" data-chart="expenses">Expenses</button>
+                            <button class="chart-tab-btn" data-chart="loans">Goals</button>
+                            <button class="chart-tab-btn" data-chart="calories">Calories</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-wrapper" id="wrapper-growth">
+                            <canvas id="growthChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper hidden" id="wrapper-expenses">
+                            <canvas id="expensesChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper hidden" id="wrapper-loans">
+                            <canvas id="loanPayoffChart"></canvas>
+                        </div>
+                        <div class="chart-wrapper hidden" id="wrapper-calories">
+                            <canvas id="caloriesChart"></canvas>
+                        </div>
+                    </div>
+                </article>
             </section>
         </main>
     </div>
 
     <script src="script.js"></script>
+    <script>
+    // Home page greeting and dynamic rendering logic
+    (function() {
+        // Splash screen fadeout logic
+        const splash = document.getElementById('splashScreen');
+        if (splash) {
+            setTimeout(() => {
+                splash.classList.add('fade-out');
+                setTimeout(() => {
+                    splash.remove();
+                }, 500);
+            }, 2000);
+        }
+
+        const hour = new Date().getHours();
+        let greeting;
+        if (hour < 6) { greeting = 'Good night'; }
+        else if (hour < 12) { greeting = 'Good morning'; }
+        else if (hour < 17) { greeting = 'Good afternoon'; }
+        else if (hour < 21) { greeting = 'Good evening'; }
+        else { greeting = 'Good night'; }
+
+        const el = document.getElementById('greetingText');
+        if (el) el.textContent = `${greeting}, Benjie!`;
+
+        // Date element removed per user request
+
+        // Today's Focus persistence
+        const focusInput = document.getElementById('todayFocusInput');
+        if (focusInput) {
+            const saved = localStorage.getItem('todayFocus');
+            if (saved) focusInput.value = saved;
+            focusInput.addEventListener('input', () => {
+                localStorage.setItem('todayFocus', focusInput.value);
+            });
+        }
+        
+        // Dynamic summary metrics
+        if(typeof updateSummaryCards === 'function') updateSummaryCards();
+
+        // Chart tab switching logic
+        const tabBtns = document.querySelectorAll('.chart-tab-btn');
+        const wrappers = {
+            growth: document.getElementById('wrapper-growth'),
+            expenses: document.getElementById('wrapper-expenses'),
+            loans: document.getElementById('wrapper-loans'),
+            calories: document.getElementById('wrapper-calories')
+        };
+        const titles = {
+            growth: 'Savings Growth',
+            expenses: 'Expenses by Category',
+            loans: 'Savings Goals Progress',
+            calories: 'Calories Burned (Total)'
+        };
+        const titleEl = document.getElementById('activeChartTitle');
+
+        function triggerChartRender(chartName) {
+            if (typeof Chart === 'undefined') return;
+            
+            if (chartName === 'growth' && typeof creategrowthChart === 'function') {
+                const canvas = document.getElementById('growthChart');
+                if (canvas) {
+                    const existing = Chart.getChart(canvas);
+                    if (existing) existing.destroy();
+                    creategrowthChart();
+                }
+            } else if (chartName === 'expenses' && typeof createExpensesChart === 'function') {
+                const canvas = document.getElementById('expensesChart');
+                if (canvas) {
+                    const existing = Chart.getChart(canvas);
+                    if (existing) existing.destroy();
+                    createExpensesChart();
+                }
+            } else if (chartName === 'loans' && typeof createLoanPayoffChart === 'function') {
+                const canvas = document.getElementById('loanPayoffChart');
+                if (canvas) {
+                    const existing = Chart.getChart(canvas);
+                    if (existing) existing.destroy();
+                    createLoanPayoffChart();
+                }
+            } else if (chartName === 'calories' && typeof renderCaloriesChart === 'function') {
+                const canvas = document.getElementById('caloriesChart');
+                if (canvas) {
+                    const existing = Chart.getChart(canvas);
+                    if (existing) existing.destroy();
+                    renderCaloriesChart();
+                }
+            }
+        }
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetChart = btn.getAttribute('data-chart');
+                
+                // Update active button state
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Update active title
+                if (titleEl && titles[targetChart]) {
+                    titleEl.textContent = titles[targetChart];
+                }
+
+                // Show/hide wrappers
+                Object.keys(wrappers).forEach(key => {
+                    if (wrappers[key]) {
+                        if (key === targetChart) {
+                            wrappers[key].classList.remove('hidden');
+                        } else {
+                            wrappers[key].classList.add('hidden');
+                        }
+                    }
+                });
+
+                // Trigger chart rendering
+                triggerChartRender(targetChart);
+            });
+        });
+
+        // Initialize default active chart (growth) on window load
+        window.addEventListener('load', () => {
+            triggerChartRender('growth');
+        });
+    })();
+    </script>
 </body>
 </html>

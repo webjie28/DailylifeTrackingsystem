@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Life Tracking System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
@@ -21,45 +24,22 @@
                 </header>
 
                 <section class="summary-grid">
-                    <article class="card summary-card" style="border-color: #22c55e; background: #f0fdf4;">
-                         <h3 style="color: #16a34a;">🔥 Total Calories Burned Today</h3>
-                         <div class="summary-value" id="summaryTotalCaloriesToday" style="color: #16a34a;">0 kcal</div>
+                    <article class="card summary-card" style="border-left: 4px solid var(--accent-green); background: var(--bg-card);">
+                         <h3 style="color: var(--text-secondary); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;"> Calories Today</h3>
+                         <div class="summary-value" id="summaryTotalCaloriesToday" style="color: var(--accent-green); font-size: 28px; font-weight: 800; margin-top: 8px;">0 kcal</div>
                     </article>
-                    <article class="card summary-card">
-                        <h3>Streak</h3>
-                        <div class="summary-value" id="summaryStreak">0</div>
+                    <article class="card summary-card" style="border-left: 4px solid #3b82f6; background: var(--bg-card);">
+                        <h3 style="color: var(--text-secondary); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;"> Steps Today</h3>
+                        <div class="summary-value" id="summaryTodaySteps" style="color: #3b82f6; font-size: 28px; font-weight: 800; margin-top: 8px;">0 steps</div>
                     </article>
-                    <article class="card summary-card">
-                        <h3>Total Categories</h3>
-                        <div class="summary-value" id="summaryTotalCategories">0</div>
+                    <article class="card summary-card" style="border-left: 4px solid var(--accent-red); background: var(--bg-card);">
+                        <h3 style="color: var(--text-secondary); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;"> Expenses (Month)</h3>
+                        <div class="summary-value" id="summaryMonthlyExpenses" style="color: var(--accent-red); font-size: 28px; font-weight: 800; margin-top: 8px;">₱0</div>
                     </article>
-                    <article class="card summary-card">
-                        <h3>Active Categories</h3>
-                        <div class="summary-value" id="summaryActiveCategories">0</div>
+                    <article class="card summary-card" style="border-left: 4px solid var(--accent-purple); background: var(--bg-card);">
+                        <h3 style="color: var(--text-secondary); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;"> Total Savings</h3>
+                        <div class="summary-value" id="summaryTotalSavings" style="color: var(--accent-purple); font-size: 28px; font-weight: 800; margin-top: 8px;">₱0</div>
                     </article>
-                    <article class="card summary-card">
-                        <h3>Tasks Completed</h3>
-                        <div class="summary-value" id="summaryCompletedTasks">0</div>
-                    </article>
-                    <article class="card summary-card">
-                        <h3>Loans Remaining</h3>
-                        <div class="summary-value" id="summaryLoansRemaining">0</div>
-                    </article>
-                    <article class="card summary-card">
-                        <h3>Upcoming Payments</h3>
-                        <div class="summary-value" id="summaryUpcomingPayments">0</div>
-                    </article>
-                    <article class="card summary-card">
-                        <h3>Overall Progress</h3>
-                        <div class="summary-value" id="summaryOverallProgress">0%</div>
-                    </article>
-                </section>
-
-                <section class="actions-grid">
-                    <button id="newCategoryAction" class="action-card" type="button">+ New Category</button>
-                    <button id="addTaskAction" class="action-card" type="button">+ Add Task</button>
-                    <button id="addLoanAction" class="action-card" type="button">+ Add Loan</button>
-                    <button id="addPaymentAction" class="action-card" type="button">+ Add Payment</button>
                 </section>
 
                 <section class="charts-grid">
@@ -80,10 +60,6 @@
                          <canvas id="caloriesChart" aria-label="Calories Burned chart" role="img"></canvas>
                     </article>
                 </section>
-
-                
-
-                <section class="category-grid" id="categoryGrid"></section>
             </div>  
 
             </div>

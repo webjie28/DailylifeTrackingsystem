@@ -4,68 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Savings — Daily Life Tracking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../style.css">
     <style>
         .page-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
-        .page-header h1 { font-size: 32px; font-weight: 800; color: #0f172a; margin: 0; }
+        .page-header h1 { font-size: 32px; font-weight: 800; color: var(--text-primary); margin: 0; }
         .header-actions { display: flex; gap: 10px; }
         .btn { padding: 10px 18px; border-radius: 12px; border: none; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .btn-primary { background: #7c3aed; color: #fff; }
         .btn-primary:hover { background: #5b21b6; }
-        .btn-outline { background: #fff; color: #0f172a; border: 1px solid rgba(148,163,184,0.3); }
-        .btn-outline:hover { background: #f1f5f9; }
+        .btn-outline { background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color-strong); }
+        .btn-outline:hover { background: var(--bg-subtle); }
         .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
         .btn-danger-sm { background: transparent; color: #ef4444; border: none; font-weight: 700; cursor: pointer; font-size: 12px; }
 
         .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
-        .stat-card { background: #fff; border: 1px solid rgba(148,163,184,0.18); border-radius: 20px; padding: 20px 22px; box-shadow: 0 8px 20px rgba(15,23,42,0.06); }
-        .stat-label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+        .stat-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 20px 22px; box-shadow: var(--shadow-sm); }
+        .stat-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
         .stat-value { font-size: 28px; font-weight: 800; color: #7c3aed; }
 
         .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }
         @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } }
 
-        .panel { background: #fff; border: 1px solid rgba(148,163,184,0.18); border-radius: 24px; padding: 24px; box-shadow: 0 10px 24px rgba(15,23,42,0.06); }
-        .panel h3 { font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 20px; }
+        .panel { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; padding: 24px; box-shadow: var(--shadow-md); }
+        .panel h3 { font-size: 18px; font-weight: 700; color: var(--text-heading); margin: 0 0 20px; }
 
         .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-        .form-group label { font-size: 13px; font-weight: 600; color: #475569; }
-        .form-group input, .form-group select { padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(148,163,184,0.3); background: #f8fafc; font-size: 14px; color: #0f172a; outline: none; width: 100%; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+        .form-group input, .form-group select { padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--input-bg); font-size: 14px; color: var(--text-primary); outline: none; width: 100%; }
         .form-group input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.08); }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         .goals-list { display: flex; flex-direction: column; gap: 16px; }
-        .goal-card { background: #f8fafc; border: 1px solid rgba(148,163,184,0.2); border-radius: 18px; padding: 18px; }
+        .goal-card { background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 18px; padding: 18px; }
         .goal-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .goal-name { font-size: 15px; font-weight: 700; color: #0f172a; }
+        .goal-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
         .goal-emoji { font-size: 20px; margin-right: 8px; }
-        .goal-amounts { font-size: 13px; color: #64748b; margin-bottom: 10px; }
-        .goal-amounts strong { color: #0f172a; }
-        .goal-bar-wrap { height: 8px; background: #e2e8f0; border-radius: 999px; overflow: hidden; margin-bottom: 10px; }
+        .goal-amounts { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+        .goal-amounts strong { color: var(--text-primary); }
+        .goal-bar-wrap { height: 8px; background: var(--border-color); border-radius: 999px; overflow: hidden; margin-bottom: 10px; }
         .goal-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #7c3aed, #22c55e); transition: width 0.5s ease; }
         .goal-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
         .goal-pct { font-size: 13px; font-weight: 700; color: #7c3aed; }
-        .goal-due { font-size: 12px; color: #94a3b8; }
+        .goal-due { font-size: 12px; color: var(--text-muted); }
         .goal-actions { display: flex; gap: 8px; }
-        .goal-completed { border-color: #22c55e; background: #f0fdf4; }
+        .goal-completed { border-color: #22c55e; background: var(--accent-green-light); }
         .goal-completed .goal-bar-fill { background: #22c55e; }
         .goal-completed .goal-pct { color: #16a34a; }
 
         .contrib-list { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; }
-        .contrib-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f8fafc; border: 1px solid rgba(148,163,184,0.16); border-radius: 12px; }
+        .contrib-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 12px; }
         .contrib-left { display: flex; flex-direction: column; gap: 2px; }
-        .contrib-name { font-size: 13px; font-weight: 700; color: #0f172a; }
-        .contrib-date { font-size: 11px; color: #94a3b8; }
+        .contrib-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+        .contrib-date { font-size: 11px; color: var(--text-muted); }
         .contrib-amount { font-size: 14px; font-weight: 800; color: #16a34a; }
 
         .chart-wrap { position: relative; height: 260px; }
-        .empty-msg { text-align: center; padding: 40px 20px; color: #94a3b8; font-size: 14px; }
-
-        .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1100; }
-        .modal-overlay.hidden { display: none; }
-        .modal-card { background: #fff; border-radius: 24px; padding: 28px; width: min(480px, 96%); box-shadow: 0 24px 60px rgba(15,23,42,0.18); position: relative; }
-        .modal-card h3 { font-size: 20px; font-weight: 700; margin: 0 0 20px; }
-        .modal-close { position: absolute; top: 16px; right: 16px; width: 34px; height: 34px; border-radius: 50%; border: none; background: #f1f5f9; cursor: pointer; font-size: 18px; }
+        .empty-msg { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; }
     </style>
 </head>
 <body>
@@ -77,7 +74,7 @@
 
                 <div class="page-header">
                     <div>
-                        <h1>🏦 Savings</h1>
+                        <h1>Savings</h1>
                         <p style="color:#64748b; margin-top:4px; font-size:14px;" id="todayLabel"></p>
                     </div>
                     <div class="header-actions">
@@ -159,26 +156,26 @@
     <div class="modal-overlay hidden" id="goalModal">
         <div class="modal-card">
             <button class="modal-close" onclick="closeGoalModal()">×</button>
-            <h3>Create Savings Goal</h3>
-            <div class="form-group">
-                <label>Goal Name</label>
-                <input id="goalName" type="text" placeholder="e.g. Emergency Fund" />
+            <div class="modal-header">
+                <h3>Create Savings Goal</h3>
             </div>
-            <div class="form-group">
-                <label>Emoji Icon</label>
-                <input id="goalEmoji" type="text" placeholder="🎯" maxlength="2" />
-            </div>
-            <div class="form-row">
+            <div class="modal-body">
                 <div class="form-group">
-                    <label>Target Amount (₱)</label>
-                    <input id="goalTarget" type="number" min="0" placeholder="50000" />
+                    <label>Goal Name</label>
+                    <input id="goalName" type="text" placeholder="e.g. Emergency Fund" />
                 </div>
-                <div class="form-group">
-                    <label>Target Date</label>
-                    <input id="goalDate" type="date" />
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Target Amount (₱)</label>
+                        <input id="goalTarget" type="number" min="0" placeholder="50000" />
+                    </div>
+                    <div class="form-group">
+                        <label>Target Date</label>
+                        <input id="goalDate" type="date" />
+                    </div>
                 </div>
+                <button class="btn btn-primary" style="width:100%;" onclick="createGoal()">Create Goal</button>
             </div>
-            <button class="btn btn-primary" style="width:100%;" onclick="createGoal()">Create Goal</button>
         </div>
     </div>
 
@@ -186,22 +183,26 @@
     <div class="modal-overlay hidden" id="contribModal">
         <div class="modal-card">
             <button class="modal-close" onclick="closeContribModal()">×</button>
-            <h3 id="contribModalTitle">Add Contribution</h3>
-            <div class="form-group">
-                <label>Amount (₱)</label>
-                <input id="modalContribAmount" type="number" min="0" placeholder="0.00" />
+            <div class="modal-header">
+                <h3 id="contribModalTitle">Add Contribution</h3>
             </div>
-            <div class="form-row">
+            <div class="modal-body">
                 <div class="form-group">
-                    <label>Date</label>
-                    <input id="modalContribDate" type="date" />
+                    <label>Amount (₱)</label>
+                    <input id="modalContribAmount" type="number" min="0" placeholder="0.00" />
                 </div>
-                <div class="form-group">
-                    <label>Note</label>
-                    <input id="modalContribNote" type="text" placeholder="Optional" />
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input id="modalContribDate" type="date" />
+                    </div>
+                    <div class="form-group">
+                        <label>Note</label>
+                        <input id="modalContribNote" type="text" placeholder="Optional" />
+                    </div>
                 </div>
+                <button class="btn btn-primary" style="width:100%;" onclick="saveModalContrib()">Add</button>
             </div>
-            <button class="btn btn-primary" style="width:100%;" onclick="saveModalContrib()">Add</button>
         </div>
     </div>
 
@@ -229,14 +230,13 @@
 
     function createGoal() {
         const name = document.getElementById('goalName').value.trim();
-        const emoji = document.getElementById('goalEmoji').value.trim() || '🎯';
+        const emoji = '';
         const target = parseFloat(document.getElementById('goalTarget').value);
         const date = document.getElementById('goalDate').value;
         if (!name || !target || target <= 0) { alert('Please fill in goal name and target amount.'); return; }
         goals.push({ id: genId(), name, emoji, target, date });
         save(); closeGoalModal();
         document.getElementById('goalName').value = '';
-        document.getElementById('goalEmoji').value = '';
         document.getElementById('goalTarget').value = '';
         document.getElementById('goalDate').value = '';
         refresh();
@@ -265,13 +265,13 @@
             <div class="goal-card ${done ? 'goal-completed' : ''}">
                 <div class="goal-top">
                     <div>
-                        <span class="goal-emoji">${g.emoji}</span>
+                        <span class="goal-emoji">${g.emoji || ''}</span>
                         <span class="goal-name">${g.name}</span>
-                        ${done ? ' <span style="color:#16a34a;font-size:12px;font-weight:700;">✓ COMPLETE</span>' : ''}
+                        ${done ? ' <span style="color:#16a34a;font-size:12px;font-weight:700;"> COMPLETE</span>' : ''}
                     </div>
                     <div class="goal-actions">
                         <button class="btn btn-primary btn-sm" onclick="openContribModal('${g.id}', '${g.name}')">+ Add</button>
-                        <button class="btn-danger-sm" onclick="deleteGoal('${g.id}')">✕</button>
+                        <button class="btn-danger-sm" onclick="deleteGoal('${g.id}')"></button>
                     </div>
                 </div>
                 <div class="goal-amounts">
@@ -282,7 +282,7 @@
                 <div class="goal-bar-wrap"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
                 <div class="goal-footer">
                     <span class="goal-pct">${pct}%</span>
-                    ${g.date ? `<span class="goal-due">🗓 Target: ${g.date}</span>` : ''}
+                    ${g.date ? `<span class="goal-due"> Target: ${g.date}</span>` : ''}
                 </div>
             </div>`;
         }).join('');
@@ -326,7 +326,7 @@
         const sel = document.getElementById('contribGoal');
         sel.innerHTML = goals.length === 0
             ? '<option value="">No goals yet</option>'
-            : goals.map(g => `<option value="${g.id}">${g.emoji} ${g.name}</option>`).join('');
+            : goals.map(g => `<option value="${g.id}">${g.emoji || ''} ${g.name}</option>`).join('');
     }
 
     function renderContributions() {
@@ -338,12 +338,12 @@
             return `
             <div class="contrib-item">
                 <div class="contrib-left">
-                    <div class="contrib-name">${g ? `${g.emoji} ${g.name}` : 'Unknown goal'}</div>
+                    <div class="contrib-name">${g ? `${g.emoji || ''} ${g.name}` : 'Unknown goal'}</div>
                     <div class="contrib-date">${c.date}${c.note ? ' · ' + c.note : ''}</div>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;">
                     <div class="contrib-amount">+₱${Number(c.amount).toLocaleString('en-PH',{minimumFractionDigits:2})}</div>
-                    <button class="btn-danger-sm" onclick="deleteContrib('${c.id}')">✕</button>
+                    <button class="btn-danger-sm" onclick="deleteContrib('${c.id}')"></button>
                 </div>
             </div>`;
         }).join('');
