@@ -1,11 +1,25 @@
-if(!localStorage.getItem("dataResetV2")){
+﻿if(!localStorage.getItem("dataResetV2")){
     localStorage.removeItem("dailyTasks");
     localStorage.removeItem("customCategories");
     localStorage.removeItem("lastGymDay");
     localStorage.setItem("dataResetV2", "true");
 }
 
-// ── Dark Mode ──────────────────────────────────────────────
+// ── Dark Mode + Time-of-Day Theme ─────────────────────────
+function getTimePeriod() {
+    const h = new Date().getHours();
+    if (h < 5)  return 'night';
+    if (h < 8)  return 'dawn';
+    if (h < 12) return 'morning';
+    if (h < 18) return 'afternoon';
+    if (h < 21) return 'evening';
+    return 'night';
+}
+
+function applyTimePeriod() {
+    document.documentElement.setAttribute('data-time', getTimePeriod());
+}
+
 function initTheme(){
     const saved = localStorage.getItem('theme');
     if(saved){
@@ -13,6 +27,9 @@ function initTheme(){
     } else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
         document.documentElement.setAttribute('data-theme', 'dark');
     }
+    applyTimePeriod();
+    // Re-check every 60 seconds in case period changes while app is open
+    setInterval(applyTimePeriod, 60000);
 }
 initTheme();
 
@@ -684,27 +701,12 @@ function createExpensesChart(){
     if(!ctx || !Chart) return;
     const categoriesData = getExpenseCategoryData();
     new Chart(ctx, {
-        type: 'bar',
+        type: 'pie',
         data: {
             labels: categoriesData.map(item => item.label),
-            datasets: [{
-                label: 'Expenses',
-                data: categoriesData.map(item => item.value),
-                backgroundColor: ['#7c3aed', '#22c55e', '#f97316', '#3b82f6', '#ec4899', '#14b8a6'],
-                borderRadius: 8,
-                maxBarThickness: 20
-            }]
+            datasets: [{ data: categoriesData.map(item => item.value), backgroundColor: ['#7c3aed', '#22c55e', '#f97316'], borderWidth: 0 }]
         },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
-                y: { grid: { display: false } }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 }
 
