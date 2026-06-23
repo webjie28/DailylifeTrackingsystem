@@ -297,84 +297,40 @@
     /* ── Professional Dashboard Header ─────────────────────── */
     .dash-header {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: space-between;
-        padding: 32px 0 24px;
+        justify-content: center;
+        text-align: center;
+        padding: 40px 0 24px;
         border-bottom: 1px solid var(--border-color);
         margin-bottom: 32px;
-        gap: 16px;
-        flex-wrap: wrap;
-    }
-    .dash-header-left {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
+        width: 100%;
     }
     .dash-greeting {
-        font-size: 32px;
-        font-weight: 700;
+        font-size: 38px;
+        font-weight: 800;
         color: var(--text-primary);
-        margin: 0;
-        letter-spacing: -0.02em;
+        margin: 0 0 8px;
+        letter-spacing: -0.025em;
     }
     .dash-date-sub {
-        font-size: 14px;
+        font-size: 15px;
         color: var(--text-secondary);
-        font-weight: 500;
-    }
-    .dash-header-right {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-    .dash-time {
-        font-size: 26px;
         font-weight: 600;
-        color: var(--text-primary);
-        font-variant-numeric: tabular-nums;
-        letter-spacing: -0.01em;
-    }
-    .dash-period-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 14px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 600;
-        background: var(--bg-subtle);
-        border: 1px solid var(--border-color);
-        color: var(--text-secondary);
-    }
-    .dash-period-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--accent-green);
-        animation: pulse 2s ease-in-out infinite;
-        flex-shrink: 0;
-    }
-    @keyframes pulse {
-        0% { transform: scale(0.95); opacity: 0.5; }
-        50% { transform: scale(1.1); opacity: 1; }
-        100% { transform: scale(0.95); opacity: 0.5; }
+        margin: 0;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
     }
     @media (max-width: 600px) {
         .dash-header {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 24px 0 20px;
-        }
-        .dash-header-right {
-            align-items: flex-start;
-            width: 100%;
-            justify-content: space-between;
+            padding: 28px 0 20px;
+            margin-bottom: 24px;
         }
         .dash-greeting {
-            font-size: 26px;
+            font-size: 28px;
         }
-        .dash-time {
-            font-size: 22px;
+        .dash-date-sub {
+            font-size: 13px;
         }
     }
 </style>
@@ -400,19 +356,10 @@
         <main class="main-content">
             <!-- Dashboard Header -->
             <header class="dash-header animate-in" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;">
-                <div class="dash-header-left">
-                    <h1 class="dash-greeting" id="dashGreeting">Good evening, Benjie!</h1>
-                    <div class="dash-date-sub">
-                        <span id="dashDayLabel">Wednesday</span>, <span id="dashDateMain">June 24, 2026</span>
-                    </div>
-                </div>
-                <div class="dash-header-right">
-                    <span class="dash-time" id="dashClock">11:42 PM</span>
-                    <span class="dash-period-badge">
-                        <span class="dash-period-dot"></span>
-                        <span id="dashPeriodText">Evening</span>
-                    </span>
-                </div>
+                <h1 class="dash-greeting" id="dashGreeting">Good evening, Benjie!</h1>
+                <p class="dash-date-sub">
+                    <span id="dashDayLabel">Wednesday</span>, <span id="dashDateMain">June 24, 2026</span>
+                </p>
             </header>
 
             <!-- Today's Focus Card -->
@@ -444,9 +391,8 @@
                     <a href="pages/fitness.html" class="stat-pastel-card stat-pastel-blue" style="animation: slideInLeft 0.5s ease both; animation-delay: 0.3s;">
                         <div class="stat-pastel-icon-wrapper">
                             <svg viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M6 14.5c.3-1 .6-2.1.4-3.1-.2-1-.8-2-.8-2.7a1.5 1.5 0 0 1 3-.3c0 .7-.3 1.3-.5 2 .3.7.5 1.7.5 2.7 0 1.3-1 2-2.6 1.4z" />
-                                <path d="M11.5 16.5h7c.6 0 1.1-.4 1.2-.9l1.3-3.2c.2-.6-.2-1.2-.8-1.2h-4.8l-1.2-2a.8.8 0 0 0-.6-.4H12L11.2 11v5.5z" />
-                                <path d="M14.5 11.5v2.5M16.5 11.5v2.5" />
+                                <path d="M4 16v-2.38C4 11.5 5.88 9.85 6 7.07l.08-1.94c.02-.45.33-.84.77-.92.8-.14 1.46.22 1.93.94l.84 1.3c.3.45.32 1.03.07 1.5L8.75 11c-.38.7-.75 1.5-.75 2.5v2.5" />
+                                <path d="M16 16v-2.38c0-2.12-1.88-3.77-2-6.55l-.08-1.94c-.02-.45-.33-.84-.77-.92-.8-.14-1.46.22-1.93.94l-.84 1.3c-.3.45-.32 1.03-.07 1.5l.93 3.08c.38.7.75 1.5.75 2.5v2.5" />
                             </svg>
                         </div>
                         <div class="stat-pastel-info">
@@ -575,27 +521,16 @@
             return 'night';
         }
 
-        function formatClock(d) {
-            let h = d.getHours(), m = d.getMinutes();
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12 || 12;
-            return `${h}:${String(m).padStart(2,'0')} ${ampm}`;
-        }
-
         function updateDashHeader() {
             const now   = new Date();
             const day   = document.getElementById('dashDayLabel');
             const date  = document.getElementById('dashDateMain');
-            const clock = document.getElementById('dashClock');
-            const per   = document.getElementById('dashPeriodText');
             const greet = document.getElementById('dashGreeting');
 
             const period = getTimePeriodLabel(now.getHours());
 
             if (day)   day.textContent   = DAYS[now.getDay()];
             if (date)  date.textContent  = `${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
-            if (clock) clock.textContent = formatClock(now);
-            if (per)   per.textContent   = PERIODS[period];
             if (greet) greet.textContent  = GREETINGS[period];
         }
 
