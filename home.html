@@ -102,8 +102,6 @@
         text-decoration: none;
         position: relative;
         overflow: hidden;
-        backdrop-filter: blur(16px) saturate(1.4);
-        -webkit-backdrop-filter: blur(16px) saturate(1.4);
     }
     .stat-pastel-card:hover {
         transform: translateY(-3px);
@@ -120,57 +118,57 @@
         opacity: 0.7;
     }
 
-    /* Pastel glass colors for light and dark themes */
+    /* Solid Pastel colors for light and dark themes */
     .stat-pastel-green {
-        background: rgba(220, 252, 231, 0.65) !important;
-        border: 1px solid rgba(220, 252, 231, 0.4) !important;
+        background: #dcfce7 !important;
+        border: 1px solid #bbf7d0 !important;
         color: #14532d !important;
-        box-shadow: 0 4px 20px rgba(22, 101, 52, 0.08);
+        box-shadow: 0 4px 20px rgba(22, 101, 52, 0.04);
     }
     [data-theme="dark"] .stat-pastel-green {
-        background: rgba(34, 197, 94, 0.12) !important;
-        border: 1px solid rgba(34, 197, 94, 0.25) !important;
-        color: #4ade80 !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        background: #14532d !important;
+        border: 1px solid #166534 !important;
+        color: #dcfce7 !important;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
     }
 
     .stat-pastel-blue {
-        background: rgba(224, 242, 254, 0.65) !important;
-        border: 1px solid rgba(224, 242, 254, 0.4) !important;
+        background: #e0f2fe !important;
+        border: 1px solid #bae6fd !important;
         color: #0c4a6e !important;
-        box-shadow: 0 4px 20px rgba(3, 105, 161, 0.08);
+        box-shadow: 0 4px 20px rgba(3, 105, 161, 0.04);
     }
     [data-theme="dark"] .stat-pastel-blue {
-        background: rgba(56, 189, 248, 0.12) !important;
-        border: 1px solid rgba(56, 189, 248, 0.25) !important;
-        color: #38bdf8 !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        background: #0c4a6e !important;
+        border: 1px solid #0369a1 !important;
+        color: #e0f2fe !important;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
     }
 
     .stat-pastel-yellow {
-        background: rgba(254, 249, 195, 0.65) !important;
-        border: 1px solid rgba(254, 249, 195, 0.4) !important;
+        background: #fef9c3 !important;
+        border: 1px solid #fef08a !important;
         color: #713f12 !important;
-        box-shadow: 0 4px 20px rgba(133, 77, 14, 0.08);
+        box-shadow: 0 4px 20px rgba(133, 77, 14, 0.04);
     }
     [data-theme="dark"] .stat-pastel-yellow {
-        background: rgba(251, 191, 36, 0.12) !important;
-        border: 1px solid rgba(251, 191, 36, 0.25) !important;
-        color: #fbbf24 !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        background: #713f12 !important;
+        border: 1px solid #854d0e !important;
+        color: #fef9c3 !important;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
     }
 
     .stat-pastel-purple {
-        background: rgba(243, 232, 255, 0.65) !important;
-        border: 1px solid rgba(243, 232, 255, 0.4) !important;
+        background: #f3e8ff !important;
+        border: 1px solid #e9d5ff !important;
         color: #581c87 !important;
-        box-shadow: 0 4px 20px rgba(107, 33, 168, 0.08);
+        box-shadow: 0 4px 20px rgba(107, 33, 168, 0.04);
     }
     [data-theme="dark"] .stat-pastel-purple {
-        background: rgba(167, 139, 250, 0.12) !important;
-        border: 1px solid rgba(167, 139, 250, 0.25) !important;
-        color: #c084fc !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+        background: #581c87 !important;
+        border: 1px solid #6b21a8 !important;
+        color: #f3e8ff !important;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
     }
 
     .stat-pastel-icon-wrapper {
@@ -179,38 +177,17 @@
         align-items: center;
     }
 
-    /* Glassmorphism base — reusable */
-    .glass {
-        background: rgba(255, 255, 255, 0.18);
-        backdrop-filter: blur(16px) saturate(1.4);
-        -webkit-backdrop-filter: blur(16px) saturate(1.4);
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        box-shadow: 0 4px 24px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.4);
-    }
-    [data-theme="dark"] .glass {
-        background: rgba(255, 255, 255, 0.06);
-        border: 1px solid rgba(255, 255, 255, 0.09);
-        box-shadow: 0 4px 24px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.07);
-    }
-
-    /* Tabbed Chart — glass */
+    /* Tabbed Chart Styling — Solid theme colors */
     .chart-card-tabbed {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
         border-radius: 20px;
         padding: 24px;
+        box-shadow: var(--shadow-md);
         display: flex;
         flex-direction: column;
         gap: 20px;
         width: 100%;
-        background: rgba(255, 255, 255, 0.18);
-        backdrop-filter: blur(16px) saturate(1.4);
-        -webkit-backdrop-filter: blur(16px) saturate(1.4);
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        box-shadow: 0 4px 24px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.4);
-    }
-    [data-theme="dark"] .chart-card-tabbed {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
     }
 
     .chart-tab-header {
@@ -219,11 +196,8 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 12px;
-        border-bottom: 1px solid rgba(255,255,255,0.2);
+        border-bottom: 1px solid var(--border-color);
         padding-bottom: 16px;
-    }
-    [data-theme="dark"] .chart-tab-header {
-        border-bottom-color: rgba(255,255,255,0.08);
     }
     .chart-tab-header h3 {
         font-size: 18px;
@@ -233,12 +207,9 @@
     .chart-tabs {
         display: flex;
         gap: 4px;
-        background: rgba(0,0,0,0.06);
+        background: var(--bg-subtle);
         padding: 4px;
         border-radius: 12px;
-    }
-    [data-theme="dark"] .chart-tabs {
-        background: rgba(255,255,255,0.06);
     }
     .chart-tab-btn {
         background: transparent;
@@ -253,58 +224,43 @@
     }
     .chart-tab-btn:hover { color: var(--text-primary); }
     .chart-tab-btn.active {
-        background: rgba(255,255,255,0.5);
+        background: var(--card-bg);
         color: var(--text-primary);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-    [data-theme="dark"] .chart-tab-btn.active {
-        background: rgba(255,255,255,0.12);
+        box-shadow: var(--shadow-sm);
     }
     .chart-wrapper { position: relative; height: 320px; width: 100%; }
     .chart-wrapper.hidden { display: none !important; }
 
-    /* Action buttons — glass */
+    /* Action buttons — Solid theme styling */
     .actions-minimal-row { display: flex; gap: 12px; margin-bottom: 32px; }
     .action-minimal-btn {
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 12px 24px;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
         border-radius: 12px;
         color: var(--text-primary);
         font-size: 14px;
         font-weight: 600;
         text-decoration: none;
         transition: all 0.2s ease;
-        background: rgba(255, 255, 255, 0.22);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.32);
-    }
-    [data-theme="dark"] .action-minimal-btn {
-        background: rgba(255, 255, 255, 0.07);
-        border-color: rgba(255, 255, 255, 0.1);
     }
     .action-minimal-btn:hover {
-        background: rgba(255, 255, 255, 0.38);
+        background: var(--bg-hover);
+        border-color: var(--accent-purple);
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
     }
 
-    /* Focus Card — glass */
+    /* Focus Card — Solid theme styling */
     .focus-minimal-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
         border-radius: 20px;
         padding: 24px;
+        box-shadow: var(--shadow-sm);
         margin-bottom: 24px;
-        background: rgba(255, 255, 255, 0.18);
-        backdrop-filter: blur(16px) saturate(1.4);
-        -webkit-backdrop-filter: blur(16px) saturate(1.4);
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        box-shadow: 0 4px 24px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.4);
-    }
-    [data-theme="dark"] .focus-minimal-card {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .focus-minimal-card .focus-header {
         display: flex;
@@ -322,9 +278,9 @@
     .focus-minimal-input {
         width: 100%;
         padding: 12px 16px;
-        border: 1px solid rgba(255,255,255,0.3);
+        border: 1px solid var(--border-color);
         border-radius: 12px;
-        background: rgba(255,255,255,0.2);
+        background: var(--bg-subtle);
         color: var(--text-primary);
         font-family: inherit;
         font-size: 14px;
@@ -332,186 +288,94 @@
         outline: none;
         transition: border-color 0.2s, box-shadow 0.2s;
     }
-    [data-theme="dark"] .focus-minimal-input {
-        background: rgba(255,255,255,0.06);
-        border-color: rgba(255,255,255,0.1);
-    }
     .focus-minimal-input:focus {
-        border-color: rgba(255,255,255,0.6);
-        box-shadow: 0 0 0 3px rgba(255,255,255,0.12);
-    }
-
-    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
-
-    /* ── Main content — time-of-day gradient background ─────── */
-    .main-content {
-        transition: background 1.2s cubic-bezier(0.4,0,0.2,1);
-    }
-
-    /* Night */
-    [data-time="night"] .main-content {
-        background: linear-gradient(160deg, #0f0c29 0%, #1a1040 45%, #24243e 100%);
-    }
-    /* Dawn */
-    [data-time="dawn"] .main-content {
-        background: linear-gradient(160deg, #1a0533 0%, #6b2fa0 45%, #c44a08 100%);
-    }
-    /* Morning */
-    [data-time="morning"] .main-content {
-        background: linear-gradient(160deg, #7dd3fc 0%, #e0f2fe 45%, #fde68a 100%);
-    }
-    /* Afternoon */
-    [data-time="afternoon"] .main-content {
-        background: linear-gradient(160deg, #fde68a 0%, #fef9c3 45%, #fed7aa 100%);
-    }
-    /* Evening */
-    [data-time="evening"] .main-content {
-        background: linear-gradient(160deg, #fbcfe8 0%, #fce7f3 45%, #fed7aa 100%);
-    }
-
-    /* Dark mode variants */
-    [data-time="night"][data-theme="dark"] .main-content {
-        background: linear-gradient(160deg, #060810 0%, #0a0d1e 45%, #0e1228 100%);
-    }
-    [data-time="dawn"][data-theme="dark"] .main-content {
-        background: linear-gradient(160deg, #100400 0%, #1c0c06 45%, #2a1008 100%);
-    }
-    [data-time="morning"][data-theme="dark"] .main-content {
-        background: linear-gradient(160deg, #010d18 0%, #031828 45%, #051e30 100%);
-    }
-    [data-time="afternoon"][data-theme="dark"] .main-content {
-        background: linear-gradient(160deg, #0c0800 0%, #161000 45%, #1e1600 100%);
-    }
-    [data-time="evening"][data-theme="dark"] .main-content {
-        background: linear-gradient(160deg, #100208 0%, #160410 45%, #200818 100%);
+        border-color: var(--accent-purple);
+        box-shadow: 0 0 0 3px var(--accent-purple-light);
+        background: var(--card-bg);
     }
 
     /* ── Professional Dashboard Header ─────────────────────── */
     .dash-header {
         display: flex;
-        align-items: flex-end;
+        align-items: center;
         justify-content: space-between;
-        padding: 40px 0 28px;
-        border-bottom: 1px solid rgba(255,255,255,0.2);
+        padding: 32px 0 24px;
+        border-bottom: 1px solid var(--border-color);
         margin-bottom: 32px;
         gap: 16px;
         flex-wrap: wrap;
     }
-    [data-theme="dark"] .dash-header {
-        border-bottom-color: rgba(255,255,255,0.08);
+    .dash-header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
     }
-    .dash-header-left { display: flex; flex-direction: column; gap: 2px; }
-    .dash-header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-
-    /* ── Header date — synced to time period ───────────────── */
-    .dash-date-label {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 15px;
-        letter-spacing: 0.22em;
-        text-transform: uppercase;
-        line-height: 1;
+    .dash-greeting {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        letter-spacing: -0.02em;
     }
-    .dash-date-main {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 58px;
-        letter-spacing: 0.04em;
-        line-height: 0.95;
-        text-transform: uppercase;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+    .dash-date-sub {
+        font-size: 14px;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+    .dash-header-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
     }
     .dash-time {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 52px;
-        letter-spacing: 0.06em;
-        line-height: 0.95;
+        font-size: 26px;
+        font-weight: 600;
+        color: var(--text-primary);
         font-variant-numeric: tabular-nums;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        letter-spacing: -0.01em;
     }
-
-    /* Night — silver-blue date / deep navy time */
-    [data-time="night"] .dash-date-label { color: #8899cc; }
-    [data-time="night"] .dash-date-main  { background: linear-gradient(160deg, #b8cce8 0%, #d0e0f5 60%, #b8cce8 100%); }
-    [data-time="night"] .dash-time       { background: linear-gradient(160deg, #1e2a5a 0%, #2d3f80 55%, #1a2450 100%); }
-
-    [data-time="night"][data-theme="dark"] .dash-date-label { color: #6677aa; }
-    [data-time="night"][data-theme="dark"] .dash-date-main  { background: linear-gradient(160deg, #8899cc 0%, #a0b4e0 55%, #8899cc 100%); }
-    [data-time="night"][data-theme="dark"] .dash-time       { background: linear-gradient(160deg, #c8d8f0 0%, #dce8ff 55%, #c0d0ec 100%); }
-
-    /* Dawn — rose-gold date / deep burgundy time */
-    [data-time="dawn"] .dash-date-label { color: #f0a070; }
-    [data-time="dawn"] .dash-date-main  { background: linear-gradient(160deg, #ffd8b8 0%, #ffe8d0 60%, #ffd0a8 100%); }
-    [data-time="dawn"] .dash-time       { background: linear-gradient(160deg, #6a1a40 0%, #8a2050 55%, #601530 100%); }
-
-    [data-time="dawn"][data-theme="dark"] .dash-date-label { color: #c07040; }
-    [data-time="dawn"][data-theme="dark"] .dash-date-main  { background: linear-gradient(160deg, #c07040 0%, #d88050 55%, #b86030 100%); }
-    [data-time="dawn"][data-theme="dark"] .dash-time       { background: linear-gradient(160deg, #ffd8b8 0%, #ffe8d0 55%, #ffc8a0 100%); }
-
-    /* Morning — sky blue date / deep ocean time */
-    [data-time="morning"] .dash-date-label { color: #0369a1; }
-    [data-time="morning"] .dash-date-main  { background: linear-gradient(160deg, #082040 0%, #103060 60%, #082040 100%); }
-    [data-time="morning"] .dash-time       { background: linear-gradient(160deg, #0ea5e9 0%, #38bdf8 55%, #0284c7 100%); }
-
-    [data-time="morning"][data-theme="dark"] .dash-date-label { color: #38bdf8; }
-    [data-time="morning"][data-theme="dark"] .dash-date-main  { background: linear-gradient(160deg, #b8e4ff 0%, #d0eeff 55%, #a8d8f8 100%); }
-    [data-time="morning"][data-theme="dark"] .dash-time       { background: linear-gradient(160deg, #0a2a40 0%, #082030 55%, #041820 100%); }
-
-    /* Afternoon — golden amber date / deep brown time */
-    [data-time="afternoon"] .dash-date-label { color: #92400e; }
-    [data-time="afternoon"] .dash-date-main  { background: linear-gradient(160deg, #1c1200 0%, #3a2400 60%, #1c1200 100%); }
-    [data-time="afternoon"] .dash-time       { background: linear-gradient(160deg, #d97706 0%, #f59e0b 55%, #b45309 100%); }
-
-    [data-time="afternoon"][data-theme="dark"] .dash-date-label { color: #fbbf24; }
-    [data-time="afternoon"][data-theme="dark"] .dash-date-main  { background: linear-gradient(160deg, #f5e0a0 0%, #ffe8b0 55%, #e8cc80 100%); }
-    [data-time="afternoon"][data-theme="dark"] .dash-time       { background: linear-gradient(160deg, #301c00 0%, #4a2a00 55%, #281400 100%); }
-
-    /* Evening — dusty pink-mauve date / deep wine time */
-    [data-time="evening"] .dash-date-label { color: #9d174d; }
-    [data-time="evening"] .dash-date-main  { background: linear-gradient(160deg, #2d0a1e 0%, #4a1030 60%, #2d0a1e 100%); }
-    [data-time="evening"] .dash-time       { background: linear-gradient(160deg, #be185d 0%, #db2777 55%, #9d174d 100%); }
-
-    [data-time="evening"][data-theme="dark"] .dash-date-label { color: #f472b6; }
-    [data-time="evening"][data-theme="dark"] .dash-date-main  { background: linear-gradient(160deg, #f0c0dc 0%, #ffd8ee 55%, #e8a8cc 100%); }
-    [data-time="evening"][data-theme="dark"] .dash-time       { background: linear-gradient(160deg, #2a0418 0%, #3c0826 55%, #200210 100%); }
-
-    /* Period badge — glass style */
     .dash-period-badge {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 5px 14px;
+        padding: 6px 14px;
         border-radius: 999px;
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 13px;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        background: rgba(255,255,255,0.2);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(255,255,255,0.35);
-        color: rgba(0,0,0,0.55);
-    }
-    [data-theme="dark"] .dash-period-badge {
-        background: rgba(255,255,255,0.08);
-        border-color: rgba(255,255,255,0.15);
-        color: rgba(255,255,255,0.6);
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
     }
     .dash-period-dot {
-        width: 6px; height: 6px;
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        background: currentColor;
-        animation: pulse 2.5s ease-in-out infinite;
+        background: var(--accent-green);
+        animation: pulse 2s ease-in-out infinite;
         flex-shrink: 0;
     }
-
+    @keyframes pulse {
+        0% { transform: scale(0.95); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(0.95); opacity: 0.5; }
+    }
     @media (max-width: 600px) {
-        .dash-header { flex-direction: column; align-items: flex-start; padding: 28px 0 20px; }
-        .dash-header-right { align-items: flex-start; }
-        .dash-date-main { font-size: 44px; }
-        .dash-time { font-size: 38px; }
+        .dash-header {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 24px 0 20px;
+        }
+        .dash-header-right {
+            align-items: flex-start;
+            width: 100%;
+            justify-content: space-between;
+        }
+        .dash-greeting {
+            font-size: 26px;
+        }
+        .dash-time {
+            font-size: 22px;
+        }
     }
 </style>
 </head>
@@ -537,8 +401,10 @@
             <!-- Dashboard Header -->
             <header class="dash-header animate-in" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;">
                 <div class="dash-header-left">
-                    <span class="dash-date-label" id="dashDayLabel">Wednesday</span>
-                    <h1 class="dash-date-main" id="dashDateMain">June 24, 2026</h1>
+                    <h1 class="dash-greeting" id="dashGreeting">Good evening, Benjie!</h1>
+                    <div class="dash-date-sub">
+                        <span id="dashDayLabel">Wednesday</span>, <span id="dashDateMain">June 24, 2026</span>
+                    </div>
                 </div>
                 <div class="dash-header-right">
                     <span class="dash-time" id="dashClock">11:42 PM</span>
@@ -696,6 +562,13 @@
             afternoon: 'Afternoon',
             evening:   'Evening',
         };
+        const GREETINGS = {
+            night:     'Good night, Benjie! 🌙',
+            dawn:      'Good morning, Benjie! 🌅',
+            morning:   'Good morning, Benjie! ☀️',
+            afternoon: 'Good afternoon, Benjie! 🌤️',
+            evening:   'Good evening, Benjie! 🌅',
+        };
 
         function getTimePeriodLabel(h) {
             if (h < 5)  return 'night';
@@ -719,11 +592,15 @@
             const date  = document.getElementById('dashDateMain');
             const clock = document.getElementById('dashClock');
             const per   = document.getElementById('dashPeriodText');
+            const greet = document.getElementById('dashGreeting');
+
+            const period = getTimePeriodLabel(now.getHours());
 
             if (day)   day.textContent   = DAYS[now.getDay()];
             if (date)  date.textContent  = `${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
             if (clock) clock.textContent = formatClock(now);
-            if (per)   per.textContent   = PERIODS[getTimePeriodLabel(now.getHours())];
+            if (per)   per.textContent   = PERIODS[period];
+            if (greet) greet.textContent  = GREETINGS[period];
         }
 
         updateDashHeader();
