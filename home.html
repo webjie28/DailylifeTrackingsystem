@@ -6,7 +6,7 @@
 <title>Daily Life Tracking System — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <style>
     /* Splash Screen Overlay */
@@ -84,7 +84,7 @@
         100% { width: 100%; }
     }
 
-    /* Clean Pastel Stats styling inspired by NeuroNest */
+    /* ── Stat Cards: Glassmorphism ─────────────────────────── */
     .stats-pastel-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -92,98 +92,58 @@
         margin-bottom: 24px;
     }
     .stat-pastel-card {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         border-radius: 24px;
         padding: 24px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         height: 172px;
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
         text-decoration: none;
         position: relative;
         overflow: hidden;
+        background: var(--glass-bg, rgba(255,255,255,0.15)) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border: 1px solid var(--glass-border, rgba(255,255,255,0.2)) !important;
+        color: var(--time-text, var(--text-primary)) !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.08);
     }
     .stat-pastel-card:hover {
-        transform: translateY(-3px);
+        transform: translateY(-4px);
+        background: var(--glass-hover, rgba(255,255,255,0.22)) !important;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.12);
     }
     .stat-pastel-value {
-        font-size: 30px;
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 32px;
         font-weight: 800;
         line-height: 1.1;
         margin-bottom: 4px;
+        color: var(--time-text, var(--text-primary));
     }
     .stat-pastel-label {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 13px;
         font-weight: 600;
-        opacity: 0.7;
+        color: var(--time-text-muted, var(--text-secondary));
     }
-
-    /* Solid Pastel colors for light and dark themes */
-    .stat-pastel-green {
-        background: #dcfce7 !important;
-        border: 1px solid #bbf7d0 !important;
-        color: #14532d !important;
-        box-shadow: 0 4px 20px rgba(22, 101, 52, 0.04);
-    }
-    [data-theme="dark"] .stat-pastel-green {
-        background: #14532d !important;
-        border: 1px solid #166534 !important;
-        color: #dcfce7 !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
-    }
-
-    .stat-pastel-blue {
-        background: #e0f2fe !important;
-        border: 1px solid #bae6fd !important;
-        color: #0c4a6e !important;
-        box-shadow: 0 4px 20px rgba(3, 105, 161, 0.04);
-    }
-    [data-theme="dark"] .stat-pastel-blue {
-        background: #0c4a6e !important;
-        border: 1px solid #0369a1 !important;
-        color: #e0f2fe !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
-    }
-
-    .stat-pastel-yellow {
-        background: #fef9c3 !important;
-        border: 1px solid #fef08a !important;
-        color: #713f12 !important;
-        box-shadow: 0 4px 20px rgba(133, 77, 14, 0.04);
-    }
-    [data-theme="dark"] .stat-pastel-yellow {
-        background: #713f12 !important;
-        border: 1px solid #854d0e !important;
-        color: #fef9c3 !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
-    }
-
-    .stat-pastel-purple {
-        background: #f3e8ff !important;
-        border: 1px solid #e9d5ff !important;
-        color: #581c87 !important;
-        box-shadow: 0 4px 20px rgba(107, 33, 168, 0.04);
-    }
-    [data-theme="dark"] .stat-pastel-purple {
-        background: #581c87 !important;
-        border: 1px solid #6b21a8 !important;
-        color: #f3e8ff !important;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
-    }
-
     .stat-pastel-icon-wrapper {
         margin-bottom: 8px;
         display: flex;
         align-items: center;
     }
 
-    /* Tabbed Chart Styling — Solid theme colors */
+    /* ── Tabbed Chart Card: Glassmorphism ──────────────────── */
     .chart-card-tabbed {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
+        background: var(--glass-bg, rgba(255,255,255,0.18)) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border: 1px solid var(--glass-border, rgba(255,255,255,0.2)) !important;
         border-radius: 20px;
         padding: 24px;
-        box-shadow: var(--shadow-md);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.08);
         display: flex;
         flex-direction: column;
         gap: 20px;
@@ -196,70 +156,77 @@
         align-items: center;
         flex-wrap: wrap;
         gap: 12px;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.15));
         padding-bottom: 16px;
     }
     .chart-tab-header h3 {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 18px;
         font-weight: 700;
-        color: var(--text-primary);
+        color: var(--time-text, var(--text-primary));
     }
     .chart-tabs {
         display: flex;
         gap: 4px;
-        background: var(--bg-subtle);
+        background: var(--glass-bg, rgba(255,255,255,0.1));
         padding: 4px;
         border-radius: 12px;
     }
     .chart-tab-btn {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         background: transparent;
         border: none;
         padding: 6px 12px;
         font-size: 13px;
         font-weight: 600;
-        color: var(--text-secondary);
+        color: var(--time-text-muted, var(--text-secondary));
         cursor: pointer;
         border-radius: 8px;
         transition: all 0.2s ease;
     }
-    .chart-tab-btn:hover { color: var(--text-primary); }
+    .chart-tab-btn:hover { color: var(--time-text, var(--text-primary)); }
     .chart-tab-btn.active {
-        background: var(--card-bg);
-        color: var(--text-primary);
-        box-shadow: var(--shadow-sm);
+        background: var(--glass-hover, rgba(255,255,255,0.2));
+        color: var(--time-text, var(--text-primary));
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
     .chart-wrapper { position: relative; height: 320px; width: 100%; }
     .chart-wrapper.hidden { display: none !important; }
 
-    /* Action buttons — Solid theme styling */
+    /* ── Action Buttons: Glassmorphism ─────────────────────── */
     .actions-minimal-row { display: flex; gap: 12px; margin-bottom: 32px; }
     .action-minimal-btn {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 12px 24px;
-        background: var(--bg-subtle);
-        border: 1px solid var(--border-color);
+        background: var(--glass-bg, rgba(255,255,255,0.15)) !important;
+        backdrop-filter: blur(16px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+        border: 1px solid var(--glass-border, rgba(255,255,255,0.2)) !important;
         border-radius: 12px;
-        color: var(--text-primary);
+        color: var(--time-text, var(--text-primary)) !important;
         font-size: 14px;
         font-weight: 600;
         text-decoration: none;
-        transition: all 0.2s ease;
+        transition: all 0.25s ease;
     }
     .action-minimal-btn:hover {
-        background: var(--bg-hover);
-        border-color: var(--accent-purple);
+        background: var(--glass-hover, rgba(255,255,255,0.25)) !important;
         transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
     }
 
-    /* Focus Card — Solid theme styling */
+    /* ── Focus Card: Glassmorphism ─────────────────────────── */
     .focus-minimal-card {
-        background: var(--card-bg);
-        border: 1px solid var(--card-border);
+        background: var(--glass-bg, rgba(255,255,255,0.15)) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border: 1px solid var(--glass-border, rgba(255,255,255,0.2)) !important;
         border-radius: 20px;
         padding: 24px;
-        box-shadow: var(--shadow-sm);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.08);
         margin-bottom: 24px;
     }
     .focus-minimal-card .focus-header {
@@ -269,69 +236,185 @@
         margin-bottom: 12px;
     }
     .focus-minimal-card h3 {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         font-size: 14px;
         font-weight: 700;
-        color: var(--text-secondary);
+        color: var(--time-text-muted, var(--text-secondary));
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
     .focus-minimal-input {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
         width: 100%;
         padding: 12px 16px;
-        border: 1px solid var(--border-color);
+        border: 1px solid var(--glass-border, rgba(255,255,255,0.2));
         border-radius: 12px;
-        background: var(--bg-subtle);
-        color: var(--text-primary);
-        font-family: inherit;
+        background: var(--glass-bg, rgba(255,255,255,0.1));
+        color: var(--time-text, var(--text-primary));
         font-size: 14px;
         font-weight: 500;
         outline: none;
-        transition: border-color 0.2s, box-shadow 0.2s;
+        transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .focus-minimal-input::placeholder {
+        color: var(--time-text-muted, var(--text-secondary));
+        opacity: 0.7;
     }
     .focus-minimal-input:focus {
-        border-color: var(--accent-purple);
-        box-shadow: 0 0 0 3px var(--accent-purple-light);
-        background: var(--card-bg);
+        border-color: var(--time-accent, var(--accent-purple));
+        box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
+        background: var(--glass-hover, rgba(255,255,255,0.2));
     }
 
-    /* ── Professional Dashboard Header ─────────────────────── */
+    /* ── Dashboard Header: Split Layout with Clock ─────────── */
     .dash-header {
         display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 40px 0 24px;
-        border-bottom: 1px solid var(--border-color);
+        justify-content: space-between;
+        align-items: flex-end;
+        padding: 40px 0 28px;
+        border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.15));
         margin-bottom: 32px;
         width: 100%;
     }
-    .dash-greeting {
-        font-size: 38px;
-        font-weight: 800;
-        color: var(--text-primary);
-        margin: 0 0 8px;
-        letter-spacing: -0.025em;
+    .dash-header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
     }
-    .dash-date-sub {
-        font-size: 15px;
-        color: var(--text-secondary);
-        font-weight: 600;
-        margin: 0;
-        letter-spacing: 0.08em;
+    .dash-day-label {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
+        color: var(--time-accent, var(--accent-purple));
+    }
+    .dash-date-main {
+        font-family: 'Playfair Display', Georgia, serif !important;
+        font-style: italic;
+        font-size: 38px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        color: var(--time-text, var(--text-primary));
+        line-height: 1.15;
+    }
+    .dash-header-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+    }
+    .dash-clock {
+        font-family: 'Playfair Display', Georgia, serif !important;
+        font-size: 36px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+        color: var(--time-accent, var(--accent-purple));
+        line-height: 1.15;
+    }
+    .dash-period-badge {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 14px;
+        border-radius: 999px;
+        background: var(--badge-bg, rgba(255,255,255,0.15));
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--badge-text, var(--text-secondary));
+    }
+    .dash-period-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--badge-dot, var(--accent-purple));
+        animation: pulseDot 2s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.85); }
     }
     @media (max-width: 600px) {
         .dash-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
             padding: 28px 0 20px;
             margin-bottom: 24px;
         }
-        .dash-greeting {
-            font-size: 28px;
-        }
-        .dash-date-sub {
-            font-size: 13px;
-        }
+        .dash-header-right { align-items: flex-start; }
+        .dash-date-main { font-size: 28px; }
+        .dash-clock { font-size: 26px; }
+    }
+
+    /* ── Time-Period Gradients (main-content only) ─────────── */
+    .main-content[data-time] {
+        background-attachment: fixed;
+        transition: background 0.8s ease;
+        min-height: 100vh;
+    }
+    .main-content[data-time="night"] {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #1a1a2e 100%);
+        --time-text: #cbd5e1;
+        --time-text-muted: #94a3b8;
+        --time-accent: #a5b4fc;
+        --glass-bg: rgba(255,255,255,0.06);
+        --glass-border: rgba(255,255,255,0.10);
+        --glass-hover: rgba(255,255,255,0.10);
+        --badge-bg: rgba(255,255,255,0.08);
+        --badge-text: #c7d2fe;
+        --badge-dot: #a5b4fc;
+    }
+    .main-content[data-time="dawn"] {
+        background: linear-gradient(135deg, #ede9fe 0%, #fce7f3 35%, #fff1e6 70%, #fef9c3 100%);
+        --time-text: #3b0764;
+        --time-text-muted: #6b21a8;
+        --time-accent: #9333ea;
+        --glass-bg: rgba(255,255,255,0.50);
+        --glass-border: rgba(255,255,255,0.65);
+        --glass-hover: rgba(255,255,255,0.60);
+        --badge-bg: rgba(255,255,255,0.55);
+        --badge-text: #7e22ce;
+        --badge-dot: #c084fc;
+    }
+    .main-content[data-time="morning"] {
+        background: linear-gradient(135deg, #dbeafe 0%, #e8f4fe 35%, #fefce8 70%, #fef9c3 100%);
+        --time-text: #1e3a5f;
+        --time-text-muted: #1e6091;
+        --time-accent: #0369a1;
+        --glass-bg: rgba(255,255,255,0.50);
+        --glass-border: rgba(255,255,255,0.65);
+        --glass-hover: rgba(255,255,255,0.60);
+        --badge-bg: rgba(255,255,255,0.55);
+        --badge-text: #0c4a6e;
+        --badge-dot: #38bdf8;
+    }
+    .main-content[data-time="afternoon"] {
+        background: linear-gradient(135deg, #fef9c3 0%, #fefce8 40%, #fffef5 70%, #fef8ee 100%);
+        --time-text: #422006;
+        --time-text-muted: #713f12;
+        --time-accent: #a16207;
+        --glass-bg: rgba(255,255,255,0.55);
+        --glass-border: rgba(255,255,255,0.70);
+        --glass-hover: rgba(255,255,255,0.65);
+        --badge-bg: rgba(255,255,255,0.55);
+        --badge-text: #854d0e;
+        --badge-dot: #eab308;
+    }
+    .main-content[data-time="evening"] {
+        background: linear-gradient(135deg, #fce7f3 0%, #fde8d8 50%, #fef3c7 100%);
+        --time-text: #4a0d2b;
+        --time-text-muted: #831843;
+        --time-accent: #be185d;
+        --glass-bg: rgba(255,255,255,0.45);
+        --glass-border: rgba(255,255,255,0.60);
+        --glass-hover: rgba(255,255,255,0.55);
+        --badge-bg: rgba(255,255,255,0.50);
+        --badge-text: #9d174d;
+        --badge-dot: #f472b6;
     }
 </style>
 </head>
@@ -356,10 +439,17 @@
         <main class="main-content">
             <!-- Dashboard Header -->
             <header class="dash-header animate-in" style="animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;">
-                <h1 class="dash-greeting" id="dashGreeting">Good evening, Benjie!</h1>
-                <p class="dash-date-sub">
-                    <span id="dashDayLabel">Wednesday</span>, <span id="dashDateMain">June 24, 2026</span>
-                </p>
+                <div class="dash-header-left">
+                    <span class="dash-day-label" id="dashDayLabel">WEDNESDAY</span>
+                    <span class="dash-date-main" id="dashDateMain">June 24, 2026</span>
+                </div>
+                <div class="dash-header-right">
+                    <span class="dash-clock" id="dashClock">6:38 AM</span>
+                    <span class="dash-period-badge">
+                        <span class="dash-period-dot"></span>
+                        <span id="dashPeriodLabel">MORNING</span>
+                    </span>
+                </div>
             </header>
 
             <!-- Today's Focus Card -->
@@ -372,7 +462,7 @@
                 </article>
             </section>
 
-            <!-- Quick Stats Section (Pastel Colored Cards) -->
+            <!-- Quick Stats Section (Glassmorphism Cards) -->
             <section class="animate-in">
                 <div class="stats-pastel-grid">
                     <a href="pages/fitness.html" class="stat-pastel-card stat-pastel-green" style="animation: slideInLeft 0.5s ease both; animation-delay: 0.2s;">
@@ -465,25 +555,18 @@
             }, 2000);
         }
 
-        // ── Dashboard Header Clock ────────────────────────────
+        // ── Dashboard Header Clock & Time-Based Theme ─────────
         const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
         const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-        const PERIODS = {
+        const PERIOD_LABELS = {
             night:     'Late Night',
             dawn:      'Dawn',
             morning:   'Morning',
             afternoon: 'Afternoon',
             evening:   'Evening',
         };
-        const GREETINGS = {
-            night:     'Good night, Benjie!',
-            dawn:      'Good morning, Benjie!',
-            morning:   'Good morning, Benjie!',
-            afternoon: 'Good afternoon, Benjie!',
-            evening:   'Good evening, Benjie!',
-        };
 
-        function getTimePeriodLabel(h) {
+        function getTimePeriod(h) {
             if (h < 5)  return 'night';
             if (h < 8)  return 'dawn';
             if (h < 12) return 'morning';
@@ -492,21 +575,44 @@
             return 'night';
         }
 
-        function updateDashHeader() {
-            const now   = new Date();
-            const day   = document.getElementById('dashDayLabel');
-            const date  = document.getElementById('dashDateMain');
-            const greet = document.getElementById('dashGreeting');
-
-            const period = getTimePeriodLabel(now.getHours());
-
-            if (day)   day.textContent   = DAYS[now.getDay()];
-            if (date)  date.textContent  = `${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
-            if (greet) greet.textContent  = GREETINGS[period];
+        function formatTime(date) {
+            let h = date.getHours();
+            const m = date.getMinutes().toString().padStart(2, '0');
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            return `${h}:${m} ${ampm}`;
         }
 
-        updateDashHeader();
-        setInterval(updateDashHeader, 30000);
+        function updateDashboard() {
+            const now    = new Date();
+            const period = getTimePeriod(now.getHours());
+
+            // Set time palette on <html> for global CSS vars (sidebar, text colors, etc.)
+            document.documentElement.setAttribute('data-time', period);
+
+            // Set time-based gradient on main content only
+            const main = document.querySelector('.main-content');
+            if (main) main.setAttribute('data-time', period);
+
+            // Update day label
+            const dayEl = document.getElementById('dashDayLabel');
+            if (dayEl) dayEl.textContent = DAYS[now.getDay()];
+
+            // Update date
+            const dateEl = document.getElementById('dashDateMain');
+            if (dateEl) dateEl.textContent = `${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+
+            // Update clock
+            const clockEl = document.getElementById('dashClock');
+            if (clockEl) clockEl.textContent = formatTime(now);
+
+            // Update period badge
+            const periodEl = document.getElementById('dashPeriodLabel');
+            if (periodEl) periodEl.textContent = PERIOD_LABELS[period];
+        }
+
+        updateDashboard();
+        setInterval(updateDashboard, 1000);
         // ─────────────────────────────────────────────────────
 
         // Today's Focus persistence
