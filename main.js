@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const { app, BrowserWindow } = require('electron');
+app.disableHardwareAcceleration();
 const { PythonShell } = require('python-shell');
 
 const defaultCachePath = path.join(app.getPath('userData'), 'Cache');
