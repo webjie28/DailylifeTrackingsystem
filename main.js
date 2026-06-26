@@ -14,7 +14,7 @@ function runPythonProcess(data) {
     let options = {
         mode: 'json',
         pythonPath: 'python', // siguraduhing nasa PATH mo ang python
-        scriptPath: './',
+        scriptPath: path.join(__dirname, 'src'),
     };
 
     let pyshell = new PythonShell('processor.py', options);
@@ -89,7 +89,10 @@ const { ipcMain } = require('electron');
 // Listener para tumanggap ng request mula sa renderer (script.js)
 ipcMain.handle('run-python', async (event, data) => {
     return new Promise((resolve, reject) => {
-        let pyshell = new PythonShell('processor.py', { mode: 'json' });
+        let pyshell = new PythonShell('processor.py', { 
+            mode: 'json',
+            scriptPath: path.join(__dirname, 'src')
+        });
         pyshell.send(data);
         pyshell.on('message', (msg) => resolve(msg));
         pyshell.on('error', (err) => reject(err));

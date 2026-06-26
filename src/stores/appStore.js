@@ -101,6 +101,15 @@ export const useAppStore = defineStore('app', {
       waterIntakeLog = (parsed && typeof parsed === 'object') ? parsed : {}
     } catch { waterIntakeLog = {} }
 
+    let workTimeLogs = []
+    try {
+      const parsed = JSON.parse(localStorage.getItem('workTimeLogs') || '[]')
+      workTimeLogs = Array.isArray(parsed) ? parsed : []
+    } catch { workTimeLogs = [] }
+
+    const isClockedIn = localStorage.getItem('isClockedIn') === 'true'
+    const activeClockInLogId = localStorage.getItem('activeClockInLogId') || null
+
     return {
       theme: localStorage.getItem('theme') || 'light',
       timePeriod: 'morning',
@@ -128,6 +137,11 @@ export const useAppStore = defineStore('app', {
       
       waterIntakeLog,
       waterDailyTarget: parseInt(localStorage.getItem('waterDailyTarget') || '2000'),
+      
+      // Work logs data
+      workTimeLogs,
+      isClockedIn,
+      activeClockInLogId,
       
       dailyStreak: parseInt(localStorage.getItem('dailyStreak') || '0'),
       lastStreakDate: localStorage.getItem('lastStreakDate') || ''
@@ -394,6 +408,66 @@ export const useAppStore = defineStore('app', {
     updateWaterTarget(target) {
       this.waterDailyTarget = target
       localStorage.setItem('waterDailyTarget', target.toString())
+    },
+    // ── Work Logs / Clock In/Out ──────────────────────────
+    clockIn(note = '') {
+      if (this.isClockedIn) return
+      
+      const logId = Date.now().toString()
+      const now = new Date()
+      const today = getTodayKey()
+      
+      const newLog = {
+        id: logId,
+        date: today,
+        clockIn: now.toISOString(),
+        clockOut: null,
+        duration: null,
+        note: note
+      }
+      
+      this.workTimeLogs.push(newLog)
+      this.isClockedIn = true
+      this.activeClockInLogId = logId
+      
+      localStorage.setItem('workTimeLogs', JSON.stringify(this.workTimeLogs))
+      localStorage.setItem('isClockedIn', 'true')
+      localStorage.setItem('activeClockInLogId', logId)
+    },
+    clockOut(note = '') {
+      if (!this.isClockedIn || !this.activeClockInLogId) return
+      
+      const idx = this.workTimeLogs.findIndex(l => l.id === this.activeClockInLogId)
+      if (idx !== -1) {
+        const now = new Date()
+        const clockInTime = new Date(this.workTimeLogs[idx].clockIn)
+        const diffMs = now - clockInTime
+        const durationMins = Math.max(0, Math.round(diffMs / 60000))
+        
+        this.workTimeLogs[idx].clockOut = now.toISOString()
+        this.workTimeLogs[idx].duration = durationMins
+        if (note) {
+          this.workTimeLogs[idx].note = note
+        }
+      }
+      
+      this.isClockedIn = false
+      this.activeClockInLogId = null
+      
+      localStorage.setItem('workTimeLogs', JSON.stringify(this.workTimeLogs))
+      localStorage.setItem('isClockedIn', 'false')
+      localStorage.removeItem('activeClockInLogId')
+    },
+    deleteWorkLog(id) {
+      this.workTimeLogs = this.workTimeLogs.filter(l => l.id !== id)
+      localStorage.setItem('workTimeLogs', JSON.stringify(this.workTimeLogs))
+      
+      if (this.activeClockInLogId === id) {
+        this.isClockedIn = false
+        this.activeClockInLogId = null
+        localStorage.setItem('isClockedIn', 'false')
+        localStorage.removeItem('activeClockInLogId')
+      }
     }
   }
 })

@@ -19,6 +19,112 @@
       </article>
     </section>
 
+    <!-- Time Tracker Widget Card -->
+    <section class="animate-in delay-150" style="margin-bottom: 24px;">
+      <article class="focus-minimal-card">
+        <div class="focus-header" style="justify-content: space-between; display: flex; align-items: center; width: 100%;">
+          <h3>Time Tracker</h3>
+          <span 
+            class="status-dot-badge" 
+            :class="{ active: store.isClockedIn }"
+          >
+            {{ store.isClockedIn ? 'Clocked In' : 'Clocked Out' }}
+          </span>
+        </div>
+
+        <!-- Clocked Out View -->
+        <div v-if="!store.isClockedIn" class="clock-control-row">
+          <input 
+            type="text" 
+            v-model="workNoteInput" 
+            class="focus-minimal-input" 
+            placeholder="What are you working on? (e.g. Coding Portfolio, Study Math)" 
+            style="margin-bottom: 12px;"
+          />
+          <button class="btn btn-primary" style="width: 100%;" @click="handleClockIn">
+            Clock In
+          </button>
+        </div>
+
+        <!-- Clocked In View -->
+        <div v-else class="clock-control-row">
+          <div class="timer-tick-display">
+            {{ activeDurationText }}
+          </div>
+          <p v-if="activeLog && activeLog.note" class="active-note-lbl">
+            Working on: <strong>{{ activeLog.note }}</strong>
+          </p>
+          <button class="btn btn-warning" style="width: 100%; margin-top: 10px;" @click="handleClockOut">
+            Clock Out
+          </button>
+        </div>
+
+        <!-- Logs Toggle Button -->
+        <div style="margin-top: 16px; text-align: center;">
+          <button 
+            class="btn-text-toggle" 
+            @click="showLogsDrawer = !showLogsDrawer"
+          >
+            {{ showLogsDrawer ? 'Hide Logs History' : 'Show Logs History (' + store.workTimeLogs.length + ')' }}
+          </button>
+        </div>
+
+        <!-- Logs Drawer (Collapsible) -->
+        <div v-if="showLogsDrawer" class="logs-drawer-content animate-in">
+          <!-- Python Powered Analytics Summary Shelf -->
+          <div v-if="pythonAnalytics && store.workTimeLogs.length > 0" class="python-analytics-box animate-in">
+            <h4>Python-Powered Work Analytics</h4>
+            <div class="python-stats-row">
+              <div class="py-stat-card">
+                <span class="py-stat-lbl">Total Time Worked</span>
+                <span class="py-stat-val">{{ formatDuration(pythonAnalytics.total_minutes) }}</span>
+              </div>
+              <div class="py-stat-card">
+                <span class="py-stat-lbl">Average Session</span>
+                <span class="py-stat-val">{{ formatDuration(pythonAnalytics.avg_minutes) }}</span>
+              </div>
+              <div class="py-stat-card">
+                <span class="py-stat-lbl">Most Active Day</span>
+                <span class="py-stat-val" style="color: var(--time-accent, var(--accent-orange));">{{ pythonAnalytics.most_productive_day }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="store.workTimeLogs.length === 0" class="empty-msg" style="padding: 20px 0;">
+            No work logs recorded yet.
+          </div>
+          <div v-else class="logs-table-wrapper">
+            <table class="logs-history-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>In</th>
+                  <th>Out</th>
+                  <th>Duration</th>
+                  <th>Note</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="log in store.workTimeLogs" :key="log.id">
+                  <td>{{ log.date }}</td>
+                  <td>{{ formatTime(log.clockIn) }}</td>
+                  <td>{{ log.clockOut ? formatTime(log.clockOut) : 'In Progress' }}</td>
+                  <td style="font-weight: 700; color: var(--time-accent, var(--accent-orange));">
+                    {{ formatDuration(log.duration) }}
+                  </td>
+                  <td class="log-note-td" :title="log.note">{{ log.note || '-' }}</td>
+                  <td>
+                    <button class="btn-del-log" @click="store.deleteWorkLog(log.id)">✕</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+    </section>
+
     <!-- Quick Stats Section (Modern Grid Cards) -->
     <section class="animate-in delay-200">
       <div class="stats-pastel-grid">
@@ -132,7 +238,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import Header from '../components/Header.vue'
 import { useAppStore } from '../stores/appStore'
 import Chart from 'chart.js/auto'
@@ -159,6 +265,97 @@ const savingsGoalsPercent = computed(() => {
   const totalTarget = store.savingsGoals.reduce((sum, g) => sum + (g.target || 0), 0)
   if (totalTarget <= 0) return 0
   return Math.min(100, Math.round((store.totalSavings / totalTarget) * 100))
+})
+
+// Time Tracker states and ticking logic
+const workNoteInput = ref('')
+const showLogsDrawer = ref(false)
+const activeDurationText = ref('00:00:00')
+let activeTimerId = null
+
+const activeLog = computed(() => {
+  return store.workTimeLogs.find(l => l.id === store.activeClockInLogId)
+})
+
+// Electron IPC & Python Analytics
+const { ipcRenderer } = window.require ? window.require('electron') : {}
+const pythonAnalytics = ref(null)
+
+async function runPythonAnalytics() {
+  if (!ipcRenderer) return
+  try {
+    const rawLogs = JSON.parse(JSON.stringify(store.workTimeLogs))
+    const result = await ipcRenderer.invoke('run-python', {
+      action: 'analyze_work_logs',
+      logs: rawLogs
+    })
+    if (result && result.status === 'success') {
+      pythonAnalytics.value = result
+    }
+  } catch (err) {
+    console.error('Python Analytics error:', err)
+  }
+}
+
+watch(() => store.workTimeLogs, () => {
+  runPythonAnalytics()
+}, { deep: true })
+
+function updateActiveDuration() {
+  if (!store.isClockedIn || !activeLog.value) {
+    activeDurationText.value = '00:00:00'
+    return
+  }
+  const start = new Date(activeLog.value.clockIn)
+  const now = new Date()
+  const diffMs = now - start
+  
+  const h = Math.floor(diffMs / 3600000).toString().padStart(2, '0')
+  const m = Math.floor((diffMs % 3600000) / 60000).toString().padStart(2, '0')
+  const s = Math.floor((diffMs % 60000) / 1000).toString().padStart(2, '0')
+  activeDurationText.value = `${h}:${m}:${s}`
+}
+
+function handleClockIn() {
+  store.clockIn(workNoteInput.value)
+  workNoteInput.value = ''
+}
+
+function handleClockOut() {
+  store.clockOut()
+}
+
+function formatTime(isoStr) {
+  if (!isoStr) return ''
+  const d = new Date(isoStr)
+  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+}
+
+function formatDuration(mins) {
+  if (mins === null || mins === undefined) return 'In Progress'
+  if (mins < 60) return `${mins} mins`
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return `${h}h ${m}m`
+}
+
+watch(() => store.isClockedIn, (val) => {
+  if (val) {
+    if (!activeTimerId) {
+      activeTimerId = setInterval(updateActiveDuration, 1000)
+    }
+    updateActiveDuration()
+  } else {
+    if (activeTimerId) {
+      clearInterval(activeTimerId)
+      activeTimerId = null
+    }
+    activeDurationText.value = '00:00:00'
+  }
+}, { immediate: true })
+
+onUnmounted(() => {
+  if (activeTimerId) clearInterval(activeTimerId)
 })
 const activeChart = ref('growth')
 const chartCanvas = ref(null)
@@ -364,6 +561,7 @@ function renderChart() {
 
 onMounted(() => {
   renderChart()
+  runPythonAnalytics()
 })
 
 // Re-render chart if relevant store state updates
@@ -473,6 +671,175 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
     width: 38px;
     height: 38px;
     stroke-width: 1.75;
+}
+
+/* ── Time Tracker Widget Styling ────────────────────────── */
+.status-dot-badge {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.status-dot-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #64748b;
+}
+.status-dot-badge.active {
+    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+}
+.status-dot-badge.active::before {
+    background: #22c55e;
+    animation: blinkDotPulse 1.5s step-start infinite;
+}
+@keyframes blinkDotPulse {
+  50% { opacity: 0.3; }
+}
+.timer-tick-display {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 40px;
+    font-weight: 800;
+    text-align: center;
+    color: var(--time-text, var(--text-primary));
+    letter-spacing: -0.01em;
+    margin: 8px 0;
+}
+.active-note-lbl {
+    font-size: 13px;
+    text-align: center;
+    color: var(--time-text-muted, var(--text-secondary));
+    margin-bottom: 12px;
+}
+.btn-warning {
+    background: linear-gradient(135deg, #ea580c 0%, #d97706 100%);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.2s;
+}
+.btn-warning:hover {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
+}
+.btn-text-toggle {
+    background: transparent;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--time-accent, var(--accent-purple));
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.btn-text-toggle:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+}
+.logs-drawer-content {
+    margin-top: 20px;
+    border-top: 1px solid var(--glass-border, rgba(255,255,255,0.15));
+    padding-top: 16px;
+}
+.logs-table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+.logs-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+}
+.logs-history-table th {
+    font-weight: 700;
+    color: var(--time-text-muted, var(--text-secondary));
+    padding: 8px;
+    border-bottom: 1.5px solid var(--glass-border, rgba(255,255,255,0.15));
+}
+.logs-history-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.1));
+    color: var(--time-text, var(--text-primary));
+}
+.log-note-td {
+    max-width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.btn-del-log {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    transition: color 0.2s;
+}
+.btn-del-log:hover {
+    color: #ef4444;
+}
+
+/* ── Python Analytics Dashboard Styles ─────────────────── */
+.python-analytics-box {
+    background: var(--bg-subtle, rgba(255,255,255,0.06));
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.12));
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+.python-analytics-box h4 {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 12px;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--time-accent, var(--accent-orange));
+    margin: 0 0 12px;
+}
+.python-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+.py-stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--bg-card, rgba(255,255,255,0.1));
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.08));
+    border-radius: 12px;
+    padding: 12px 10px;
+    text-align: center;
+}
+.py-stat-lbl {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--time-text-muted, var(--text-secondary));
+    text-transform: uppercase;
+}
+.py-stat-val {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--time-text, var(--text-primary));
+}
+@media (max-width: 500px) {
+    .python-stats-row {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ── Tabbed Chart Card: Glassmorphism ──────────────────── */

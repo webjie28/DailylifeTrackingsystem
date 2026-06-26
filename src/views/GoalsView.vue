@@ -93,6 +93,33 @@
       </div>
     </div>
 
+    <!-- Recommended SDLC Projects Shelf -->
+    <section class="animate-in" style="margin-top: 48px; margin-bottom: 32px;">
+      <h3 style="font-size: 20px; font-weight: 800; color: var(--text-heading); margin-bottom: 16px;">
+        Recommended Future Projects (SDLC Structured)
+      </h3>
+      <div class="recommendations-grid">
+        <div v-for="proj in recommendedProjects" :key="proj.id" class="recommend-card">
+          <div class="recommend-header">
+            <h4>{{ proj.title }}</h4>
+            <span class="recommend-cat">{{ proj.category }}</span>
+          </div>
+          <p class="recommend-desc">{{ proj.description }}</p>
+          
+          <div class="recommend-milestones">
+            <div v-for="(m, i) in proj.milestones" :key="i" class="recommend-milestone-item">
+              <span class="m-bullet">▪</span>
+              <span>{{ m.text }}</span>
+            </div>
+          </div>
+          
+          <button class="btn btn-outline" style="width: 100%; margin-top: auto;" @click="importProjectGoal(proj)">
+            + Add to Goals Board
+          </button>
+        </div>
+      </div>
+    </section>
+
     <!-- Add Goal Modal Overlay -->
     <div class="modal-overlay" v-if="showAddModal" @click.self="showAddModal = false">
       <div class="modal-content">
@@ -235,6 +262,69 @@ function saveGoal() {
 function deleteGoal(id) {
   if (!confirm('Delete this long-term goal?')) return
   store.deleteLongtermGoal(id)
+}
+
+// Recommended SDLC Projects template data
+const recommendedProjects = [
+  {
+    id: 'blog_cms',
+    title: 'Developer Blog & CMS',
+    category: 'Study',
+    description: 'A personal technical blog with markdown rendering, SEO meta fields, tag filters, and local headless CMS database integration.',
+    milestones: [
+      { text: 'Phase 1 (Planning): Select headless CMS & define posts schema' },
+      { text: 'Phase 2 (Design): Sketch responsive blog card layouts & dark theme overrides' },
+      { text: 'Phase 3 (Dev): Code article page renderer & GraphQL query services' },
+      { text: 'Phase 4 (Testing): Audit site with Google Lighthouse and verify forms' },
+      { text: 'Phase 5 (Deploy): Set up continuous deployment to Vercel/Netlify' }
+    ]
+  },
+  {
+    id: 'kanban_board',
+    title: 'Kanban Collaboration Board',
+    category: 'Productivity',
+    description: 'A board displaying project tasks in columns (Todo, In Progress, Review, Done) with smooth drag-and-drop, card categories, and search.',
+    milestones: [
+      { text: 'Phase 1 (Planning): Draft state flow diagram & task schema specifications' },
+      { text: 'Phase 2 (Design): Wireframe column groups and task card layouts' },
+      { text: 'Phase 3 (Dev): Implement HTML5 Drag & Drop operations and card filters' },
+      { text: 'Phase 4 (Testing): Verify task sorting, card movements, and state persistence' },
+      { text: 'Phase 5 (Deploy): Deploy fully functional prototype to GitHub pages' }
+    ]
+  },
+  {
+    id: 'crypto_analytics',
+    title: 'Crypto Analytics Dashboard',
+    category: 'Finance',
+    description: 'A financial dashboard fetching live crypto token prices, plotting interactive price charts, tracking portfolio values, and firing indicators.',
+    milestones: [
+      { text: 'Phase 1 (Planning): Register CoinGecko API keys & define target assets' },
+      { text: 'Phase 2 (Design): Grid mockup for candlestick chart & price alert modal' },
+      { text: 'Phase 3 (Dev): Code Chart.js candlestick data queries & portfolio calculator' },
+      { text: 'Phase 4 (Testing): Validate rendering speeds & test asset price alarms' },
+      { text: 'Phase 5 (Deploy): Compile desktop application wrapper using Electron' }
+    ]
+  }
+]
+
+function importProjectGoal(proj) {
+  if (!confirm(`Add "${proj.title}" as a new Goal with SDLC milestones to your board?`)) return
+  
+  const deadlineDate = new Date()
+  deadlineDate.setDate(deadlineDate.getDate() + 30)
+  const deadlineStr = deadlineDate.toISOString().split('T')[0]
+  
+  const newGoal = {
+    id: Date.now() + '_' + Math.random().toString(36).slice(2),
+    title: proj.title,
+    category: proj.category.toLowerCase(),
+    deadline: deadlineStr,
+    emoji: '🎯',
+    milestones: proj.milestones.map(m => ({ text: m.text, done: false }))
+  }
+  
+  store.addLongtermGoal(newGoal)
+  alert(`"${proj.title}" successfully added to your Goals Board!`)
 }
 </script>
 
@@ -530,5 +620,72 @@ function deleteGoal(id) {
   color: var(--text-heading);
   margin-top: 0;
   margin-bottom: 20px;
+}
+
+/* ── Recommended Projects SDLC Shelf Styling ───────────── */
+.recommendations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 16px;
+}
+.recommend-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.25s, box-shadow 0.25s;
+    min-height: 380px;
+    text-align: left;
+}
+.recommend-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+.recommend-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.recommend-header h4 {
+    font-size: 16px;
+    font-weight: 750;
+    color: var(--text-heading);
+    margin: 0;
+}
+.recommend-cat {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    color: #7c3aed;
+    background: rgba(124, 58, 237, 0.1);
+}
+.recommend-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin: 0 0 16px;
+}
+.recommend-milestones {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+.recommend-milestone-item {
+    display: flex;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.m-bullet {
+    color: var(--time-accent, #7c3aed);
 }
 </style>
