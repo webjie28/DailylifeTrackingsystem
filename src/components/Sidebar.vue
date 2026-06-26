@@ -7,12 +7,12 @@
         <ul>
           <li>
             <router-link to="/" exact-active-class="active">
-              📊 Dashboard
+              Dashboard
             </router-link>
           </li>
           <li>
             <router-link to="/study" active-class="active">
-              📚 Study &amp; Books
+              Study &amp; Books
             </router-link>
           </li>
         </ul>
@@ -25,12 +25,12 @@
         <ul>
           <li>
             <router-link to="/fitness" active-class="active">
-              🏋 Fitness Tracker
+              Fitness Tracker
             </router-link>
           </li>
           <li>
             <router-link to="/water" active-class="active">
-              💧 Water Intake
+              Water Intake
             </router-link>
           </li>
         </ul>
@@ -43,12 +43,12 @@
         <ul>
           <li>
             <router-link to="/finance" active-class="active">
-              💰 Expenses
+              Expenses
             </router-link>
           </li>
           <li>
             <router-link to="/savings" active-class="active">
-              🏦 Savings Tracking
+              Savings Tracking
             </router-link>
           </li>
         </ul>
@@ -61,17 +61,17 @@
         <ul>
           <li>
             <router-link to="/anime" active-class="active">
-              🎬 Anime Watchlist
+              Anime Watchlist
             </router-link>
           </li>
           <li>
             <router-link to="/events" active-class="active">
-              📅 Events
+              Events
             </router-link>
           </li>
           <li>
             <router-link to="/goals" active-class="active">
-              🎯 Goals
+              Goals
             </router-link>
           </li>
         </ul>
@@ -81,7 +81,7 @@
 
       <div class="nav-section sidebar-bottom">
         <div class="dark-mode-toggle">
-          <span class="toggle-label">🌙 Dark Mode</span>
+          <span class="toggle-label">Dark Mode</span>
           <label class="toggle-switch">
             <input 
               type="checkbox" 

@@ -8,8 +8,8 @@
         </p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-outline" @click="exportCSV">⬇ Export CSV</button>
-        <button class="btn btn-outline" @click="clearAll">🧹 Clear All</button>
+        <button class="btn btn-outline" @click="exportCSV">Export CSV</button>
+        <button class="btn btn-outline" @click="clearAll">Clear All</button>
       </div>
     </div>
 
@@ -161,7 +161,7 @@
             class="ledger-item"
           >
             <div class="tx-icon" :class="tx.type">
-              {{ tx.type === 'income' ? '💵' : '💸' }}
+              {{ tx.type === 'income' ? 'IN' : 'OUT' }}
             </div>
             <div class="tx-info">
               <div class="tx-name">{{ tx.desc }}</div>
@@ -177,8 +177,8 @@
               {{ tx.type === 'income' ? '+' : '-' }}₱{{ tx.amount.toLocaleString() }}
             </div>
             <div class="tx-actions" style="margin-left: 12px;">
-              <button class="btn-del" @click="editTransaction(tx.id)" title="Edit">✏️</button>
-              <button class="btn-del" @click="deleteTransaction(tx.id)" title="Delete">🗑️</button>
+              <button class="btn-del" @click="editTransaction(tx.id)" title="Edit">Edit</button>
+              <button class="btn-del" @click="deleteTransaction(tx.id)" title="Delete">✕</button>
             </div>
           </div>
         </div>

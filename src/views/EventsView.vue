@@ -32,7 +32,7 @@
     <div class="content-grid-split">
       <!-- Left Column: Add Event Form -->
       <div class="panel">
-        <h3>📅 Schedule New Event</h3>
+        <h3>Schedule New Event</h3>
         <form @submit.prevent="saveEvent">
           <div class="form-group">
             <label>Event Title</label>
@@ -53,11 +53,11 @@
           <div class="form-group">
             <label>Category</label>
             <select v-model="eventCategory">
-              <option value="Personal">🏠 Personal</option>
-              <option value="Study">📚 Study / Work</option>
-              <option value="Fitness">🏋️ Fitness</option>
-              <option value="Entertainment">🎬 Entertainment</option>
-              <option value="Other">✨ Other</option>
+              <option value="Personal">Personal</option>
+              <option value="Study">Study / Work</option>
+              <option value="Fitness">Fitness</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Other">Other</option>
             </select>
           </div>
 
@@ -104,7 +104,7 @@
               <div class="event-details">
                 <div class="event-title">{{ event.title }}</div>
                 <div class="event-meta">
-                  <span class="event-time">🕒 {{ formatTimeLabel(event.time) }}</span> • 
+                  <span class="event-time">{{ formatTimeLabel(event.time) }}</span> • 
                   <span class="category-badge" :class="event.category">{{ event.category }}</span>
                 </div>
               </div>

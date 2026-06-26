@@ -38,7 +38,7 @@
               class="timer-mode-badge"
               :class="{ 'break-mode': isBreak, 'focus-mode': !isBreak }"
             >
-              {{ isBreak ? '🛋️ Break Time' : '⏱️ Focus Session' }}
+              {{ isBreak ? 'Break Time' : 'Focus Session' }}
             </span>
           </div>
           
@@ -49,7 +49,7 @@
               {{ isRunning ? '⏸' : '▶' }}
             </button>
             <button class="btn-timer reset" @click="resetTimer">
-              🔄
+              Reset
             </button>
           </div>
           <p style="font-size: 13px; color: var(--text-secondary); margin-top: 15px;">
@@ -59,7 +59,7 @@
 
         <!-- Session Notes Panel -->
         <div class="panel">
-          <h3>✍️ Study Session Notes</h3>
+          <h3>Study Session Notes</h3>
           <div class="form-group" style="margin-bottom: 0;">
             <textarea 
               v-model="sessionNotes" 
@@ -74,7 +74,7 @@
       <!-- Right Column: Reading Tracker -->
       <div class="right-col">
         <div class="panel">
-          <h3>📚 Reading Progress Tracker</h3>
+          <h3>Reading Progress Tracker</h3>
           <div class="books-list">
             <div v-if="store.studyBooksList.length === 0" class="empty-msg">
               No books registered. Add a book to track your reading progress!
@@ -89,14 +89,13 @@
             >
               <div class="book-top">
                 <div class="book-info-wrap">
-                  <span class="book-icon">📖</span>
                   <div class="book-text-details">
                     <div class="book-title">{{ book.title }}</div>
                     <div class="book-author">by {{ book.author }}</div>
                   </div>
                 </div>
                 <div class="book-actions">
-                  <button class="btn-del" @click="openEditBook(book)" title="Edit Page Progress">✏️</button>
+                  <button class="btn-del" @click="openEditBook(book)" title="Edit Page Progress">Edit</button>
                   <button class="btn-del" @click="deleteBook(book.id)" title="Remove Book">✕</button>
                 </div>
               </div>
@@ -148,9 +147,9 @@
           <div class="form-group">
             <label>Reading Status</label>
             <select v-model="bookStatus">
-              <option value="reading">📖 Reading</option>
-              <option value="completed">✅ Completed</option>
-              <option value="to-read">⏳ To Read</option>
+              <option value="reading">Reading</option>
+              <option value="completed">Completed</option>
+              <option value="to-read">To Read</option>
             </select>
           </div>
           <div style="display: flex; gap: 10px; margin-top: 20px;">

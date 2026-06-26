@@ -143,7 +143,6 @@
 
           <!-- Rest Day display -->
           <div v-else class="rest-card">
-            <span class="rest-icon">🛋️</span>
             <p>Today is scheduled as a Rest Day.</p>
             <p style="font-size: 13px; font-weight: normal; margin-top: 4px;">Make sure to stretch or do light active walking!</p>
           </div>
@@ -154,7 +153,7 @@
       <div class="right-col">
         <!-- Manual Workouts Log Form -->
         <div class="panel">
-          <h3>💪 Log Gym Session / Manual Activity</h3>
+          <h3>Log Gym Session / Manual Activity</h3>
           <form @submit.prevent="logManualGym" class="manual-log-form">
             <div class="two-input">
               <div class="form-group">
@@ -182,7 +181,7 @@
 
         <!-- 30-Day Trend Chart -->
         <div class="panel">
-          <h3>📊 30-Day Calorie Progress (Walk + Gym)</h3>
+          <h3>30-Day Calorie Progress (Walk + Gym)</h3>
           <div class="chart-wrap" style="margin-top: 10px;">
             <canvas ref="fitnessChartCanvas"></canvas>
           </div>
@@ -190,7 +189,7 @@
 
         <!-- Recent Gym History Logs -->
         <div class="panel">
-          <h3>📋 Recent Workout Logs</h3>
+          <h3>Recent Workout Logs</h3>
           <div class="water-history">
             <div v-if="sortedGymHistory.length === 0" class="empty-msg">No workout history logged yet.</div>
             <div v-else v-for="log in sortedGymHistory" :key="log.date" class="water-history-item" style="align-items: flex-start; flex-direction: column; gap: 4px;">

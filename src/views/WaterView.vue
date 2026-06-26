@@ -49,15 +49,12 @@
 
         <div class="quick-log-row">
           <div class="log-btn" @click="store.addWater(250)">
-            <span class="log-btn-icon">💧</span>
             <span class="log-btn-label">+250 ml</span>
           </div>
           <div class="log-btn" @click="store.addWater(500)">
-            <span class="log-btn-icon">🥛</span>
             <span class="log-btn-label">+500 ml</span>
           </div>
           <div class="log-btn" @click="store.addWater(750)">
-            <span class="log-btn-icon">🫙</span>
             <span class="log-btn-label">+750 ml</span>
           </div>
         </div>
@@ -70,7 +67,7 @@
 
       <!-- Right: Target setting & history -->
       <div class="panel">
-        <h3>⚙️ Target Settings</h3>
+        <h3>Target Settings</h3>
         <div class="form-group">
           <label>Daily Goal Target (ml)</label>
           <input 

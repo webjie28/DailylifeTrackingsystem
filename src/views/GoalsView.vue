@@ -31,7 +31,6 @@
     <!-- Main Grid -->
     <div class="goals-container" style="margin-bottom: 32px;">
       <div v-if="store.longtermGoalsList.length === 0" class="empty-msg-panel">
-        <span style="font-size: 40px; display: block; margin-bottom: 12px;">🎯</span>
         <p>No goals defined yet. Create your first long-term target!</p>
         <button class="btn btn-primary" style="margin-top: 10px;" @click="showAddModal = true">
           Add Goal
@@ -48,7 +47,6 @@
           <div class="card-inner-top">
             <div class="goal-card-header">
               <div class="goal-emoji-title">
-                <span class="goal-emoji">{{ goal.emoji || '🎯' }}</span>
                 <span class="goal-title">{{ goal.title }}</span>
               </div>
               <span class="goal-cat" :class="'cat-' + goal.category">{{ goal.category }}</span>
@@ -75,7 +73,7 @@
           <div class="card-inner-bottom">
             <div class="goal-deadline">
               <span>{{ goal.deadline || 'No deadline' }}</span>
-              <strong :class="{ overdue: goal.daysLeftText.includes('⚠️') }">
+              <strong :class="{ overdue: goal.daysLeftText.includes('Overdue') }">
                 {{ goal.daysLeftText }}
               </strong>
             </div>
@@ -170,9 +168,9 @@ const goalsWithCalculatedProgress = computed(() => {
       const diffTime = deadline - today
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
       if (diffDays < 0) {
-        daysLeftText = 'Overdue ⚠️'
+        daysLeftText = 'Overdue'
       } else if (diffDays === 0) {
-        daysLeftText = 'Deadline today! ⏰'
+        daysLeftText = 'Deadline today!'
       } else {
         daysLeftText = `${diffDays} days left`
       }

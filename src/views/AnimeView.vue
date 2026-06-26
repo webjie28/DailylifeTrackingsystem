@@ -69,7 +69,7 @@
               <span class="anime-card-title">{{ anime.title }}</span>
             </div>
             <div class="anime-actions">
-              <button class="btn-del" @click="editAnime(anime.id)" title="Edit">✏️</button>
+              <button class="btn-del" @click="editAnime(anime.id)" title="Edit">Edit</button>
               <button class="btn-del" @click="deleteAnime(anime.id)" title="Delete">✕</button>
             </div>
           </div>
@@ -103,7 +103,7 @@
 
           <div class="anime-card-footer">
             <span class="rating-display">
-              {{ anime.rating > 0 ? '⭐ ' + anime.rating + '/10' : 'Unrated' }}
+              {{ anime.rating > 0 ? anime.rating + '/10' : 'Unrated' }}
             </span>
             <span class="status-indicator-badge" :class="anime.status">
               {{ formatStatusLabel(anime.status) }}
@@ -139,10 +139,10 @@
               <div class="form-group">
                 <label>Status</label>
                 <select v-model="animeStatus">
-                  <option value="watching">🍿 Watching</option>
-                  <option value="completed">✅ Completed</option>
-                  <option value="planning">⏳ Plan to Watch</option>
-                  <option value="dropped">❌ Dropped</option>
+                  <option value="watching">Watching</option>
+                  <option value="completed">Completed</option>
+                  <option value="planning">Plan to Watch</option>
+                  <option value="dropped">Dropped</option>
                 </select>
               </div>
             </div>
@@ -244,10 +244,10 @@ function formatFilterLabel(f) {
 }
 
 function formatStatusLabel(s) {
-  if (s === 'watching') return '🍿 Watching'
-  if (s === 'completed') return '✅ Completed'
-  if (s === 'dropped') return '❌ Dropped'
-  return '⏳ Plan'
+  if (s === 'watching') return 'Watching'
+  if (s === 'completed') return 'Completed'
+  if (s === 'dropped') return 'Dropped'
+  return 'Plan to Watch'
 }
 
 // CRUD

@@ -30,9 +30,8 @@
 
     <!-- Goals Grid -->
     <div class="goals-section" style="margin-bottom: 32px;">
-      <h3>🎯 My Savings Goals</h3>
+      <h3>My Savings Goals</h3>
       <div v-if="store.savingsGoals.length === 0" class="empty-msg-panel">
-        <span style="font-size: 40px; display: block; margin-bottom: 12px;">🏦</span>
         <p>No goals defined yet. Create your first goal to start saving!</p>
         <button class="btn btn-primary" style="margin-top: 10px;" @click="showAddGoalModal = true">
           Create Goal
@@ -48,7 +47,6 @@
         >
           <div class="goal-top">
             <div class="goal-title-wrap">
-              <span class="goal-emoji">{{ goal.emoji || '🎯' }}</span>
               <span class="goal-name">{{ goal.name }}</span>
               <span v-if="goal.isCompleted" class="complete-badge">✓ COMPLETE</span>
             </div>
@@ -74,7 +72,7 @@
 
           <div class="goal-footer">
             <span class="goal-pct">{{ goal.percentage }}%</span>
-            <span v-if="goal.date" class="goal-due">🗓 Target: {{ goal.date }}</span>
+            <span v-if="goal.date" class="goal-due">Target: {{ goal.date }}</span>
           </div>
         </div>
       </div>
@@ -84,14 +82,14 @@
     <div class="content-grid-split">
       <!-- Quick Add Panel -->
       <div class="panel">
-        <h3>💰 Log Saving Contribution</h3>
+        <h3>Log Saving Contribution</h3>
         <form @submit.prevent="saveDirectContrib">
           <div class="form-group">
             <label>Select Savings Goal</label>
             <select v-model="contribGoalId" required>
               <option value="" disabled>Choose a goal...</option>
               <option v-for="g in store.savingsGoals" :key="g.id" :value="g.id">
-                {{ g.emoji || '🎯' }} {{ g.name }}
+                {{ g.name }}
               </option>
             </select>
           </div>
@@ -117,7 +115,7 @@
 
       <!-- Recent Contributions List -->
       <div class="panel">
-        <h3>📋 Recent Contributions History</h3>
+        <h3>Recent Contributions History</h3>
         <div class="contrib-list">
           <div v-if="store.savingsContributions.length === 0" class="empty-msg">
             No savings contributions logged yet.
@@ -156,15 +154,9 @@
             <label>Goal Name</label>
             <input type="text" v-model="goalName" placeholder="e.g. New Laptop, Japan Travel" required />
           </div>
-          <div class="two-input">
-            <div class="form-group">
-              <label>Target Amount (₱)</label>
-              <input type="number" v-model.number="goalTarget" min="1" placeholder="0.00" required />
-            </div>
-            <div class="form-group">
-              <label>Emoji Icon</label>
-              <input type="text" v-model="goalEmoji" placeholder="e.g. 💻, ✈️, 🚗" maxLength="4" />
-            </div>
+          <div class="form-group">
+            <label>Target Amount (₱)</label>
+            <input type="number" v-model.number="goalTarget" min="1" placeholder="0.00" required />
           </div>
           <div class="form-group">
             <label>Target Date (Optional)</label>
@@ -270,7 +262,7 @@ const sortedContributions = computed(() => {
 
 function getGoalDisplayName(goalId) {
   const g = store.savingsGoals.find(g => g.id === goalId)
-  return g ? `${g.emoji || '🎯'} ${g.name}` : 'Unknown Goal'
+  return g ? g.name : 'Unknown Goal'
 }
 
 // Actions
