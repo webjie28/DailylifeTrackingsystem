@@ -80,17 +80,34 @@
       <div class="nav-divider" aria-hidden="true"></div>
 
       <div class="nav-section sidebar-bottom">
-        <div class="dark-mode-toggle">
-          <span class="toggle-label">Dark Mode</span>
-          <label class="toggle-switch">
-            <input 
-              type="checkbox" 
-              id="darkModeToggle" 
-              :checked="store.theme === 'dark'"
-              @change="store.toggleTheme()"
-            />
-            <span class="toggle-slider"></span>
-          </label>
+        <div class="theme-selector-sidebar">
+          <span class="theme-select-title">Appearance</span>
+          <div class="theme-segmented-control">
+            <button 
+              type="button"
+              class="theme-seg-btn" 
+              :class="{ active: store.theme === 'light' }" 
+              @click="store.setTheme('light')"
+            >
+              Light
+            </button>
+            <button 
+              type="button"
+              class="theme-seg-btn" 
+              :class="{ active: store.theme === 'navy' }" 
+              @click="store.setTheme('navy')"
+            >
+              Navy
+            </button>
+            <button 
+              type="button"
+              class="theme-seg-btn" 
+              :class="{ active: store.theme === 'dark' }" 
+              @click="store.setTheme('dark')"
+            >
+              Dark
+            </button>
+          </div>
         </div>
       </div>
 
@@ -108,5 +125,52 @@ const store = useAppStore()
 .sidebar a {
   display: block;
   text-decoration: none;
+}
+
+.theme-selector-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+  width: 100%;
+}
+.theme-select-title {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+.theme-segmented-control {
+  display: flex;
+  background: var(--bg-subtle, rgba(0,0,0,0.05));
+  border: 1px solid var(--border-color);
+  padding: 3px;
+  border-radius: 12px;
+  width: 100%;
+}
+.theme-seg-btn {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: 6px 0;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.theme-seg-btn:hover {
+  color: var(--text-primary);
+}
+.theme-seg-btn.active {
+  background: var(--bg-card, #ffffff);
+  color: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 </style>

@@ -236,10 +236,19 @@ export const useAppStore = defineStore('app', {
   
   actions: {
     // ── Global Themes & Settings ──────────────────────────
+    setTheme(theme) {
+      this.theme = theme
+      localStorage.setItem('theme', theme)
+      document.documentElement.setAttribute('data-theme', theme)
+    },
     toggleTheme() {
-      this.theme = this.theme === 'light' ? 'dark' : 'light'
-      localStorage.setItem('theme', this.theme)
-      document.documentElement.setAttribute('data-theme', this.theme)
+      if (this.theme === 'light') {
+        this.setTheme('navy')
+      } else if (this.theme === 'navy') {
+        this.setTheme('dark')
+      } else {
+        this.setTheme('light')
+      }
     },
     updateTimePeriod(period) {
       this.timePeriod = period
