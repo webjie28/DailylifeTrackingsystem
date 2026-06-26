@@ -26,8 +26,8 @@
         <Sidebar />
       </div>
 
-      <!-- Main content container synced with time period -->
-      <main class="main-content" :data-time="store.timePeriod">
+      <!-- Main content container -->
+      <main class="main-content">
         <div class="container" style="padding-top: 0;">
           <router-view v-slot="{ Component }">
             <transition name="fade-slide" mode="out-in">
