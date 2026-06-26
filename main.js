@@ -46,7 +46,6 @@ if (actualCachePath && actualCachePath !== defaultCachePath) {
     app.commandLine.appendSwitch('disk-cache-dir', actualCachePath);
     app.setPath('cache', actualCachePath);
 }
-
 function createWindow() {
     const win = new BrowserWindow({
         width: 1200,
@@ -60,7 +59,13 @@ function createWindow() {
         }
     });
 
-    win.loadFile('home.html');
+    const isDev = !app.isPackaged && !process.argv.includes('--prod');
+    if (isDev) {
+        win.webContents.openDevTools();
+        win.loadURL('http://localhost:5173');
+    } else {
+        win.loadFile(path.join(__dirname, 'dist/index.html'));
+    }
 }
 
 app.whenReady().then(() => {
