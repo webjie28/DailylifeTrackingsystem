@@ -128,11 +128,11 @@
         <form @submit.prevent="saveBook">
           <div class="form-group">
             <label>Book Title</label>
-            <input type="text" v-model="bookTitle" placeholder="e.g. Clean Code, Atomic Habits" required :disabled="!!editingBookId" />
+            <input type="text" v-model="bookTitle" placeholder="e.g. Clean Code, Atomic Habits" required />
           </div>
           <div class="form-group">
             <label>Author</label>
-            <input type="text" v-model="bookAuthor" placeholder="e.g. James Clear" :disabled="!!editingBookId" />
+            <input type="text" v-model="bookAuthor" placeholder="e.g. James Clear" />
           </div>
           <div class="two-input">
             <div class="form-group">
@@ -141,7 +141,7 @@
             </div>
             <div class="form-group">
               <label>Total Pages</label>
-              <input type="number" v-model.number="bookTotalPages" min="1" placeholder="100" required :disabled="!!editingBookId" />
+              <input type="number" v-model.number="bookTotalPages" min="1" placeholder="100" required />
             </div>
           </div>
           <div class="form-group">
@@ -265,9 +265,8 @@ function saveNotes() {
   store.saveStudyNotes(sessionNotes.value)
 }
 
-// Book CRUD
 function saveBook() {
-  if (!bookTitle.value.trim() || !bookCurrentPage.value) {
+  if (!bookTitle.value.trim() || bookCurrentPage.value === undefined || bookCurrentPage.value === null || bookCurrentPage.value === '') {
     alert('Please fill out necessary fields.')
     return
   }
@@ -283,7 +282,10 @@ function saveBook() {
 
   if (editingBookId.value) {
     store.updateBook(editingBookId.value, {
+      title: bookTitle.value.trim(),
+      author: bookAuthor.value.trim() || 'Unknown',
       currentPage: curr,
+      totalPages: total,
       status
     })
     closeBookModal()
