@@ -19,34 +19,74 @@
       </article>
     </section>
 
-    <!-- Quick Stats Section (Glassmorphism Cards) -->
+    <!-- Quick Stats Section (Modern Grid Cards) -->
     <section class="animate-in delay-200">
       <div class="stats-pastel-grid">
-        <router-link to="/fitness" class="stat-pastel-card stat-pastel-green">
-          <div class="stat-pastel-info">
+        <!-- Calories -->
+        <router-link to="/fitness" class="stat-pastel-card">
+          <div class="stat-card-left">
+            <div class="stat-pastel-label">Calories Burned</div>
             <div class="stat-pastel-value">{{ store.todayTotalCaloriesBurned }} kcal</div>
-            <div class="stat-pastel-label">Calories Today</div>
+            <span class="trend-pill" :class="calGoalPercent >= 100 ? 'success' : 'warning'">
+              {{ calGoalPercent }}% of goal
+            </span>
+          </div>
+          <div class="stat-card-right">
+            <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+            </svg>
           </div>
         </router-link>
 
-        <router-link to="/fitness" class="stat-pastel-card stat-pastel-blue">
-          <div class="stat-pastel-info">
-            <div class="stat-pastel-value">{{ store.todaySteps.toLocaleString() }} steps</div>
+        <!-- Steps -->
+        <router-link to="/fitness" class="stat-pastel-card">
+          <div class="stat-card-left">
             <div class="stat-pastel-label">Steps Today</div>
+            <div class="stat-pastel-value">{{ store.todaySteps.toLocaleString() }}</div>
+            <span class="trend-pill" :class="stepsGoalPercent >= 100 ? 'success' : 'warning'">
+              {{ stepsGoalPercent }}% of goal
+            </span>
+          </div>
+          <div class="stat-card-right">
+            <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 8v8M8 12h8"/>
+            </svg>
           </div>
         </router-link>
 
-        <router-link to="/finance" class="stat-pastel-card stat-pastel-yellow">
-          <div class="stat-pastel-info">
-            <div class="stat-pastel-value">₱{{ store.monthlyExpenses.toLocaleString() }}</div>
+        <!-- Expenses -->
+        <router-link to="/finance" class="stat-pastel-card">
+          <div class="stat-card-left">
             <div class="stat-pastel-label">Expenses (Month)</div>
+            <div class="stat-pastel-value">₱{{ store.monthlyExpenses.toLocaleString() }}</div>
+            <span class="trend-pill" :class="expensesBudgetPercent > 100 ? 'danger' : (expensesBudgetPercent > 70 ? 'warning' : 'success')">
+              {{ expensesBudgetPercent }}% of budget
+            </span>
+          </div>
+          <div class="stat-card-right">
+            <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
           </div>
         </router-link>
 
-        <router-link to="/savings" class="stat-pastel-card stat-pastel-purple">
-          <div class="stat-pastel-info">
-            <div class="stat-pastel-value">₱{{ store.totalSavings.toLocaleString() }}</div>
+        <!-- Savings -->
+        <router-link to="/savings" class="stat-pastel-card">
+          <div class="stat-card-left">
             <div class="stat-pastel-label">Total Savings</div>
+            <div class="stat-pastel-value">₱{{ store.totalSavings.toLocaleString() }}</div>
+            <span class="trend-pill" :class="savingsGoalsPercent > 0 ? 'success' : 'neutral'">
+              {{ savingsGoalsPercent > 0 ? savingsGoalsPercent + '% of target' : 'No active targets' }}
+            </span>
+          </div>
+          <div class="stat-card-right">
+            <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="6"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
           </div>
         </router-link>
       </div>
@@ -99,6 +139,27 @@ import Chart from 'chart.js/auto'
 
 const store = useAppStore()
 const focusInput = ref(store.todayFocus)
+
+const calGoalPercent = computed(() => {
+  const target = 500 // Active calorie burn target
+  return Math.min(100, Math.round((store.todayTotalCaloriesBurned / target) * 100))
+})
+
+const stepsGoalPercent = computed(() => {
+  const target = store.fitnessStepGoal || 8000
+  return Math.min(100, Math.round((store.todaySteps / target) * 100))
+})
+
+const expensesBudgetPercent = computed(() => {
+  const target = 15000 // Monthly budget target
+  return Math.min(100, Math.round((store.monthlyExpenses / target) * 100))
+})
+
+const savingsGoalsPercent = computed(() => {
+  const totalTarget = store.savingsGoals.reduce((sum, g) => sum + (g.target || 0), 0)
+  if (totalTarget <= 0) return 0
+  return Math.min(100, Math.round((store.totalSavings / totalTarget) * 100))
+})
 const activeChart = ref('growth')
 const chartCanvas = ref(null)
 let chartInstance = null
@@ -322,7 +383,7 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
 .delay-300 { animation-delay: 0.24s; }
 .delay-400 { animation-delay: 0.32s; }
 
-/* ── Stat Cards: Glassmorphism ─────────────────────────── */
+/* ── Stat Cards: Split Layout with Trend Pills ─────────── */
 .stats-pastel-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -331,12 +392,12 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
 }
 .stat-pastel-card {
     font-family: 'Plus Jakarta Sans', sans-serif !important;
-    border-radius: 24px;
+    border-radius: 20px;
     padding: 24px;
     display: flex;
-    flex-direction: column;
     justify-content: space-between;
-    height: 172px;
+    align-items: center;
+    height: 148px;
     transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
     text-decoration: none;
     position: relative;
@@ -346,26 +407,72 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
     -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
     border: 1px solid var(--glass-border, rgba(255,255,255,0.2)) !important;
     color: var(--time-text, var(--text-primary)) !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.06);
 }
 .stat-pastel-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
     background: var(--glass-hover, rgba(255,255,255,0.22)) !important;
     box-shadow: 0 12px 40px rgba(0,0,0,0.12);
 }
-.stat-pastel-value {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
-    font-size: 32px;
-    font-weight: 800;
-    line-height: 1.1;
-    margin-bottom: 4px;
-    color: var(--time-text, var(--text-primary));
+.stat-card-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    text-align: left;
 }
 .stat-pastel-label {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     color: var(--time-text-muted, var(--text-secondary));
+    opacity: 0.8;
+}
+.stat-pastel-value {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--time-text, var(--text-primary));
+    margin: 0;
+}
+.trend-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    margin-top: 4px;
+}
+.trend-pill.success {
+    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+}
+.trend-pill.warning {
+    background: rgba(249, 115, 22, 0.15);
+    color: #ea580c;
+}
+.trend-pill.danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+}
+.trend-pill.neutral {
+    background: rgba(148, 163, 184, 0.15);
+    color: var(--text-secondary);
+}
+.stat-card-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--time-accent, var(--accent-orange));
+    opacity: 0.85;
+}
+.stat-card-icon {
+    width: 38px;
+    height: 38px;
+    stroke-width: 1.75;
 }
 
 /* ── Tabbed Chart Card: Glassmorphism ──────────────────── */

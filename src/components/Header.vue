@@ -2,10 +2,27 @@
   <header class="dash-header animate-in">
     <div class="dash-header-left">
       <span class="dash-day-label">{{ dayLabel }}</span>
-      <span class="dash-date-main">{{ dateLabel }}</span>
+      <div class="dash-date-main-wrapper">
+        <span 
+          v-for="(char, index) in dateLabelArray" 
+          :key="index"
+          class="date-char-flip"
+          :style="{ 'animation-delay': (index * 0.02) + 's' }"
+        >
+          <span v-if="char === ' '">&nbsp;</span>
+          <span v-else>{{ char }}</span>
+        </span>
+      </div>
     </div>
     <div class="dash-header-right">
-      <span class="dash-clock">{{ clockLabel }}</span>
+      <div class="dash-clock-flip-container">
+        <FlipDigit :value="hTens" />
+        <FlipDigit :value="hOnes" />
+        <span class="clock-colon">:</span>
+        <FlipDigit :value="mTens" />
+        <FlipDigit :value="mOnes" />
+        <span class="clock-ampm">{{ ampmLabel }}</span>
+      </div>
       <span class="dash-period-badge">
         <span class="dash-period-dot"></span>
         <span>{{ periodLabel }}</span>
@@ -17,6 +34,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '../stores/appStore'
+import FlipDigit from './FlipDigit.vue'
 
 const store = useAppStore()
 
@@ -37,12 +55,29 @@ let timerId = null
 const dayLabel = computed(() => DAYS[time.value.getDay()].toUpperCase())
 const dateLabel = computed(() => `${MONTHS[time.value.getMonth()]} ${time.value.getDate()}, ${time.value.getFullYear()}`)
 
-const clockLabel = computed(() => {
+const dateLabelArray = computed(() => {
+  return dateLabel.value.split('')
+})
+
+// Parsed digits for the flip clock
+const hTens = computed(() => {
   let h = time.value.getHours()
-  const m = time.value.getMinutes().toString().padStart(2, '0')
-  const ampm = h >= 12 ? 'PM' : 'AM'
   h = h % 12 || 12
-  return `${h}:${m} ${ampm}`
+  return Math.floor(h / 10).toString()
+})
+const hOnes = computed(() => {
+  let h = time.value.getHours()
+  h = h % 12 || 12
+  return (h % 10).toString()
+})
+const mTens = computed(() => {
+  return Math.floor(time.value.getMinutes() / 10).toString()
+})
+const mOnes = computed(() => {
+  return (time.value.getMinutes() % 10).toString()
+})
+const ampmLabel = computed(() => {
+  return time.value.getHours() >= 12 ? 'PM' : 'AM'
 })
 
 const periodLabel = computed(() => {
@@ -99,9 +134,17 @@ onUnmounted(() => {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--time-accent, var(--accent-purple));
+  color: var(--time-accent, var(--accent-orange));
 }
-.dash-date-main {
+
+/* Date character animation */
+.dash-date-main-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+.date-char-flip {
+  display: inline-block;
   font-family: 'Playfair Display', Georgia, serif !important;
   font-style: italic;
   font-size: 38px;
@@ -109,21 +152,57 @@ onUnmounted(() => {
   letter-spacing: -0.015em;
   color: var(--time-text, var(--text-primary));
   line-height: 1.15;
+  transform-origin: top center;
+  transform: rotateX(-90deg);
+  opacity: 0;
+  animation: dateFlipIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
+@keyframes dateFlipIn {
+  100% {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+}
+
 .dash-header-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 6px;
+  gap: 12px;
 }
-.dash-clock {
-  font-family: 'Playfair Display', Georgia, serif !important;
-  font-size: 36px;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: var(--time-accent, var(--accent-purple));
-  line-height: 1.15;
+
+/* Flip clock layout styling */
+.dash-clock-flip-container {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  user-select: none;
 }
+.clock-colon {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--time-accent, var(--accent-orange));
+  margin: 0 2px;
+  animation: blink 1s step-start infinite;
+  align-self: center;
+  line-height: 1;
+}
+@keyframes blink {
+  50% { opacity: 0.2; }
+}
+.clock-ampm {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--time-accent, var(--accent-orange));
+  margin-left: 6px;
+  align-self: flex-end;
+  padding-bottom: 4px;
+  letter-spacing: 0.05em;
+}
+
 .dash-period-badge {
   font-family: 'Plus Jakarta Sans', sans-serif !important;
   display: inline-flex;
@@ -142,24 +221,29 @@ onUnmounted(() => {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--badge-dot, var(--accent-purple));
+  background: var(--badge-dot, var(--accent-orange));
   animation: pulseDot 2s ease-in-out infinite;
 }
 @keyframes pulseDot {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(0.85); }
 }
+
 @media (max-width: 600px) {
   .dash-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    gap: 20px;
     padding: 28px 0 20px;
     margin-bottom: 24px;
   }
-  .dash-header-right { align-items: flex-start; }
-  .dash-date-main { font-size: 28px; }
-  .dash-clock { font-size: 26px; }
+  .dash-header-right {
+    align-items: flex-start;
+  }
+  .date-char-flip {
+    font-size: 28px;
+  }
 }
 </style>
+
 
