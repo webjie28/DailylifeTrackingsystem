@@ -225,8 +225,80 @@ const showLogsDrawer = ref(false)
 const { ipcRenderer } = window.require ? window.require('electron') : {}
 const pythonAnalytics = ref(null)
 
+function calculateJSAnalytics() {
+  const logs = store.workTimeLogs
+  if (!logs || logs.length === 0) {
+    pythonAnalytics.value = {
+      total_minutes: 0,
+      avg_minutes: 0,
+      most_productive_day: 'None',
+      project_breakdown: []
+    }
+    return
+  }
+
+  let total_mins = 0
+  const durations = []
+  const project_counts = {}
+  const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+  const dayMinutes = { "Sunday": 0, "Monday": 0, "Tuesday": 0, "Wednesday": 0, "Thursday": 0, "Friday": 0, "Saturday": 0 }
+
+  logs.forEach(log => {
+    const duration = log.duration
+    if (duration !== null && duration !== undefined) {
+      total_mins += duration
+      durations.push(duration)
+    }
+
+    if (log.date) {
+      try {
+        const parts = log.date.split('-')
+        const dt = new Date(parts[0], parts[1] - 1, parts[2])
+        const dayName = dayNames[dt.getDay()]
+        if (duration !== null && duration !== undefined) {
+          dayMinutes[dayName] = (dayMinutes[dayName] || 0) + duration
+        }
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
+    let note = (log.note || '').trim()
+    if (!note) note = 'General Work'
+    project_counts[note] = (project_counts[note] || 0) + (duration || 0)
+  })
+
+  const avg_mins = durations.length > 0 ? Math.round(total_mins / durations.length) : 0
+
+  let most_productive = 'None'
+  let max_mins = -1
+  for (const day of dayNames) {
+    const mins = dayMinutes[day]
+    if (mins > max_mins && mins > 0) {
+      max_mins = mins
+      most_productive = day
+    }
+  }
+
+  const proj_breakdown = Object.keys(project_counts).map(name => ({
+    name,
+    minutes: project_counts[name]
+  }))
+
+  pythonAnalytics.value = {
+    status: 'success',
+    total_minutes: total_mins,
+    avg_minutes: avg_mins,
+    most_productive_day: most_productive,
+    project_breakdown: proj_breakdown
+  }
+}
+
 async function runPythonAnalytics() {
-  if (!ipcRenderer) return
+  if (!ipcRenderer) {
+    calculateJSAnalytics()
+    return
+  }
   try {
     const rawLogs = JSON.parse(JSON.stringify(store.workTimeLogs))
     const result = await ipcRenderer.invoke('run-python', {
@@ -235,9 +307,12 @@ async function runPythonAnalytics() {
     })
     if (result && result.status === 'success') {
       pythonAnalytics.value = result
+    } else {
+      calculateJSAnalytics()
     }
   } catch (err) {
-    console.error('Python Analytics error:', err)
+    console.error('Python Analytics error, using JS fallback:', err)
+    calculateJSAnalytics()
   }
 }
 
