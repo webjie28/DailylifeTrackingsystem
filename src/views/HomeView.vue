@@ -1,96 +1,49 @@
 <template>
   <div>
-    <!-- Dashboard Header -->
+    <!-- Dashboard Header (now contains Clock In / Clock Out) -->
     <Header />
 
-    <!-- Today's Focus Card -->
-    <section class="animate-in delay-100">
-      <article class="focus-minimal-card">
-        <div class="focus-header">
-          <h3>Today's Focus</h3>
-        </div>
-        <input 
-          type="text" 
-          v-model="focusInput" 
-          @input="onFocusInput"
-          class="focus-minimal-input" 
-          placeholder="What is your #1 priority today?" 
-        />
-      </article>
-    </section>
-
-    <!-- Time Tracker Widget Card -->
-    <section class="animate-in delay-150" style="margin-bottom: 24px;">
+    <!-- Work Logs & Analytics Card -->
+    <section class="animate-in delay-100" style="margin-bottom: 24px;">
       <article class="focus-minimal-card">
         <div class="focus-header" style="justify-content: space-between; display: flex; align-items: center; width: 100%;">
-          <h3>Time Tracker</h3>
-          <span 
-            class="status-dot-badge" 
-            :class="{ active: store.isClockedIn }"
-          >
-            {{ store.isClockedIn ? 'Clocked In' : 'Clocked Out' }}
+          <h3>Work Logs &amp; Python Analytics</h3>
+          <span class="status-dot-badge">
+            {{ store.workTimeLogs.length }} {{ store.workTimeLogs.length === 1 ? 'Log' : 'Logs' }}
           </span>
         </div>
 
-        <!-- Clocked Out View -->
-        <div v-if="!store.isClockedIn" class="clock-control-row">
-          <input 
-            type="text" 
-            v-model="workNoteInput" 
-            class="focus-minimal-input" 
-            placeholder="What are you working on? (e.g. Coding Portfolio, Study Math)" 
-            style="margin-bottom: 12px;"
-          />
-          <button class="btn btn-primary" style="width: 100%;" @click="handleClockIn">
-            Clock In
-          </button>
-        </div>
-
-        <!-- Clocked In View -->
-        <div v-else class="clock-control-row">
-          <div class="timer-tick-display">
-            {{ activeDurationText }}
+        <!-- Python Powered Analytics Summary Shelf -->
+        <div v-if="pythonAnalytics && store.workTimeLogs.length > 0" class="python-analytics-box animate-in" style="margin-top: 12px; margin-bottom: 20px;">
+          <div class="python-stats-row">
+            <div class="py-stat-card">
+              <span class="py-stat-lbl">Total Time Worked</span>
+              <span class="py-stat-val">{{ formatDuration(pythonAnalytics.total_minutes) }}</span>
+            </div>
+            <div class="py-stat-card">
+              <span class="py-stat-lbl">Average Session</span>
+              <span class="py-stat-val">{{ formatDuration(pythonAnalytics.avg_minutes) }}</span>
+            </div>
+            <div class="py-stat-card">
+              <span class="py-stat-lbl">Most Active Day</span>
+              <span class="py-stat-val" style="color: var(--time-accent, var(--accent-orange));">{{ pythonAnalytics.most_productive_day }}</span>
+            </div>
           </div>
-          <p v-if="activeLog && activeLog.note" class="active-note-lbl">
-            Working on: <strong>{{ activeLog.note }}</strong>
-          </p>
-          <button class="btn btn-warning" style="width: 100%; margin-top: 10px;" @click="handleClockOut">
-            Clock Out
-          </button>
         </div>
 
         <!-- Logs Toggle Button -->
-        <div style="margin-top: 16px; text-align: center;">
+        <div style="text-align: center; margin-bottom: 12px;">
           <button 
             class="btn-text-toggle" 
             @click="showLogsDrawer = !showLogsDrawer"
           >
-            {{ showLogsDrawer ? 'Hide Logs History' : 'Show Logs History (' + store.workTimeLogs.length + ')' }}
+            {{ showLogsDrawer ? 'Hide Logs History' : 'Show Logs History' }}
           </button>
         </div>
 
-        <!-- Logs Drawer (Collapsible) -->
-        <div v-if="showLogsDrawer" class="logs-drawer-content animate-in">
-          <!-- Python Powered Analytics Summary Shelf -->
-          <div v-if="pythonAnalytics && store.workTimeLogs.length > 0" class="python-analytics-box animate-in">
-            <h4>Python-Powered Work Analytics</h4>
-            <div class="python-stats-row">
-              <div class="py-stat-card">
-                <span class="py-stat-lbl">Total Time Worked</span>
-                <span class="py-stat-val">{{ formatDuration(pythonAnalytics.total_minutes) }}</span>
-              </div>
-              <div class="py-stat-card">
-                <span class="py-stat-lbl">Average Session</span>
-                <span class="py-stat-val">{{ formatDuration(pythonAnalytics.avg_minutes) }}</span>
-              </div>
-              <div class="py-stat-card">
-                <span class="py-stat-lbl">Most Active Day</span>
-                <span class="py-stat-val" style="color: var(--time-accent, var(--accent-orange));">{{ pythonAnalytics.most_productive_day }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="store.workTimeLogs.length === 0" class="empty-msg" style="padding: 20px 0;">
+        <!-- Logs History Table (Collapsible) -->
+        <div v-if="showLogsDrawer" class="logs-drawer-content animate-in" style="border-top: 1px solid var(--glass-border, rgba(255,255,255,0.15)); padding-top: 16px;">
+          <div v-if="store.workTimeLogs.length === 0" class="empty-msg" style="padding: 20px 0; text-align: center;">
             No work logs recorded yet.
           </div>
           <div v-else class="logs-table-wrapper">
@@ -126,7 +79,7 @@
     </section>
 
     <!-- Quick Stats Section (Modern Grid Cards) -->
-    <section class="animate-in delay-200">
+    <section class="animate-in delay-150">
       <div class="stats-pastel-grid">
         <!-- Calories -->
         <router-link to="/fitness" class="stat-pastel-card">
@@ -199,7 +152,7 @@
     </section>
 
     <!-- Quick Actions Card -->
-    <section class="animate-in delay-300">
+    <section class="animate-in delay-200">
       <div class="actions-minimal-row">
         <router-link to="/finance" class="action-minimal-btn">
           Log Expense
@@ -211,7 +164,7 @@
     </section>
 
     <!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
-    <section class="animate-in delay-400" style="margin-bottom: 36px;">
+    <section class="animate-in delay-250" style="margin-bottom: 36px;">
       <article class="chart-card-tabbed">
         <div class="chart-tab-header">
           <h3>{{ activeChartTitle }}</h3>
@@ -244,7 +197,6 @@ import { useAppStore } from '../stores/appStore'
 import Chart from 'chart.js/auto'
 
 const store = useAppStore()
-const focusInput = ref(store.todayFocus)
 
 const calGoalPercent = computed(() => {
   const target = 500 // Active calorie burn target
@@ -267,15 +219,7 @@ const savingsGoalsPercent = computed(() => {
   return Math.min(100, Math.round((store.totalSavings / totalTarget) * 100))
 })
 
-// Time Tracker states and ticking logic
-const workNoteInput = ref('')
 const showLogsDrawer = ref(false)
-const activeDurationText = ref('00:00:00')
-let activeTimerId = null
-
-const activeLog = computed(() => {
-  return store.workTimeLogs.find(l => l.id === store.activeClockInLogId)
-})
 
 // Electron IPC & Python Analytics
 const { ipcRenderer } = window.require ? window.require('electron') : {}
@@ -301,30 +245,6 @@ watch(() => store.workTimeLogs, () => {
   runPythonAnalytics()
 }, { deep: true })
 
-function updateActiveDuration() {
-  if (!store.isClockedIn || !activeLog.value) {
-    activeDurationText.value = '00:00:00'
-    return
-  }
-  const start = new Date(activeLog.value.clockIn)
-  const now = new Date()
-  const diffMs = now - start
-  
-  const h = Math.floor(diffMs / 3600000).toString().padStart(2, '0')
-  const m = Math.floor((diffMs % 3600000) / 60000).toString().padStart(2, '0')
-  const s = Math.floor((diffMs % 60000) / 1000).toString().padStart(2, '0')
-  activeDurationText.value = `${h}:${m}:${s}`
-}
-
-function handleClockIn() {
-  store.clockIn(workNoteInput.value)
-  workNoteInput.value = ''
-}
-
-function handleClockOut() {
-  store.clockOut()
-}
-
 function formatTime(isoStr) {
   if (!isoStr) return ''
   const d = new Date(isoStr)
@@ -339,24 +259,11 @@ function formatDuration(mins) {
   return `${h}h ${m}m`
 }
 
-watch(() => store.isClockedIn, (val) => {
-  if (val) {
-    if (!activeTimerId) {
-      activeTimerId = setInterval(updateActiveDuration, 1000)
-    }
-    updateActiveDuration()
-  } else {
-    if (activeTimerId) {
-      clearInterval(activeTimerId)
-      activeTimerId = null
-    }
-    activeDurationText.value = '00:00:00'
-  }
-}, { immediate: true })
-
-onUnmounted(() => {
-  if (activeTimerId) clearInterval(activeTimerId)
+onMounted(() => {
+  renderChart()
+  runPythonAnalytics()
 })
+
 const activeChart = ref('growth')
 const chartCanvas = ref(null)
 let chartInstance = null
@@ -376,10 +283,6 @@ const titles = {
 }
 
 const activeChartTitle = computed(() => titles[activeChart.value])
-
-function onFocusInput() {
-  store.updateTodayFocus(focusInput.value)
-}
 
 function selectChart(chartKey) {
   activeChart.value = chartKey
