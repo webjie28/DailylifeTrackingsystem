@@ -16,13 +16,23 @@
     </div>
 
     <!-- Toggle Menu Button -->
-    <button id="toggleSidebar" class="toggle-sidebar-btn" @click="toggleSidebar">
+    <button 
+      v-if="store.isAuthenticated"
+      id="toggleSidebar" 
+      class="toggle-sidebar-btn" 
+      @click="toggleSidebar"
+    >
       ☰ Menu
     </button>
 
-    <div class="app-shell">
+    <div class="app-shell" :class="{ 'no-sidebar': !store.isAuthenticated }">
       <!-- Sidebar container with reactive collapsed class -->
-      <div id="sidebar" class="sidebar-container" :class="{ collapsed: isSidebarCollapsed }">
+      <div 
+        v-if="store.isAuthenticated"
+        id="sidebar" 
+        class="sidebar-container" 
+        :class="{ collapsed: isSidebarCollapsed }"
+      >
         <Sidebar />
       </div>
 
@@ -172,5 +182,10 @@ onMounted(() => {
   background-attachment: fixed;
   transition: background 0.8s ease;
   min-height: 100vh;
+}
+
+.no-sidebar .main-content {
+  margin-left: 0 !important;
+  padding: 40px 20px;
 }
 </style>
