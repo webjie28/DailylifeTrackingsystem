@@ -33,7 +33,7 @@
 
         <div class="auth-input-group">
           <input 
-            type="password" 
+            :type="showPassword ? 'text' : 'password'" 
             id="password-input"
             v-model="password" 
             placeholder=" " 
@@ -45,6 +45,21 @@
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
+          <button 
+            type="button" 
+            class="password-toggle-btn" 
+            @click="showPassword = !showPassword"
+            tabindex="-1"
+          >
+            <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+          </button>
         </div>
 
         <button type="submit" class="btn-auth-submit" :disabled="isLoading">
@@ -74,6 +89,7 @@ const username = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const isLoading = ref(false)
+const showPassword = ref(false)
 
 async function handleLogin() {
   if (!username.value || !password.value) return
@@ -197,7 +213,7 @@ async function handleLogin() {
 
 .auth-input-group input {
   width: 100%;
-  padding: 12px 14px 12px 42px; /* centered vertical padding */
+  padding: 12px 42px 12px 42px; /* centered vertical padding with right room for eye toggle */
   border-radius: 14px;
   border: 1px solid var(--border-color-strong);
   background: var(--bg-input-inset);
@@ -312,5 +328,31 @@ async function handleLogin() {
 .auth-link:hover {
   text-decoration: underline;
   opacity: 0.85;
+}
+
+/* Password Toggle Button */
+.password-toggle-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+  color: var(--accent-purple);
+}
+
+.password-toggle-btn svg {
+  width: 18px;
+  height: 18px;
 }
 </style>
