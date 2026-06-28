@@ -4,7 +4,7 @@ import { getFirestore } from 'firebase/firestore'
 
 // Firebase configuration from Firebase Console
 const firebaseConfig = {
-  apiKey: "AIzaSyClUlfeU8qovcZKqg_gwkV1IFooBQJFsOE",
+  apiKey: "AIzaSyClUlfeU8qovcZKqg_gwkV1IFOoBQJFsOE",
   authDomain: "dailylifetrackingsystem.firebaseapp.com",
   projectId: "dailylifetrackingsystem",
   storageBucket: "dailylifetrackingsystem.firebasestorage.app",
