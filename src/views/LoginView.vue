@@ -15,38 +15,36 @@
       </div>
 
       <form @submit.prevent="handleLogin" class="auth-form">
-        <div class="form-group">
-          <label>Email Address</label>
-          <div class="auth-input-wrapper">
-            <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <polyline points="22,6 12,13 2,6"/>
-            </svg>
-            <input 
-              type="email" 
-              v-model="email" 
-              placeholder="name@example.com" 
-              required 
-              :disabled="isLoading"
-            />
-          </div>
+        <div class="auth-input-group">
+          <input 
+            type="email" 
+            id="email-input"
+            v-model="email" 
+            placeholder=" " 
+            required 
+            :disabled="isLoading"
+          />
+          <label for="email-input">Email Address</label>
+          <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
         </div>
 
-        <div class="form-group">
-          <label>Password</label>
-          <div class="auth-input-wrapper">
-            <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-            </svg>
-            <input 
-              type="password" 
-              v-model="password" 
-              placeholder="••••••••" 
-              required 
-              :disabled="isLoading"
-            />
-          </div>
+        <div class="auth-input-group">
+          <input 
+            type="password" 
+            id="password-input"
+            v-model="password" 
+            placeholder=" " 
+            required 
+            :disabled="isLoading"
+          />
+          <label for="password-input">Password</label>
+          <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
         </div>
 
         <button type="submit" class="btn-auth-submit" :disabled="isLoading">
@@ -177,39 +175,14 @@ async function handleLogin() {
   gap: 18px;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  text-align: left;
-}
-
-.form-group label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.auth-input-wrapper {
+.auth-input-group {
   position: relative;
-  display: flex;
-  align-items: center;
+  margin-bottom: 8px;
 }
 
-.auth-input-icon {
-  position: absolute;
-  left: 14px;
-  width: 18px;
-  height: 18px;
-  color: var(--text-muted);
-  pointer-events: none;
-}
-
-.auth-input-wrapper input {
+.auth-input-group input {
   width: 100%;
-  padding: 12px 14px 12px 42px;
+  padding: 18px 14px 6px 42px;
   border-radius: 14px;
   border: 1px solid var(--border-color-strong);
   background: var(--bg-input-inset);
@@ -220,7 +193,47 @@ async function handleLogin() {
   transition: all 0.2s ease;
 }
 
-.auth-input-wrapper input:focus {
+.auth-input-group label {
+  position: absolute;
+  left: 42px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left top;
+}
+
+/* Floating Label Animation */
+.auth-input-group input:focus ~ label,
+.auth-input-group input:not(:placeholder-shown) ~ label {
+  top: 8px;
+  transform: translateY(0) scale(0.75);
+  font-weight: 700;
+  color: var(--accent-purple);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.auth-input-group input:focus ~ .auth-input-icon {
+  color: var(--accent-purple);
+}
+
+.auth-input-group input:focus {
   border-color: var(--accent-purple);
   box-shadow: 0 0 0 3px var(--accent-purple-light);
 }
