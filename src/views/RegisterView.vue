@@ -55,12 +55,30 @@
             placeholder=" " 
             required 
             :disabled="isLoading"
+            @focus="showPasswordRequirements = true"
+            @input="checkPasswordRequirements"
           />
           <label for="password-input">Password</label>
           <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
+        </div>
+
+        <!-- Password Requirements Widget -->
+        <div v-show="showPasswordRequirements" class="password-req-box animate-in">
+          <div class="req-item" :class="{ met: reqs.startsWithCapital }">
+            <span class="req-indicator">{{ reqs.startsWithCapital ? '✓' : '○' }}</span>
+            <span>Starts with a capital letter (A-Z)</span>
+          </div>
+          <div class="req-item" :class="{ met: reqs.hasNumber }">
+            <span class="req-indicator">{{ reqs.hasNumber ? '✓' : '○' }}</span>
+            <span>Contains a number (0-9)</span>
+          </div>
+          <div class="req-item" :class="{ met: reqs.hasSpecialChar }">
+            <span class="req-indicator">{{ reqs.hasSpecialChar ? '✓' : '○' }}</span>
+            <span>Contains a special character (@, #, !, etc.)</span>
+          </div>
         </div>
 
         <div class="auth-input-group">
@@ -109,6 +127,20 @@ const confirmPassword = ref('')
 const errorMessage = ref('')
 const isLoading = ref(false)
 
+const showPasswordRequirements = ref(false)
+const reqs = ref({
+  startsWithCapital: false,
+  hasNumber: false,
+  hasSpecialChar: false
+})
+
+function checkPasswordRequirements() {
+  const val = password.value
+  reqs.value.startsWithCapital = /^[A-Z]/.test(val)
+  reqs.value.hasNumber = /[0-9]/.test(val)
+  reqs.value.hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(val)
+}
+
 async function handleRegister() {
   if (!username.value || !email.value || !password.value || !confirmPassword.value) return
   
@@ -120,13 +152,15 @@ async function handleRegister() {
     return
   }
 
-  if (password.value !== confirmPassword.value) {
-    errorMessage.value = 'Passwords do not match.'
+  // Enforce password strength requirements
+  checkPasswordRequirements()
+  if (!reqs.value.startsWithCapital || !reqs.value.hasNumber || !reqs.value.hasSpecialChar) {
+    errorMessage.value = 'Please satisfy all password requirements (Capital letter start, number, special char).'
     return
   }
-  
-  if (password.value.length < 6) {
-    errorMessage.value = 'Password should be at least 6 characters.'
+
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = 'Passwords do not match.'
     return
   }
   
@@ -154,9 +188,9 @@ async function handleRegister() {
     } else if (err.code === 'auth/invalid-email') {
       errorMessage.value = 'Please enter a valid email address.'
     } else if (err.code === 'auth/weak-password') {
-      errorMessage.value = 'Password is too weak. Make it at least 6 characters.'
+      errorMessage.value = 'Password is too weak.'
     } else {
-      errorMessage.value = 'Failed to create account. Please try again.'
+      errorMessage.value = 'Failed to create account: ' + (err.message || err.code || err)
     }
   } finally {
     isLoading.value = false
@@ -365,5 +399,39 @@ async function handleRegister() {
 .auth-link:hover {
   text-decoration: underline;
   opacity: 0.85;
+}
+
+/* Password Requirements Box */
+.password-req-box {
+  background: var(--bg-input-inset);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  animation: fadeIn 0.25s ease both;
+}
+
+.req-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.req-item.met {
+  color: #22c55e; /* Accent green */
+}
+
+.req-indicator {
+  font-weight: 700;
+  display: inline-block;
+  min-width: 14px;
 }
 </style>
