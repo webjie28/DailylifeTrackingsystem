@@ -20,6 +20,7 @@
     "chart.js": "^4.5.1",
     "pinia": "^2.3.0",
     "python-shell": "^5.0.0",
+    "tesseract.js": "^7.0.0",
     "vue": "^3.5.38",
     "vue-router": "^4.5.0"
   }

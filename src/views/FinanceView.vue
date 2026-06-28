@@ -8,6 +8,7 @@
         </p>
       </div>
       <div class="header-actions">
+        <button class="btn btn-primary" @click="openScanModal">📄 Scan Receipt Image</button>
         <button class="btn btn-outline" @click="exportCSV">Export CSV</button>
         <button class="btn btn-outline" @click="clearAll">Clear All</button>
       </div>
@@ -184,6 +185,113 @@
         </div>
       </div>
     </div>
+
+    <!-- Receipt Scanner Modal -->
+    <div class="modal-overlay" v-if="showScanModal" @click.self="closeScanModal">
+      <div class="modal-content" style="max-width: 550px; width: 95%;">
+        <h3>Scan Receipt Image</h3>
+        
+        <!-- Drag & Drop / File Select Area -->
+        <div 
+          v-if="!receiptImageSrc"
+          class="scan-dropzone"
+          :class="{ 'drag-over': isDragging }"
+          @dragover.prevent="isDragging = true"
+          @dragleave.prevent="isDragging = false"
+          @drop.prevent="handleFileDrop"
+          @click="triggerFileInput"
+        >
+          <input 
+            type="file" 
+            ref="fileInputRef" 
+            style="display: none;" 
+            accept="image/*" 
+            @change="handleFileSelect"
+          />
+          <div class="dropzone-icon">📁</div>
+          <p class="dropzone-text">Drag & drop your receipt image here, or <strong>browse files</strong></p>
+          <span class="dropzone-sub">Supports PNG, JPG, JPEG</span>
+        </div>
+
+        <!-- Preview & Progress Area -->
+        <div v-else class="scan-preview-area">
+          <div class="preview-header">
+            <span>Receipt Preview</span>
+            <button class="btn-text-danger" @click="resetScanner">Remove Image</button>
+          </div>
+          
+          <div class="preview-img-container">
+            <img :src="receiptImageSrc" class="receipt-preview-img" alt="Uploaded Receipt" />
+          </div>
+
+          <!-- OCR Processing State -->
+          <div v-if="isProcessingOCR" class="scan-progress-wrap">
+            <div class="spinner-circle"></div>
+            <div class="progress-message">{{ progressMessage }}</div>
+          </div>
+          
+          <!-- Review Fields Form (Visible after OCR completes) -->
+          <div v-else class="scan-results-form animate-in">
+            <div class="raw-text-toggle-wrap">
+              <button 
+                type="button" 
+                class="btn-text-toggle" 
+                @click="showRawText = !showRawText"
+              >
+                {{ showRawText ? 'Hide Raw Scanned Text' : 'Show Raw Scanned Text' }}
+              </button>
+            </div>
+            
+            <!-- Raw Scanned Text Box (Helps verify nothing is missed) -->
+            <div v-if="showRawText" class="raw-text-box animate-in">
+              <pre>{{ scannedRawText }}</pre>
+            </div>
+
+            <h4 style="margin: 16px 0 10px; font-size: 14px; text-transform: uppercase; color: var(--accent-purple);">Confirm Transaction Details</h4>
+            
+            <form @submit.prevent="saveScannedTransaction">
+              <div class="form-group">
+                <label>Description / Store Name</label>
+                <input type="text" v-model="scannedDesc" required placeholder="e.g. SM Supermarket" />
+              </div>
+
+              <div class="two-input">
+                <div class="form-group">
+                  <label>Amount (₱)</label>
+                  <input type="number" v-model.number="scannedAmount" min="0.01" step="any" required placeholder="0.00" />
+                </div>
+                <div class="form-group">
+                  <label>Category</label>
+                  <select v-model="scannedCategory">
+                    <option v-for="cat in expenseCategories" :key="cat" :value="cat">
+                      {{ cat }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="two-input">
+                <div class="form-group">
+                  <label>Date</label>
+                  <input type="date" v-model="scannedDate" required />
+                </div>
+                <div class="form-group">
+                  <label>Note / Extras</label>
+                  <input type="text" v-model="scannedNote" placeholder="e.g. Weekly grocery stock" />
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                  Add to Ledger
+                </button>
+                <button type="button" class="btn btn-outline" @click="closeScanModal">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -191,8 +299,26 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useAppStore, getTodayKey } from '../stores/appStore'
 import Chart from 'chart.js/auto'
+import Tesseract from 'tesseract.js'
 
 const store = useAppStore()
+
+// Receipt Scanner states
+const showScanModal = ref(false)
+const isDragging = ref(false)
+const receiptImageSrc = ref(null)
+const isProcessingOCR = ref(false)
+const progressMessage = ref('Initializing engine...')
+const scannedRawText = ref('')
+const showRawText = ref(false)
+const fileInputRef = ref(null)
+
+// Scanned review fields
+const scannedDesc = ref('')
+const scannedAmount = ref('')
+const scannedCategory = ref('Food')
+const scannedDate = ref(getTodayKey())
+const scannedNote = ref('')
 
 // Form states
 const txType = ref('expense')
@@ -471,6 +597,244 @@ onMounted(() => {
 watch(() => store.financeTransactions, () => {
   renderCharts()
 }, { deep: true })
+
+function openScanModal() {
+  resetScanner()
+  showScanModal.value = true
+}
+
+function closeScanModal() {
+  showScanModal.value = false
+  resetScanner()
+}
+
+function resetScanner() {
+  receiptImageSrc.value = null
+  isProcessingOCR.value = false
+  scannedRawText.value = ''
+  showRawText.value = false
+  scannedDesc.value = ''
+  scannedAmount.value = ''
+  scannedCategory.value = 'Food'
+  scannedDate.value = getTodayKey()
+  scannedNote.value = ''
+}
+
+function triggerFileInput() {
+  if (fileInputRef.value) {
+    fileInputRef.value.click()
+  }
+}
+
+function handleFileSelect(e) {
+  const files = e.target.files
+  if (files && files[0]) {
+    processImageFile(files[0])
+  }
+}
+
+function handleFileDrop(e) {
+  isDragging.value = false
+  const files = e.dataTransfer.files
+  if (files && files[0]) {
+    processImageFile(files[0])
+  }
+}
+
+function processImageFile(file) {
+  if (!file.type.startsWith('image/')) {
+    alert('Please upload an image file (PNG, JPG, or JPEG).')
+    return
+  }
+  
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    receiptImageSrc.value = e.target.result
+    runOCR(file)
+  }
+  reader.readAsDataURL(file)
+}
+
+async function runOCR(file) {
+  isProcessingOCR.value = true
+  progressMessage.value = 'Initializing scanner...'
+  
+  try {
+    const result = await Tesseract.recognize(
+      file,
+      'eng',
+      {
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            progressMessage.value = `Reading receipt... ${Math.round(m.progress * 100)}%`
+          } else if (m.status === 'loading tesseract ocr core') {
+            progressMessage.value = 'Loading scan engine...'
+          }
+        }
+      }
+    )
+    
+    scannedRawText.value = result.data.text
+    isProcessingOCR.value = false
+    
+    // Parse fields from text
+    const parsed = parseReceiptText(result.data.text)
+    scannedDesc.value = parsed.storeName
+    scannedAmount.value = parsed.amount > 0 ? parsed.amount : ''
+    scannedCategory.value = parsed.category
+    scannedDate.value = parsed.date
+    scannedNote.value = `Scanned from receipt image`
+  } catch (error) {
+    console.error('OCR failed:', error)
+    alert('Failed to read receipt text. Please enter the details manually.')
+    isProcessingOCR.value = false
+    // Fallbacks
+    scannedDesc.value = 'Receipt Purchase'
+    scannedAmount.value = ''
+    scannedCategory.value = 'Food'
+    scannedDate.value = getTodayKey()
+  }
+}
+
+function parseReceiptText(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
+  
+  // 1. Est store name (first 3 lines, ignore common things like receipt title, tel, date)
+  let storeName = 'Receipt Purchase'
+  const ignorePatterns = [/receipt/i, /invoice/i, /tel/i, /phone/i, /date/i, /time/i, /address/i, /street/i, /http/i, /www/i, /tax/i, /vat/i, /cashier/i]
+  for (let i = 0; i < Math.min(4, lines.length); i++) {
+    if (!ignorePatterns.some(p => p.test(lines[i])) && lines[i].length > 3) {
+      storeName = lines[i].replace(/[^a-zA-Z0-9\s&'-]/g, '').trim()
+      break
+    }
+  }
+
+  // 2. Est total amount
+  let amount = 0
+  const totalRegex = /(?:total|grand\s*total|due|amount|net|cash|subtotal|php|₱)\s*(?:val|due)?[:=]?\s*(?:php|₱)?\s*([\d,]+\.\d{2}|[\d,]+)/i
+  
+  let bestMatches = []
+  lines.forEach(line => {
+    const match = line.match(totalRegex)
+    if (match) {
+      const valStr = match[1].replace(/,/g, '')
+      const parsedVal = parseFloat(valStr)
+      if (!isNaN(parsedVal) && parsedVal > 0) {
+        let score = 1
+        if (/total/i.test(line)) score += 2
+        if (/due/i.test(line)) score += 1
+        if (/subtotal/i.test(line)) score -= 1
+        bestMatches.push({ value: parsedVal, score })
+      }
+    }
+  })
+
+  if (bestMatches.length > 0) {
+    bestMatches.sort((a, b) => b.score - a.score || b.value - a.value)
+    amount = bestMatches[0].value
+  } else {
+    let allNumbers = []
+    const numberRegex = /([\d,]+\.\d{2})/g
+    lines.forEach(line => {
+      if (/\d{4}-\d{2}-\d{2}/.test(line) || /\d{2}\/\d{2}\/\d{4}/.test(line)) return
+      const matches = line.match(numberRegex)
+      if (matches) {
+        matches.forEach(m => {
+          const val = parseFloat(m.replace(/,/g, ''))
+          if (!isNaN(val) && val < 50000) {
+            allNumbers.push(val)
+          }
+        })
+      }
+    })
+    if (allNumbers.length > 0) {
+      amount = Math.max(...allNumbers)
+    }
+  }
+
+  // 3. Est date
+  let date = getTodayKey()
+  const dateRegexes = [
+    /(\d{4})[-/](\d{2})[-/](\d{2})/,
+    /(\d{2})[-/](\d{2})[-/](\d{4})/,
+    /(\d{2})[-/](\d{2})[-/](\d{2})/
+  ]
+  for (const line of lines) {
+    let matched = false
+    for (const r of dateRegexes) {
+      const match = line.match(r)
+      if (match) {
+        try {
+          let y = parseInt(match[1])
+          let m = parseInt(match[2]) - 1
+          let d = parseInt(match[3])
+          if (match[3].length === 4) {
+            y = parseInt(match[3])
+            m = parseInt(match[1]) - 1
+            d = parseInt(match[2])
+            if (m > 11) {
+              m = parseInt(match[2]) - 1
+              d = parseInt(match[1])
+            }
+          }
+          const parsedDate = new Date(y, m, d)
+          if (!isNaN(parsedDate.getTime())) {
+            if (y > 2000 && y <= new Date().getFullYear() + 1) {
+              const mm = (m + 1).toString().padStart(2, '0')
+              const dd = d.toString().padStart(2, '0')
+              date = `${y}-${mm}-${dd}`
+              matched = true
+              break
+            }
+          }
+        } catch (e) {}
+      }
+    }
+    if (matched) break
+  }
+
+  // 4. Est category
+  let category = 'Food'
+  const lowerText = text.toLowerCase()
+  const catKeywords = {
+    Transport: ['grab', 'uber', 'taxi', 'gas', 'fuel', 'petrol', 'shell', 'petron', 'caltex', 'toll'],
+    Bills: ['electric', 'water', 'internet', 'meralco', 'pldt', 'globe', 'smart', 'bill', 'subscription', 'netflix', 'spotify'],
+    Shopping: ['sm', 'mall', 'lazada', 'shopee', 'uniqlo', 'h&m', 'zara', 'bench', 'clothes', 'shoes', 'boutique', 'department'],
+    Health: ['watson', 'mercury', 'drug', 'pharmacy', 'clinic', 'hospital', 'medical', 'doctor', 'medicine'],
+    Entertainment: ['cinema', 'movie', 'ticket', 'concert', 'game', 'play', 'steam', 'playstation', 'nintendo'],
+    Gym: ['anytime', 'fitness', 'workout', 'supplement', 'whey', 'protein', 'gym'],
+    Food: ['supermarket', 'grocer', 'grocery', 'food', 'restaurant', 'cafe', 'starbucks', 'coffee', 'mcdonald', 'jollibee', 'kfc', 'dining', 'baker', 'eats', 'store']
+  }
+
+  for (const [cat, keywords] of Object.entries(catKeywords)) {
+    if (keywords.some(kw => lowerText.includes(kw))) {
+      category = cat
+      break
+    }
+  }
+
+  return { storeName, amount, date, category }
+}
+
+function saveScannedTransaction() {
+  if (!scannedDesc.value.trim() || !scannedAmount.value) {
+    alert('Please fill out all required fields.')
+    return
+  }
+  
+  const newTx = {
+    id: Date.now() + '_' + Math.random().toString(36).slice(2),
+    type: 'expense',
+    desc: scannedDesc.value.trim(),
+    amount: parseFloat(scannedAmount.value),
+    category: scannedCategory.value,
+    date: scannedDate.value,
+    note: scannedNote.value.trim()
+  }
+  
+  store.addTransaction(newTx)
+  closeScanModal()
+}
 </script>
 
 <style scoped>
@@ -778,5 +1142,121 @@ watch(() => store.financeTransactions, () => {
   padding: 40px 20px;
   color: var(--text-muted);
   font-size: 14px;
+}
+
+/* ── Receipt Scanner Styles ────────────────────────────────────── */
+.scan-dropzone {
+  border: 2px dashed var(--border-color-strong);
+  border-radius: var(--radius-md);
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--bg-input-inset);
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.scan-dropzone:hover, .scan-dropzone.drag-over {
+  border-color: var(--accent-purple);
+  background: var(--bg-hover);
+  transform: translateY(-2px);
+}
+.dropzone-icon {
+  font-size: 40px;
+}
+.dropzone-text {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.dropzone-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.scan-preview-area {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 10px;
+}
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.preview-img-container {
+  max-height: 200px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background: rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.receipt-preview-img {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+}
+.scan-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+}
+.spinner-circle {
+  width: 36px;
+  height: 36px;
+  border: 3.5px solid var(--border-color);
+  border-top-color: var(--accent-purple);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.progress-message {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.raw-text-toggle-wrap {
+  text-align: right;
+  margin-bottom: 8px;
+}
+.raw-text-box {
+  background: var(--bg-input-inset);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  max-height: 120px;
+  overflow-y: auto;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  color: var(--text-primary);
+  text-align: left;
+}
+.raw-text-box pre {
+  margin: 0;
+  white-space: pre-wrap;
+}
+.btn-text-danger {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-text-danger:hover {
+  text-decoration: underline;
 }
 </style>
