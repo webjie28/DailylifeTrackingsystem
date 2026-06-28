@@ -1,4 +1,12 @@
 import { defineStore } from 'pinia'
+import { auth, db } from '../services/firebase'
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut,
+  onAuthStateChanged 
+} from 'firebase/auth'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
 
 // Helper for formatted date key
 export function getTodayKey() {
@@ -111,6 +119,11 @@ export const useAppStore = defineStore('app', {
     const activeClockInLogId = localStorage.getItem('activeClockInLogId') || null
 
     return {
+      // User authentication state
+      user: null,
+      isAuthenticated: false,
+      isAuthLoading: true,
+
       theme: localStorage.getItem('theme') || 'light',
       timePeriod: 'morning',
       todayFocus: localStorage.getItem('todayFocus') || '',
@@ -477,6 +490,199 @@ export const useAppStore = defineStore('app', {
         localStorage.setItem('isClockedIn', 'false')
         localStorage.removeItem('activeClockInLogId')
       }
+    },
+    // ── Authentication Actions ─────────────────────────────
+    async registerUser(email, password) {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+        this.user = userCredential.user
+        this.isAuthenticated = true
+        await this.syncAllDataToCloud()
+      } catch (err) {
+        throw err
+      }
+    },
+    async loginUser(email, password) {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password)
+        this.user = userCredential.user
+        this.isAuthenticated = true
+        await this.fetchUserData()
+      } catch (err) {
+        throw err
+      }
+    },
+    async logoutUser() {
+      try {
+        await signOut(auth)
+        this.user = null
+        this.isAuthenticated = false
+        this.resetStoreData()
+      } catch (err) {
+        console.error('Logout error:', err)
+      }
+    },
+    async fetchUserData() {
+      if (!this.user) return
+      try {
+        const docRef = doc(db, 'users', this.user.uid)
+        const docSnap = await getDoc(docRef)
+        if (docSnap.exists()) {
+          const data = docSnap.data()
+          if (data.dailyTasks) this.dailyTasks = data.dailyTasks
+          if (data.customCategories) this.customCategories = data.customCategories
+          if (data.walkTrackerData) this.walkTrackerData = data.walkTrackerData
+          if (data.gymTrackerData) this.gymTrackerData = data.gymTrackerData
+          if (data.gymCheckedItems) this.gymCheckedItems = data.gymCheckedItems
+          if (data.fitnessStepGoal !== undefined) this.fitnessStepGoal = data.fitnessStepGoal
+          if (data.financeTransactions) this.financeTransactions = data.financeTransactions
+          if (data.savingsContributions) this.savingsContributions = data.savingsContributions
+          if (data.savingsGoals) this.savingsGoals = data.savingsGoals
+          if (data.animeWatchlist) this.animeWatchlist = data.animeWatchlist
+          if (data.eventsList) this.eventsList = data.eventsList
+          if (data.longtermGoalsList) this.longtermGoalsList = data.longtermGoalsList
+          if (data.studyBooksList) this.studyBooksList = data.studyBooksList
+          if (data.studySessionNotes !== undefined) this.studySessionNotes = data.studySessionNotes
+          if (data.studyTotalTime !== undefined) this.studyTotalTime = data.studyTotalTime
+          if (data.waterIntakeLog) this.waterIntakeLog = data.waterIntakeLog
+          if (data.waterDailyTarget !== undefined) this.waterDailyTarget = data.waterDailyTarget
+          if (data.workTimeLogs) this.workTimeLogs = data.workTimeLogs
+          if (data.isClockedIn !== undefined) this.isClockedIn = data.isClockedIn
+          if (data.activeClockInLogId !== undefined) this.activeClockInLogId = data.activeClockInLogId
+          if (data.dailyStreak !== undefined) this.dailyStreak = data.dailyStreak
+          if (data.lastStreakDate !== undefined) this.lastStreakDate = data.lastStreakDate
+
+          this.saveAllDataToLocalStorage()
+        } else {
+          await this.syncAllDataToCloud()
+        }
+      } catch (err) {
+        console.error('Error fetching user data:', err)
+      }
+    },
+    async syncAllDataToCloud() {
+      if (!this.user) return
+      try {
+        const docRef = doc(db, 'users', this.user.uid)
+        await setDoc(docRef, {
+          dailyTasks: this.dailyTasks,
+          customCategories: this.customCategories,
+          walkTrackerData: this.walkTrackerData,
+          gymTrackerData: this.gymTrackerData,
+          gymCheckedItems: this.gymCheckedItems,
+          fitnessStepGoal: this.fitnessStepGoal,
+          financeTransactions: this.financeTransactions,
+          savingsContributions: this.savingsContributions,
+          savingsGoals: this.savingsGoals,
+          animeWatchlist: this.animeWatchlist,
+          eventsList: this.eventsList,
+          longtermGoalsList: this.longtermGoalsList,
+          studyBooksList: this.studyBooksList,
+          studySessionNotes: this.studySessionNotes,
+          studyTotalTime: this.studyTotalTime,
+          waterIntakeLog: this.waterIntakeLog,
+          waterDailyTarget: this.waterDailyTarget,
+          workTimeLogs: this.workTimeLogs,
+          isClockedIn: this.isClockedIn,
+          activeClockInLogId: this.activeClockInLogId,
+          dailyStreak: this.dailyStreak,
+          lastStreakDate: this.lastStreakDate
+        }, { merge: true })
+      } catch (err) {
+        console.error('Error syncing all data to cloud:', err)
+      }
+    },
+    saveAllDataToLocalStorage() {
+      localStorage.setItem('dailyTasks', JSON.stringify(this.dailyTasks))
+      localStorage.setItem('customCategories', JSON.stringify(this.customCategories))
+      localStorage.setItem('walkTrackerData', JSON.stringify(this.walkTrackerData))
+      localStorage.setItem('gymTrackerData', JSON.stringify(this.gymTrackerData))
+      localStorage.setItem('gymCheckedItems', JSON.stringify(this.gymCheckedItems))
+      localStorage.setItem('fitnessStepGoal', this.fitnessStepGoal.toString())
+      localStorage.setItem('financeTransactions', JSON.stringify(this.financeTransactions))
+      localStorage.setItem('savingsContributions', JSON.stringify(this.savingsContributions))
+      localStorage.setItem('savingsGoals', JSON.stringify(this.savingsGoals))
+      localStorage.setItem('animeWatchlist', JSON.stringify(this.animeWatchlist))
+      localStorage.setItem('eventsList', JSON.stringify(this.eventsList))
+      localStorage.setItem('longtermGoalsList', JSON.stringify(this.longtermGoalsList))
+      localStorage.setItem('studyBooksList', JSON.stringify(this.studyBooksList))
+      localStorage.setItem('studySessionNotes', this.studySessionNotes)
+      localStorage.setItem('studyTotalTime', this.studyTotalTime.toString())
+      localStorage.setItem('waterIntakeLog', JSON.stringify(this.waterIntakeLog))
+      localStorage.setItem('waterDailyTarget', this.waterDailyTarget.toString())
+      localStorage.setItem('workTimeLogs', JSON.stringify(this.workTimeLogs))
+      localStorage.setItem('isClockedIn', this.isClockedIn ? 'true' : 'false')
+      if (this.activeClockInLogId) {
+        localStorage.setItem('activeClockInLogId', this.activeClockInLogId)
+      } else {
+        localStorage.removeItem('activeClockInLogId')
+      }
+      localStorage.setItem('dailyStreak', this.dailyStreak.toString())
+      localStorage.setItem('lastStreakDate', this.lastStreakDate)
+    },
+    resetStoreData() {
+      this.dailyTasks = []
+      this.customCategories = []
+      this.walkTrackerData = {}
+      this.gymTrackerData = {}
+      this.gymCheckedItems = {}
+      this.fitnessStepGoal = 10000
+      this.financeTransactions = []
+      this.savingsContributions = []
+      this.savingsGoals = []
+      this.animeWatchlist = []
+      this.eventsList = []
+      this.longtermGoalsList = []
+      this.studyBooksList = []
+      this.studySessionNotes = ''
+      this.studyTotalTime = 0
+      this.waterIntakeLog = {}
+      this.waterDailyTarget = 2000
+      this.workTimeLogs = []
+      this.isClockedIn = false
+      this.activeClockInLogId = null
+      this.dailyStreak = 0
+      this.lastStreakDate = ''
+
+      localStorage.removeItem('dailyTasks')
+      localStorage.removeItem('customCategories')
+      localStorage.removeItem('walkTrackerData')
+      localStorage.removeItem('gymTrackerData')
+      localStorage.removeItem('gymCheckedItems')
+      localStorage.removeItem('fitnessStepGoal')
+      localStorage.removeItem('financeTransactions')
+      localStorage.removeItem('savingsContributions')
+      localStorage.removeItem('savingsGoals')
+      localStorage.removeItem('animeWatchlist')
+      localStorage.removeItem('eventsList')
+      localStorage.removeItem('longtermGoalsList')
+      localStorage.removeItem('studyBooksList')
+      localStorage.removeItem('studySessionNotes')
+      localStorage.removeItem('studyTotalTime')
+      localStorage.removeItem('waterIntakeLog')
+      localStorage.removeItem('waterDailyTarget')
+      localStorage.removeItem('workTimeLogs')
+      localStorage.removeItem('isClockedIn')
+      localStorage.removeItem('activeClockInLogId')
+      localStorage.removeItem('dailyStreak')
+      localStorage.removeItem('lastStreakDate')
+    },
+    initializeAuth() {
+      return new Promise((resolve) => {
+        onAuthStateChanged(auth, async (firebaseUser) => {
+          this.isAuthLoading = true
+          if (firebaseUser) {
+            this.user = firebaseUser
+            this.isAuthenticated = true
+            await this.fetchUserData()
+          } else {
+            this.user = null
+            this.isAuthenticated = false
+          }
+          this.isAuthLoading = false
+          resolve(firebaseUser)
+        })
+      })
     }
   }
 })

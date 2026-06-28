@@ -8,10 +8,25 @@ import AnimeView from '../views/AnimeView.vue'
 import EventsView from '../views/EventsView.vue'
 import GoalsView from '../views/GoalsView.vue'
 import WaterView from '../views/WaterView.vue'
+import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
+import { useAppStore } from '../stores/appStore'
 
 const router = createRouter({
   history: createWebHashHistory(), // Hash history works flawlessly in local Electron bundle (file:///)
   routes: [
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginView,
+      meta: { isGuest: true }
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterView,
+      meta: { isGuest: true }
+    },
     {
       path: '/',
       name: 'home',
@@ -60,5 +75,30 @@ const router = createRouter({
   ]
 })
 
+// Authentication guard
+router.beforeEach(async (to, from, next) => {
+  const store = useAppStore()
+  
+  // Wait for Firebase auth to initialize on first load
+  if (store.isAuthLoading) {
+    await store.initializeAuth()
+  }
+  
+  if (to.meta.isGuest) {
+    if (store.isAuthenticated) {
+      next('/')
+    } else {
+      next()
+    }
+  } else {
+    if (!store.isAuthenticated) {
+      next('/login')
+    } else {
+      next()
+    }
+  }
+})
+
 export default router
+
 
