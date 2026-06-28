@@ -397,7 +397,7 @@
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 /* Override — keep interaction transitions snappy */
-button, a, input, select, .toggle-slider, .card, .sidebar-container {
+button, a, input, select, .toggle-slider, .card, .sidebar-container, .modal-overlay, .modal-content, .panel {
     transition-duration: 0.25s;
 }
 
