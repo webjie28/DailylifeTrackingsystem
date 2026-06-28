@@ -206,12 +206,13 @@ async function handleRegister() {
 
 .auth-input-group {
   position: relative;
+  margin-top: 10px; /* add spacing at the top so the floating label has room */
   margin-bottom: 8px;
 }
 
 .auth-input-group input {
   width: 100%;
-  padding: 18px 14px 6px 42px;
+  padding: 12px 14px 12px 42px; /* centered vertical padding */
   border-radius: 14px;
   border: 1px solid var(--border-color-strong);
   background: var(--bg-input-inset);
@@ -235,12 +236,13 @@ async function handleRegister() {
   transform-origin: left top;
 }
 
-/* Floating Label Animation */
+/* Floating Label Animation: floats completely outside the input box */
 .auth-input-group input:focus ~ label,
 .auth-input-group input:not(:placeholder-shown) ~ label {
-  top: 8px;
-  transform: translateY(0) scale(0.75);
-  font-weight: 700;
+  top: -14px; /* moves completely above the input border */
+  left: 12px; /* aligns to the left edge of the input box */
+  transform: scale(0.8);
+  font-weight: 750;
   color: var(--accent-purple);
   text-transform: uppercase;
   letter-spacing: 0.05em;
