@@ -17,6 +17,22 @@
       <form @submit.prevent="handleRegister" class="auth-form">
         <div class="auth-input-group">
           <input 
+            type="text" 
+            id="username-input"
+            v-model="username" 
+            placeholder=" " 
+            required 
+            :disabled="isLoading"
+          />
+          <label for="username-input">Username</label>
+          <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+
+        <div class="auth-input-group">
+          <input 
             type="email" 
             id="email-input"
             v-model="email" 
@@ -80,10 +96,13 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../services/firebase'
 
 const store = useAppStore()
 const router = useRouter()
 
+const username = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
@@ -91,8 +110,16 @@ const errorMessage = ref('')
 const isLoading = ref(false)
 
 async function handleRegister() {
-  if (!email.value || !password.value || !confirmPassword.value) return
+  if (!username.value || !email.value || !password.value || !confirmPassword.value) return
   
+  const usernameClean = username.value.trim().toLowerCase()
+  // Validate username format (no spaces, only letters, numbers, and underscores, between 3 and 15 chars)
+  const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/
+  if (!usernameRegex.test(usernameClean)) {
+    errorMessage.value = 'Username must be 3-15 characters and contain only letters, numbers, or underscores.'
+    return
+  }
+
   if (password.value !== confirmPassword.value) {
     errorMessage.value = 'Passwords do not match.'
     return
@@ -107,7 +134,18 @@ async function handleRegister() {
   errorMessage.value = ''
   
   try {
-    await store.registerUser(email.value.trim(), password.value)
+    // 1. Check if username is already taken
+    const usernameDocRef = doc(db, 'usernames', usernameClean)
+    const usernameDocSnap = await getDoc(usernameDocRef)
+    
+    if (usernameDocSnap.exists()) {
+      errorMessage.value = 'Username is already taken.'
+      isLoading.value = false
+      return
+    }
+
+    // 2. Proceed with registration
+    await store.registerUser(email.value.trim(), password.value, username.value.trim())
     router.push('/')
   } catch (err) {
     console.error('Registration error:', err)

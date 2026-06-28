@@ -17,17 +17,17 @@
       <form @submit.prevent="handleLogin" class="auth-form">
         <div class="auth-input-group">
           <input 
-            type="email" 
-            id="email-input"
-            v-model="email" 
+            type="text" 
+            id="username-input"
+            v-model="username" 
             placeholder=" " 
             required 
             :disabled="isLoading"
           />
-          <label for="email-input">Email Address</label>
+          <label for="username-input">Username</label>
           <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-            <polyline points="22,6 12,13 2,6"/>
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
 
@@ -64,30 +64,44 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
+import { doc, getDoc } from 'firebase/firestore'
+import { db } from '../services/firebase'
 
 const store = useAppStore()
 const router = useRouter()
 
-const email = ref('')
+const username = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const isLoading = ref(false)
 
 async function handleLogin() {
-  if (!email.value || !password.value) return
+  if (!username.value || !password.value) return
   
   isLoading.value = true
   errorMessage.value = ''
   
   try {
-    await store.loginUser(email.value.trim(), password.value)
+    // 1. Look up email using username
+    const usernameClean = username.value.trim().toLowerCase()
+    const usernameDocRef = doc(db, 'usernames', usernameClean)
+    const usernameDocSnap = await getDoc(usernameDocRef)
+    
+    if (!usernameDocSnap.exists()) {
+      errorMessage.value = 'Username does not exist.'
+      isLoading.value = false
+      return
+    }
+    
+    const email = usernameDocSnap.data().email
+    
+    // 2. Authenticate using email and password
+    await store.loginUser(email, password.value)
     router.push('/')
   } catch (err) {
     console.error('Login error:', err)
-    if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-      errorMessage.value = 'Invalid email or password.'
-    } else if (err.code === 'auth/invalid-email') {
-      errorMessage.value = 'Please enter a valid email address.'
+    if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+      errorMessage.value = 'Invalid password.'
     } else {
       errorMessage.value = 'Failed to sign in. Please try again.'
     }

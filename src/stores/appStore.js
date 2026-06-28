@@ -492,11 +492,23 @@ export const useAppStore = defineStore('app', {
       }
     },
     // ── Authentication Actions ─────────────────────────────
-    async registerUser(email, password) {
+    async registerUser(email, password, username) {
       try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
         this.user = userCredential.user
         this.isAuthenticated = true
+        
+        // Write the username mapping in Firestore
+        const usernameRef = doc(db, 'usernames', username.toLowerCase())
+        await setDoc(usernameRef, { email: email.toLowerCase(), uid: this.user.uid })
+        
+        // Save the username to the user profile
+        const userRef = doc(db, 'users', this.user.uid)
+        await setDoc(userRef, {
+          username: username,
+          email: email
+        }, { merge: true })
+        
         await this.syncAllDataToCloud()
       } catch (err) {
         throw err
