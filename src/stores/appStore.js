@@ -374,6 +374,13 @@ export const useAppStore = defineStore('app', {
       this.eventsList = this.eventsList.filter(e => e.id !== id)
       localStorage.setItem('eventsList', JSON.stringify(this.eventsList))
     },
+    updateEvent(updatedEvent) {
+      const idx = this.eventsList.findIndex(e => e.id === updatedEvent.id)
+      if (idx !== -1) {
+        this.eventsList[idx] = updatedEvent
+        localStorage.setItem('eventsList', JSON.stringify(this.eventsList))
+      }
+    },
 
     // ── Goals Tracker ─────────────────────────────────────
     addLongtermGoal(g) {

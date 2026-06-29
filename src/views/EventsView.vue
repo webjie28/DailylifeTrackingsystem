@@ -30,9 +30,9 @@
 
     <!-- Layout Columns -->
     <div class="content-grid-split">
-      <!-- Left Column: Add Event Form -->
+      <!-- Left Column: Add/Edit Event Form -->
       <div class="panel">
-        <h3>Schedule New Event</h3>
+        <h3>{{ editingEventId ? 'Edit Scheduled Event' : 'Schedule New Event' }}</h3>
         <form @submit.prevent="saveEvent">
           <div class="form-group">
             <label>Event Title</label>
@@ -62,7 +62,16 @@
           </div>
 
           <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
-            Save Event
+            {{ editingEventId ? 'Update Event' : 'Save Event' }}
+          </button>
+          <button 
+            v-if="editingEventId" 
+            type="button" 
+            class="btn btn-outline" 
+            style="width: 100%; margin-top: 8px;"
+            @click="cancelEdit"
+          >
+            Cancel Edit
           </button>
         </form>
       </div>
@@ -73,6 +82,7 @@
           <h3>Upcoming Schedule</h3>
           <div class="filter-tabs">
             <button 
+              for="t in ['all', 'upcoming', 'passed']" 
               v-for="t in ['all', 'upcoming', 'passed']" 
               :key="t"
               class="tab-btn"
@@ -94,7 +104,7 @@
             v-for="event in filteredEvents" 
             :key="event.id" 
             class="event-item"
-            :class="{ passed: isEventPassed(event) }"
+            :class="{ passed: isEventPassed(event), 'event-item-editing': event.id === editingEventId }"
           >
             <div class="event-left">
               <div class="event-date-badge" :class="event.category">
@@ -109,7 +119,10 @@
                 </div>
               </div>
             </div>
-            <div class="event-right">
+            <div class="event-right" style="display: flex; gap: 8px; align-items: center;">
+              <button class="btn-edit-action" @click="startEdit(event)" title="Edit Event" style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); font-size: 14px; padding: 4px;">
+                ✏️
+              </button>
               <button class="btn-del" @click="deleteEvent(event.id)" title="Delete Event">✕</button>
             </div>
           </div>
@@ -130,6 +143,7 @@ const eventTitle = ref('')
 const eventDate = ref(getTodayKey())
 const eventTime = ref('09:00')
 const eventCategory = ref('Personal')
+const editingEventId = ref(null)
 
 const activeTab = ref('all')
 
@@ -151,7 +165,6 @@ const filteredEvents = computed(() => {
     .sort((a, b) => {
       const dateTimeA = new Date(`${a.date}T${a.time}`)
       const dateTimeB = new Date(`${b.date}T${b.time}`)
-      // Sort upcoming events ascending (soonest first), passed events descending (latest first)
       if (activeTab.value === 'passed') {
         return dateTimeB - dateTimeA
       }
@@ -186,21 +199,50 @@ function formatTimeLabel(timeStr) {
 }
 
 // CRUD
+function startEdit(event) {
+  editingEventId.value = event.id
+  eventTitle.value = event.title
+  eventDate.value = event.date
+  eventTime.value = event.time
+  eventCategory.value = event.category
+}
+
+function cancelEdit() {
+  editingEventId.value = null
+  eventTitle.value = ''
+  eventDate.value = getTodayKey()
+  eventTime.value = '09:00'
+  eventCategory.value = 'Personal'
+}
+
 function saveEvent() {
   if (!eventTitle.value.trim() || !eventDate.value || !eventTime.value) {
     alert('Please fill out all fields.')
     return
   }
 
-  const newEvent = {
-    id: Date.now() + '_' + Math.random().toString(36).slice(2),
-    title: eventTitle.value.trim(),
-    date: eventDate.value,
-    time: eventTime.value,
-    category: eventCategory.value
+  if (editingEventId.value) {
+    // Update existing event
+    const updated = {
+      id: editingEventId.value,
+      title: eventTitle.value.trim(),
+      date: eventDate.value,
+      time: eventTime.value,
+      category: eventCategory.value
+    }
+    store.updateEvent(updated)
+    editingEventId.value = null
+  } else {
+    // Create new event
+    const newEvent = {
+      id: Date.now() + '_' + Math.random().toString(36).slice(2),
+      title: eventTitle.value.trim(),
+      date: eventDate.value,
+      time: eventTime.value,
+      category: eventCategory.value
+    }
+    store.addEvent(newEvent)
   }
-
-  store.addEvent(newEvent)
   
   // Reset
   eventTitle.value = ''
@@ -210,6 +252,9 @@ function saveEvent() {
 }
 
 function deleteEvent(id) {
+  if (editingEventId.value === id) {
+    cancelEdit()
+  }
   if (!confirm('Are you sure you want to cancel this event?')) return
   store.deleteEvent(id)
 }
@@ -503,5 +548,20 @@ function deleteEvent(id) {
   padding: 40px 20px;
   color: var(--text-muted);
   font-size: 14px;
+}
+
+.event-item-editing {
+  border-color: #7c3aed !important;
+  background: var(--accent-purple-bg) !important;
+  box-shadow: 0 0 10px rgba(124, 58, 237, 0.15);
+}
+
+.btn-edit-action {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-edit-action:hover {
+  transform: scale(1.15);
+  opacity: 0.9;
 }
 </style>
