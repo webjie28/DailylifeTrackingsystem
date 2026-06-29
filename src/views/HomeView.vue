@@ -3,77 +3,50 @@
     <!-- Dashboard Header (now contains Clock In / Clock Out) -->
     <Header />
 
-    <!-- Work Logs & Analytics Card -->
+    <!-- Work Log Record Card -->
     <section class="animate-in delay-100" style="margin-bottom: 24px;">
       <article class="focus-minimal-card">
-        <div class="focus-header" style="justify-content: space-between; display: flex; align-items: center; width: 100%;">
-          <h3>Work Logs &amp; Python Analytics</h3>
-          <span class="status-dot-badge">
+        <div class="focus-header" style="justify-content: space-between; display: flex; align-items: center; width: 100%; margin-bottom: 16px;">
+          <h3>Work Log Record</h3>
+          <span class="status-dot-badge" :class="{ active: store.isClockedIn }">
             {{ store.workTimeLogs.length }} {{ store.workTimeLogs.length === 1 ? 'Log' : 'Logs' }}
           </span>
         </div>
 
-        <!-- Python Powered Analytics Summary Shelf -->
-        <div v-if="pythonAnalytics && store.workTimeLogs.length > 0" class="python-analytics-box animate-in" style="margin-top: 12px; margin-bottom: 20px;">
-          <div class="python-stats-row">
-            <div class="py-stat-card">
-              <span class="py-stat-lbl">Total Time Worked</span>
-              <span class="py-stat-val">{{ formatDuration(pythonAnalytics.total_minutes) }}</span>
-            </div>
-            <div class="py-stat-card">
-              <span class="py-stat-lbl">Average Session</span>
-              <span class="py-stat-val">{{ formatDuration(pythonAnalytics.avg_minutes) }}</span>
-            </div>
-            <div class="py-stat-card">
-              <span class="py-stat-lbl">Most Active Day</span>
-              <span class="py-stat-val" style="color: var(--time-accent, var(--accent-orange));">{{ pythonAnalytics.most_productive_day }}</span>
-            </div>
-          </div>
+        <!-- Log Table: always visible -->
+        <div v-if="store.workTimeLogs.length === 0" class="empty-msg" style="padding: 24px 0; text-align: center;">
+          No work logs recorded yet. Clock in above to start tracking.
         </div>
-
-        <!-- Logs Toggle Button -->
-        <div style="text-align: center; margin-bottom: 12px;">
-          <button 
-            class="btn-text-toggle" 
-            @click="showLogsDrawer = !showLogsDrawer"
-          >
-            {{ showLogsDrawer ? 'Hide Logs History' : 'Show Logs History' }}
-          </button>
-        </div>
-
-        <!-- Logs History Table (Collapsible) -->
-        <div v-if="showLogsDrawer" class="logs-drawer-content animate-in" style="border-top: 1px solid var(--glass-border, rgba(255,255,255,0.15)); padding-top: 16px;">
-          <div v-if="store.workTimeLogs.length === 0" class="empty-msg" style="padding: 20px 0; text-align: center;">
-            No work logs recorded yet.
-          </div>
-          <div v-else class="logs-table-wrapper">
-            <table class="logs-history-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>In</th>
-                  <th>Out</th>
-                  <th>Duration</th>
-                  <th>Note</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="log in store.workTimeLogs" :key="log.id">
-                  <td>{{ log.date }}</td>
-                  <td>{{ formatTime(log.clockIn) }}</td>
-                  <td>{{ log.clockOut ? formatTime(log.clockOut) : 'In Progress' }}</td>
-                  <td style="font-weight: 700; color: var(--time-accent, var(--accent-orange));">
-                    {{ formatDuration(log.duration) }}
-                  </td>
-                  <td class="log-note-td" :title="log.note">{{ log.note || '-' }}</td>
-                  <td>
-                    <button class="btn-del-log" @click="store.deleteWorkLog(log.id)">✕</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div v-else class="logs-table-wrapper">
+          <table class="logs-history-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Clock In</th>
+                <th>Clock Out</th>
+                <th>Hours</th>
+                <th>Note</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="log in [...store.workTimeLogs].reverse()" :key="log.id" :class="{ 'log-row-active': !log.clockOut }">
+                <td class="log-td-date">{{ log.date }}</td>
+                <td class="log-td-time">{{ formatTime(log.clockIn) }}</td>
+                <td class="log-td-time">
+                  <span v-if="log.clockOut">{{ formatTime(log.clockOut) }}</span>
+                  <span v-else class="log-in-progress-badge">● In Progress</span>
+                </td>
+                <td class="log-td-hours">
+                  {{ log.duration !== null && log.duration !== undefined ? formatDuration(log.duration) : '—' }}
+                </td>
+                <td class="log-note-td" :title="log.note">{{ log.note || '—' }}</td>
+                <td>
+                  <button class="btn-del-log" @click="store.deleteWorkLog(log.id)">✕</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </article>
     </section>
@@ -151,17 +124,7 @@
       </div>
     </section>
 
-    <!-- Quick Actions Card -->
-    <section class="animate-in delay-200">
-      <div class="actions-minimal-row">
-        <router-link to="/finance" class="action-minimal-btn">
-          Log Expense
-        </router-link>
-        <router-link to="/fitness" class="action-minimal-btn">
-          Log Workout
-        </router-link>
-      </div>
-    </section>
+
 
     <!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
     <section class="animate-in delay-250" style="margin-bottom: 36px;">

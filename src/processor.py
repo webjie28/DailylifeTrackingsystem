@@ -68,12 +68,11 @@ def process_data(data):
     return result
 
 if __name__ == "__main__":
-    # Basahin ang data mula sa stdin (via python-shell)
     lines = sys.stdin.readlines()
     for line in lines:
         try:
             data = json.loads(line)
             result = process_data(data)
-            print(json.dumps(result)) # Ipadala pabalik sa JS
+            print(json.dumps(result)) 
         except Exception as e:
             print(json.dumps({"error": str(e)}))

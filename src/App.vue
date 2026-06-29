@@ -69,20 +69,24 @@ watch(() => store.theme, (newTheme) => {
   document.documentElement.setAttribute('data-theme', newTheme)
 }, { immediate: true })
 
-watch(() => store.timePeriod, (newPeriod) => {
-  document.documentElement.setAttribute('data-time', newPeriod)
-}, { immediate: true })
-
 onMounted(() => {
   // Splash screen fadeout timer
   setTimeout(() => {
     isSplashFading.value = true
     setTimeout(() => {
       showSplash.value = false
-    }, 500)
-  }, 2000)
+    }, 600)
+  }, 1600)
 })
 </script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+body, h1, h2, h3, h4, h5, h6, input, button, select, textarea, p, span, a, label, div {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+</style>
 
 <style>
 /* View transitions for fade-slide premium feel */
