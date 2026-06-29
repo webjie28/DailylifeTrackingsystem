@@ -1,7 +1,27 @@
 <template>
   <div class="sidebar">
     <nav class="page-nav vertical" aria-label="Main navigation">
-      
+
+      <!-- ── Top Profile Card ── -->
+      <div class="sidebar-profile-card" v-if="store.isAuthenticated">
+        <div class="profile-avatar-wrap">
+          <img 
+            :src="gravatarUrl" 
+            :alt="displayName"
+            class="profile-avatar-img"
+            @error="onAvatarError"
+            referrerpolicy="no-referrer"
+          />
+          <div class="profile-online-dot"></div>
+        </div>
+        <div class="profile-text">
+          <span class="profile-display-name">{{ displayName }}</span>
+          <span class="profile-email-text" :title="store.user?.email">{{ store.user?.email }}</span>
+        </div>
+      </div>
+
+      <div class="nav-divider" aria-hidden="true" v-if="store.isAuthenticated"></div>
+
       <div class="nav-section">
         <div class="nav-section-header">Productivity</div>
         <ul>
@@ -110,15 +130,8 @@
           </div>
         </div>
 
-        <!-- User Profile & Logout section -->
-        <div class="user-profile-sidebar" v-if="store.isAuthenticated">
-          <div class="user-info-wrap">
-            <div class="user-avatar-placeholder">👤</div>
-            <div class="user-details">
-              <span class="user-name-title">Active Account</span>
-              <span class="user-email-text" :title="store.user?.email">{{ store.user?.email }}</span>
-            </div>
-          </div>
+        <!-- Sign Out button -->
+        <div class="sidebar-signout-wrap" v-if="store.isAuthenticated">
           <button type="button" class="btn-logout" @click="handleLogout">
             <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -135,11 +148,33 @@
 </template>
 
 <script setup>
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 
 const store = useAppStore()
 const router = useRouter()
+
+// Generate Gravatar URL from email using MD5 hash
+// We use a simple approach: Gravatar via DiceBear (no hash needed) as fallback
+const gravatarUrl = computed(() => {
+  const email = store.user?.email || ''
+  // Use DiceBear initials avatar as primary (works without MD5)
+  const name = encodeURIComponent(displayName.value)
+  return `https://api.dicebear.com/8.x/initials/svg?seed=${name}&backgroundColor=6366f1,8b5cf6,a78bfa&backgroundType=gradientLinear&fontSize=36&fontWeight=700`
+})
+
+const displayName = computed(() => {
+  // Show username if available, otherwise derive initials from email
+  if (store.username) return store.username
+  const email = store.user?.email || ''
+  return email.split('@')[0] || 'User'
+})
+
+function onAvatarError(e) {
+  // Fallback to a plain colored circle with initials if image fails
+  e.target.style.display = 'none'
+}
 
 async function handleLogout() {
   if (confirm('Are you sure you want to sign out?')) {
@@ -150,12 +185,81 @@ async function handleLogout() {
 </script>
 
 <style scoped>
-/* Scoped overrides if needed, global sidebar styling is inherited from index.css */
 .sidebar a {
   display: block;
   text-decoration: none;
 }
 
+/* ── Top Profile Card ───────────────────────────────────── */
+.sidebar-profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px 16px;
+  text-align: center;
+}
+
+.profile-avatar-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-avatar-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--accent-purple-light);
+  box-shadow: 0 4px 20px var(--accent-purple-light), 0 0 0 1px var(--border-color-strong);
+  background: var(--accent-purple-light);
+  transition: box-shadow 0.3s ease;
+}
+
+.profile-avatar-img:hover {
+  box-shadow: 0 6px 28px var(--accent-purple-mid), 0 0 0 1px var(--accent-purple-light);
+}
+
+.profile-online-dot {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2.5px solid var(--sidebar-bg, #ffffff);
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+}
+
+.profile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  width: 100%;
+}
+
+.profile-display-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-heading);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-email-text {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Theme Selector ────────────────────────────────────── */
 .theme-selector-sidebar {
   display: flex;
   flex-direction: column;
@@ -203,52 +307,11 @@ async function handleLogout() {
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
-/* User profile details */
-.user-profile-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border-color);
+/* ── Sign Out ──────────────────────────────────────────── */
+.sidebar-signout-wrap {
   width: 100%;
-}
-.user-info-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-align: left;
-}
-.user-avatar-placeholder {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--accent-purple-light);
-  color: var(--accent-purple);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-.user-details {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.user-name-title {
-  font-size: 10px;
-  font-weight: 750;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  letter-spacing: 0.02em;
-}
-.user-email-text {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
 }
 .btn-logout {
   font-family: 'Plus Jakarta Sans', sans-serif !important;

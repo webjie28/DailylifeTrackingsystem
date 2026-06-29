@@ -123,6 +123,7 @@ export const useAppStore = defineStore('app', {
       user: null,
       isAuthenticated: false,
       isAuthLoading: true,
+      username: '',
 
       theme: localStorage.getItem('theme') || 'light',
       timePeriod: 'morning',
@@ -497,6 +498,7 @@ export const useAppStore = defineStore('app', {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password)
         this.user = userCredential.user
         this.isAuthenticated = true
+        this.username = username
         
         // Write the username mapping in Firestore
         const usernameRef = doc(db, 'usernames', username.toLowerCase())
@@ -563,6 +565,7 @@ export const useAppStore = defineStore('app', {
           if (data.activeClockInLogId !== undefined) this.activeClockInLogId = data.activeClockInLogId
           if (data.dailyStreak !== undefined) this.dailyStreak = data.dailyStreak
           if (data.lastStreakDate !== undefined) this.lastStreakDate = data.lastStreakDate
+          if (data.username) this.username = data.username
 
           this.saveAllDataToLocalStorage()
         } else {
