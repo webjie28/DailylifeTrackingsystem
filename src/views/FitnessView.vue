@@ -90,11 +90,26 @@
               <input type="date" v-model="backtrackDate" style="padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); outline: none; font-size: 13px;" />
             </div>
 
-            <div class="step-input-row">
-              <div class="form-group" style="margin-bottom: 0;">
+            <div class="step-input-row" style="display: flex; gap: 8px; align-items: flex-end; width: 100%;">
+              <div class="form-group" style="margin-bottom: 0; flex: 1;">
                 <label>Steps Logged</label>
-                <input type="number" v-model.number="stepsInput" @change="saveSteps" @keyup.enter="saveSteps" min="0" placeholder="e.g. 8500" />
+                <input 
+                  type="number" 
+                  v-model.number="stepsInput" 
+                  @keyup.enter="saveSteps" 
+                  min="0" 
+                  placeholder="e.g. 8500" 
+                  style="padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border-color-strong); background: var(--bg-input-inset); font-size: 14px; color: var(--text-primary); outline: none; width: 100%;" 
+                />
               </div>
+              <button 
+                type="button" 
+                @click="saveSteps" 
+                class="btn btn-primary" 
+                style="padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 700; height: 42px;"
+              >
+                Save
+              </button>
             </div>
             <div class="walk-goal-row" style="margin-top: 10px;">
               <span>Goal:</span>
@@ -119,7 +134,13 @@
             <div v-if="sortedStepsHistory.length === 0" class="empty-msg">No steps logged yet.</div>
             <div v-else v-for="log in sortedStepsHistory" :key="log.date" class="water-history-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color-subtle); font-size: 14px;">
               <span class="wh-date" style="font-weight: 600;">{{ log.date }}</span>
-              <span style="font-weight: 800; color: #22c55e;">{{ log.steps.toLocaleString() }} steps</span>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-weight: 800; color: #22c55e;">{{ log.steps.toLocaleString() }} steps</span>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" @click="editStepsLog(log)" style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 2px;" title="Edit Steps">✏️</button>
+                  <button type="button" @click="deleteStepsLog(log.date)" style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 2px;" title="Delete Steps">✕</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -448,7 +469,21 @@ function toggleExercise(day, index, cals) {
 // Log actions
 function saveSteps() {
   const steps = parseInt(stepsInput.value) || 0
-  store.updateSteps(steps)
+  store.updateSteps(steps, backtrackDate.value)
+}
+
+function editStepsLog(log) {
+  backtrackDate.value = log.date
+  stepsInput.value = log.steps
+}
+
+function deleteStepsLog(date) {
+  if (confirm(`Are you sure you want to delete the steps log for ${date}?`)) {
+    store.deleteSteps(date)
+    if (backtrackDate.value === date) {
+      stepsInput.value = 0
+    }
+  }
 }
 
 function saveStepGoal(e) {

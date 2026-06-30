@@ -319,6 +319,12 @@ export const useAppStore = defineStore('app', {
       this.walkTrackerData[date] = steps
       localStorage.setItem('walkTrackerData', JSON.stringify(this.walkTrackerData))
     },
+    deleteSteps(date) {
+      if (this.walkTrackerData[date] !== undefined) {
+        delete this.walkTrackerData[date]
+        localStorage.setItem('walkTrackerData', JSON.stringify(this.walkTrackerData))
+      }
+    },
     updateGymWorkout(calories, workout = 'Gym Session', duration = 3600, date = getTodayKey()) {
       this.gymTrackerData[date] = { workout, duration, calories }
       localStorage.setItem('gymTrackerData', JSON.stringify(this.gymTrackerData))
