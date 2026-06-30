@@ -332,7 +332,13 @@
               <div v-for="log in sortedGymHistory" :key="log.date" class="water-history-item" style="align-items: flex-start; flex-direction: column; gap: 4px;">
                 <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
                   <span class="wh-date">{{ log.date }} <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">({{ log.workout }})</span></span>
-                  <span class="wh-cals" style="font-weight: 800; color: #f97316;">{{ log.calories }} kcal</span>
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="wh-cals" style="font-weight: 800; color: #f97316;">{{ log.calories }} kcal</span>
+                    <div style="display: flex; gap: 8px;">
+                      <button type="button" @click="editGymLog(log)" style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 2px;" title="Edit Workout">✏️</button>
+                      <button type="button" @click="deleteGymLog(log.date)" style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 2px;" title="Delete Workout">✕</button>
+                    </div>
+                  </div>
                 </div>
                 <p v-if="log.note" style="font-size: 12px; margin: 0; color: var(--text-secondary);">
                   Note: {{ log.note }}
@@ -660,6 +666,24 @@ function logManualGym() {
   manualCals.value = ''
   manualWorkout.value = ''
   manualNote.value = ''
+}
+
+function editGymLog(log) {
+  manualDate.value = log.date
+  manualCals.value = log.calories
+  manualWorkout.value = log.workout
+  manualNote.value = log.note || ''
+}
+
+function deleteGymLog(date) {
+  if (confirm(`Are you sure you want to delete the workout log for ${date}?`)) {
+    store.deleteGymWorkout(date)
+    if (manualDate.value === date) {
+      manualCals.value = ''
+      manualWorkout.value = ''
+      manualNote.value = ''
+    }
+  }
 }
 
 const sortedStepsHistory = computed(() => {
