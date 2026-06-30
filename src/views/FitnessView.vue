@@ -201,7 +201,7 @@
                       class="suggestion-item"
                       @mousedown="selectSuggestion(sug)"
                     >
-                      🏋️ {{ sug }}
+                      {{ sug }}
                     </div>
                   </div>
                 </div>
