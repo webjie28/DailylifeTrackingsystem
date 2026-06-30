@@ -108,7 +108,7 @@
                 class="btn btn-primary" 
                 style="padding: 10px 16px; border-radius: 12px; font-size: 13px; font-weight: 700; height: 42px;"
               >
-                Save
+                Enter
               </button>
             </div>
             <div class="walk-goal-row" style="margin-top: 10px;">
@@ -152,7 +152,6 @@
         <div class="panel">
           <div class="panel-header">
             <h3>Gym Workouts &amp; Routines</h3>
-            <span class="cal-pill" style="font-size: 13px;">Auto-calculated from checks</span>
           </div>
 
           <!-- Day Selector tabs -->
@@ -195,7 +194,7 @@
                   class="btn btn-primary" 
                   style="padding: 8px 16px; font-size: 12px;"
                 >
-                  + Add
+                  Enter
                 </button>
               </div>
             </div>
@@ -270,7 +269,7 @@
               <input type="text" v-model="manualNote" placeholder="e.g. Felt strong today, increased lat pulldowns" />
             </div>
             <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
-              Save Workout Log
+              Enter
             </button>
           </form>
         </div>
@@ -431,39 +430,11 @@ function routineProgressPercent(day) {
 
 // Toggle exercise checkbox state
 function toggleExercise(day, index, cals) {
-  const checkKey = `${getTodayKey()}_${day}`
+  const checkKey = `${backtrackDate.value}_${day}`
   const currentDayChecks = { ...(store.gymCheckedItems[checkKey] || {}) }
   
   currentDayChecks[index] = !currentDayChecks[index]
   store.setGymCheckedItem(checkKey, currentDayChecks)
-
-  const todayDayName = DAYS[new Date().getDay()]
-  if (day === todayDayName) {
-    const plan = store.gymRoutines[todayDayName] || []
-    const updatedChecks = store.gymCheckedItems[checkKey] || {}
-    const autoCals = plan.reduce((s, ex, i) => s + (updatedChecks[i] ? (ex.cals || 0) : 0), 0)
-    
-    const tk = getTodayKey()
-    const existing = store.gymTrackerData[tk] || {}
-    
-    store.updateGymWorkout(
-      autoCals + (existing.manualCals || 0),
-      existing.workout || `${todayDayName} Routine`,
-      existing.duration || 3600
-    )
-    
-    const freshGym = { ...(store.gymTrackerData) }
-    freshGym[tk] = {
-      workout: existing.workout || `${todayDayName} Routine`,
-      duration: existing.duration || 3600,
-      autoCheckCals: autoCals,
-      manualCals: existing.manualCals || 0,
-      calories: autoCals + (existing.manualCals || 0),
-      note: existing.note || ''
-    }
-    localStorage.setItem('gymTrackerData', JSON.stringify(freshGym))
-    store.gymTrackerData = freshGym
-  }
 }
 
 // Log actions
