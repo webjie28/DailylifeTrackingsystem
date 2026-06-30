@@ -175,24 +175,66 @@
             <!-- Exercise Add Form -->
             <div style="margin-bottom: 20px; background: var(--bg-subtle); padding: 14px; border-radius: 16px; border: 1px solid var(--border-color);">
               <h4 style="margin: 0 0 10px; font-size: 14px; font-weight: 700; color: var(--text-primary);">Add Exercise for {{ activeDay }}</h4>
-              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <input 
-                  type="text" 
-                  v-model="newExText" 
-                  placeholder="e.g. Bench Press – 4×10" 
-                  style="flex: 1; min-width: 180px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); outline: none; font-size: 13px;"
-                />
-                <input 
-                  type="number" 
-                  v-model.number="newExCals" 
-                  placeholder="kcal" 
-                  style="width: 70px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); outline: none; font-size: 13px;"
-                />
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;">
+                <!-- Exercise Name Input with Suggestions -->
+                <div style="flex: 1; min-width: 180px; position: relative; display: flex; flex-direction: column; gap: 4px;">
+                  <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Exercise Name</label>
+                  <input 
+                    type="text" 
+                    v-model="newExText" 
+                    placeholder="e.g. Bench Press" 
+                    @focus="showSuggestions = true"
+                    @blur="hideSuggestionsWithDelay"
+                    @keyup.enter="addCustomExercise"
+                    style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); outline: none; font-size: 13px; width: 100%;"
+                  />
+                  
+                  <!-- Suggestions Dropdown -->
+                  <div 
+                    v-if="showSuggestions && filteredSuggestions.length > 0" 
+                    class="suggestions-dropdown"
+                    style="top: 100%;"
+                  >
+                    <div 
+                      v-for="sug in filteredSuggestions" 
+                      :key="sug" 
+                      class="suggestion-item"
+                      @mousedown="selectSuggestion(sug)"
+                    >
+                      🏋️ {{ sug }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sets Input -->
+                <div style="width: 70px; display: flex; flex-direction: column; gap: 4px;">
+                  <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Sets</label>
+                  <input 
+                    type="number" 
+                    v-model.number="newExSets" 
+                    min="1"
+                    @keyup.enter="addCustomExercise"
+                    style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); outline: none; font-size: 13px; width: 100%;"
+                  />
+                </div>
+
+                <!-- Reps Input -->
+                <div style="width: 70px; display: flex; flex-direction: column; gap: 4px;">
+                  <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary);">Reps</label>
+                  <input 
+                    type="number" 
+                    v-model.number="newExReps" 
+                    min="1"
+                    @keyup.enter="addCustomExercise"
+                    style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); outline: none; font-size: 13px; width: 100%;"
+                  />
+                </div>
+
                 <button 
                   type="button"
                   @click="addCustomExercise"
                   class="btn btn-primary" 
-                  style="padding: 8px 16px; font-size: 12px;"
+                  style="padding: 8px 16px; font-size: 12px; height: 35px;"
                 >
                   Enter
                 </button>
@@ -221,7 +263,6 @@
                 <label :for="'ex-' + activeDay + '-' + index" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;">{{ ex.text }}</label>
               </div>
               <div style="display: flex; align-items: center; gap: 10px;">
-                <span class="cal-pill">+{{ ex.cals }} kcal</span>
                 <button 
                   type="button"
                   @click="deleteCustomExercise(index)"
@@ -260,32 +301,9 @@
                 <input type="number" v-model.number="manualCals" min="0" required placeholder="e.g. 350" />
               </div>
             </div>
-            <div class="form-group" style="position: relative;">
+            <div class="form-group">
               <label>Description / Workout Type</label>
-              <input 
-                type="text" 
-                v-model="manualWorkout" 
-                placeholder="e.g. Back & Biceps, Jogging" 
-                required 
-                @focus="showSuggestions = true"
-                @blur="hideSuggestionsWithDelay"
-                style="width: 100%;"
-              />
-              
-              <!-- Suggestions Dropdown -->
-              <div 
-                v-if="showSuggestions && filteredSuggestions.length > 0" 
-                class="suggestions-dropdown"
-              >
-                <div 
-                  v-for="sug in filteredSuggestions" 
-                  :key="sug" 
-                  class="suggestion-item"
-                  @mousedown="selectSuggestion(sug)"
-                >
-                  🏋️ {{ sug }}
-                </div>
-              </div>
+              <input type="text" v-model="manualWorkout" placeholder="e.g. Back & Biceps, Jogging" required />
             </div>
             <div class="form-group">
               <label>Optional Note</label>
@@ -337,7 +355,8 @@ const store = useAppStore()
 
 // Add exercise inputs
 const newExText = ref('')
-const newExCals = ref(30)
+const newExSets = ref(4)
+const newExReps = ref(12)
 
 // Ring SVG calculations
 const ringRadius = 58
@@ -369,12 +388,17 @@ let fitnessChartInstance = null
 // Custom exercise CRUD
 function addCustomExercise() {
   if (!newExText.value.trim()) return
+  const sets = parseInt(newExSets.value) || 4
+  const reps = parseInt(newExReps.value) || 12
+  const fullText = `${newExText.value.trim()} – ${sets}×${reps}`
+  
   store.addGymExercise(activeDay.value, {
-    text: newExText.value.trim(),
-    cals: parseInt(newExCals.value) || 0
+    text: fullText,
+    cals: 0
   })
   newExText.value = ''
-  newExCals.value = 30
+  newExSets.value = 4
+  newExReps.value = 12
 }
 
 function deleteCustomExercise(index) {
@@ -498,7 +522,7 @@ const PREDEFINED_WORKOUTS = [
 const showSuggestions = ref(false)
 
 const filteredSuggestions = computed(() => {
-  const query = manualWorkout.value ? manualWorkout.value.trim().toLowerCase() : ''
+  const query = newExText.value ? newExText.value.trim().toLowerCase() : ''
   
   // Unique workouts from history
   const historyWorkouts = Object.values(store.gymTrackerData)
@@ -517,7 +541,7 @@ const filteredSuggestions = computed(() => {
 })
 
 function selectSuggestion(suggestion) {
-  manualWorkout.value = suggestion
+  newExText.value = suggestion
   showSuggestions.value = false
 }
 
