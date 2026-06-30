@@ -441,6 +441,7 @@ function toggleExercise(day, index, cals) {
 function saveSteps() {
   const steps = parseInt(stepsInput.value) || 0
   store.updateSteps(steps, backtrackDate.value)
+  stepsInput.value = 0
 }
 
 function editStepsLog(log) {
