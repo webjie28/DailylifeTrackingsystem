@@ -260,9 +260,32 @@
                 <input type="number" v-model.number="manualCals" min="0" required placeholder="e.g. 350" />
               </div>
             </div>
-            <div class="form-group">
+            <div class="form-group" style="position: relative;">
               <label>Description / Workout Type</label>
-              <input type="text" v-model="manualWorkout" placeholder="e.g. Back & Biceps, Jogging" required />
+              <input 
+                type="text" 
+                v-model="manualWorkout" 
+                placeholder="e.g. Back & Biceps, Jogging" 
+                required 
+                @focus="showSuggestions = true"
+                @blur="hideSuggestionsWithDelay"
+                style="width: 100%;"
+              />
+              
+              <!-- Suggestions Dropdown -->
+              <div 
+                v-if="showSuggestions && filteredSuggestions.length > 0" 
+                class="suggestions-dropdown"
+              >
+                <div 
+                  v-for="sug in filteredSuggestions" 
+                  :key="sug" 
+                  class="suggestion-item"
+                  @mousedown="selectSuggestion(sug)"
+                >
+                  🏋️ {{ sug }}
+                </div>
+              </div>
             </div>
             <div class="form-group">
               <label>Optional Note</label>
@@ -461,6 +484,47 @@ function deleteStepsLog(date) {
       stepsInput.value = 0
     }
   }
+}
+
+const PREDEFINED_WORKOUTS = [
+  'Bench Press', 'Incline Dumbbell Press', 'Decline Bench Press', 'Chest Flyes', 'Push-Ups',
+  'Pull-Ups', 'Lat Pulldowns', 'Barbell Rows', 'Seated Cable Rows', 'Deadlift', 'Face Pulls',
+  'Overhead Shoulder Press', 'Dumbbell Lateral Raises', 'Front Shoulder Raises', 'Rear Delt Flyes',
+  'Barbell Squats', 'Leg Press', 'Romanian Deadlifts (RDL)', 'Walking Lunges', 'Leg Extensions', 'Calf Raises',
+  'Bicep curls', 'Hammer Curls', 'Tricep Pushdowns', 'Skull Crushers', 'Dips',
+  'Treadmill Run', 'Jogging / Running', 'Outdoor Cycling', 'HIIT Workout', 'Jump Rope', 'Stretching & Yoga'
+]
+
+const showSuggestions = ref(false)
+
+const filteredSuggestions = computed(() => {
+  const query = manualWorkout.value ? manualWorkout.value.trim().toLowerCase() : ''
+  
+  // Unique workouts from history
+  const historyWorkouts = Object.values(store.gymTrackerData)
+    .map(log => log.workout)
+    .filter(Boolean)
+  
+  const allSuggestions = Array.from(new Set([...PREDEFINED_WORKOUTS, ...historyWorkouts]))
+
+  if (!query) {
+    return allSuggestions.slice(0, 6)
+  }
+  
+  return allSuggestions
+    .filter(item => item.toLowerCase().includes(query))
+    .slice(0, 6)
+})
+
+function selectSuggestion(suggestion) {
+  manualWorkout.value = suggestion
+  showSuggestions.value = false
+}
+
+function hideSuggestionsWithDelay() {
+  setTimeout(() => {
+    showSuggestions.value = false
+  }, 150)
 }
 
 function saveStepGoal(e) {
@@ -729,4 +793,31 @@ watch([() => store.walkTrackerData, () => store.gymTrackerData], () => {
 .btn-primary { background: #7c3aed; color: #fff; }
 .btn-primary:hover { background: #5b21b6; }
 .btn-outline { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color-strong); }
+
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color-strong);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  z-index: 10;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.suggestion-item {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.2s;
+  text-align: left;
+}
+.suggestion-item:hover {
+  background: var(--bg-subtle);
+  color: var(--accent-purple);
+}
 </style>
