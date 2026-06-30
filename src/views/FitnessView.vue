@@ -511,12 +511,90 @@ function deleteStepsLog(date) {
 }
 
 const PREDEFINED_WORKOUTS = [
-  'Bench Press', 'Incline Dumbbell Press', 'Decline Bench Press', 'Chest Flyes', 'Push-Ups',
-  'Pull-Ups', 'Lat Pulldowns', 'Barbell Rows', 'Seated Cable Rows', 'Deadlift', 'Face Pulls',
-  'Overhead Shoulder Press', 'Dumbbell Lateral Raises', 'Front Shoulder Raises', 'Rear Delt Flyes',
-  'Barbell Squats', 'Leg Press', 'Romanian Deadlifts (RDL)', 'Walking Lunges', 'Leg Extensions', 'Calf Raises',
-  'Bicep curls', 'Hammer Curls', 'Tricep Pushdowns', 'Skull Crushers', 'Dips',
-  'Treadmill Run', 'Jogging / Running', 'Outdoor Cycling', 'HIIT Workout', 'Jump Rope', 'Stretching & Yoga'
+  // Chest Exercises
+  'Flat Barbell Bench Press',
+  'Incline Dumbbell Bench Press',
+  'Decline Barbell Bench Press',
+  'Dumbbell Chest Flyes',
+  'Cable Crossover',
+  'Chest Dips',
+  'Push-Ups',
+  'Incline Chest Flyes',
+  'Decline Dumbbell Bench Press',
+  'Pec Deck Flyes',
+  
+  // Back Exercises
+  'Barbell Deadlift',
+  'Pull-Ups',
+  'Wide-Grip Lat Pulldowns',
+  'Bent Over Barbell Rows',
+  'Seated Cable Rows',
+  'One-Arm Dumbbell Rows',
+  'Hyperextensions (Back Extensions)',
+  'Face Pulls',
+  'Chin-Ups',
+  'Close-Grip Lat Pulldowns',
+  'T-Bar Rows',
+  'Straight-Arm Cable Pulldowns',
+  
+  // Shoulders Exercises
+  'Standing Barbell Overhead Press',
+  'Seated Dumbbell Shoulder Press',
+  'Dumbbell Lateral Raises',
+  'Dumbbell Front Raises',
+  'Reverse Dumbbell Flyes (Rear Delt)',
+  'Barbell Upright Rows',
+  'Arnold Press',
+  'Cable Lateral Raises',
+  'Dumbbell Shrugs',
+  'Barbell Shrugs',
+  
+  // Legs Exercises
+  'Barbell Squats',
+  'Leg Press',
+  'Romanian Deadlifts (RDL)',
+  'Walking Lunges',
+  'Lying Leg Curls',
+  'Leg Extensions',
+  'Standing Calf Raises',
+  'Seated Calf Raises',
+  'Goblet Squats',
+  'Bulgarian Split Squats',
+  'Glute Bridges',
+  'Hip Thrusts',
+  'Sumo Squats',
+  
+  // Arms (Biceps & Triceps)
+  'Barbell Bicep Curls',
+  'Dumbbell Hammer Curls',
+  'Incline Dumbbell Curls',
+  'Preacher Curls',
+  'Concentration Curls',
+  'Tricep Rope Pushdowns',
+  'Cable Overhead Tricep Extensions',
+  'Skull Crushers (Lying Tricep Extensions)',
+  'Bench Dips',
+  'Close-Grip Bench Press',
+  'Cable Bicep Curls',
+  
+  // Abs & Core
+  'Abdominal Crunches',
+  'Hanging Leg Raises',
+  'Plank',
+  'Russian Twists',
+  'Ab Wheel Rollouts',
+  'Decline Crunches',
+  'Cable Woodchoppers',
+  
+  // Cardio & Active Movement
+  'Treadmill Run',
+  'Outdoor Running / Jogging',
+  'Stationary Cycling',
+  'Elliptical Trainer',
+  'Jump Rope',
+  'Rowing Machine',
+  'Stretching & Yoga',
+  'HIIT Workout'
 ]
 
 const showSuggestions = ref(false)
