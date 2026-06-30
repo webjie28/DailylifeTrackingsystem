@@ -546,29 +546,25 @@
 
 /* ── 🌊 NAVY DARK BLUE MODE ────────────────────────────────────── */
 [data-theme="navy"] {
-    --bg-primary: #1e2230;
-    --bg-card: #1e2230;
-    --bg-subtle: #181b26;
-    --bg-body: #1e2230;
-    --bg-hover: #252a3b;
-    --bg-input-inset: #181b26;
-    --text-primary: #e2e8f0;
-    --text-secondary: #94a3b8;
+    --bg-hover: #1e293b;
+    --bg-input-inset: #090d16;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
     --text-muted: #64748b;
-    --card-bg: rgba(40, 20, 10, 0.65);
-    --card-border: rgba(249, 115, 22, 0.08);
-    --border-color: rgba(249, 115, 22, 0.06);
-    --border-color-strong: rgba(249, 115, 22, 0.15);
-    --input-bg: rgba(255, 255, 255, 0.03);
-    --modal-bg: #200e06;
-    --sidebar-bg: #150702;
-    --sidebar-hover: #3a2216;
-    --nav-active-bg: rgba(249, 115, 22, 0.12);
-    --nav-active-color: #f97316;
-    --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.55);
-    --shadow-md: 0 10px 24px rgba(0, 0, 0, 0.5);
-    --progress-fill: linear-gradient(90deg, #f97316 0%, #fbbf24 100%);
-    --checkbox-accent: #f97316;
+    --card-bg: rgba(15, 23, 42, 0.7);
+    --card-border: rgba(59, 130, 246, 0.1);
+    --border-color: rgba(59, 130, 246, 0.08);
+    --border-color-strong: rgba(59, 130, 246, 0.2);
+    --input-bg: rgba(255, 255, 255, 0.02);
+    --modal-bg: #0f172a;
+    --sidebar-bg: #0b0f19;
+    --sidebar-hover: #1b2336;
+    --nav-active-bg: rgba(230, 92, 0, 0.12);
+    --nav-active-color: #ff7b00;
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 10px 24px rgba(0, 0, 0, 0.45);
+    --progress-fill: linear-gradient(90deg, #e65c00 0%, #ff7b00 100%);
+    --checkbox-accent: #ff7b00;
 }
 
 /* ── 🌇 EVENING — Navy ───────────────────────────────────────── */
@@ -783,42 +779,43 @@ header p {
     padding: 8px 6px;
 }
 
-.sidebar,
-.sidebar * {
-    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
-    font-weight: 600 !important; /* Professional clean look */
+.sidebar {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
 .sidebar .nav-section {
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
 .nav-section-header {
-    font-size: 13px;
-    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin: 6px 6px 10px;
+    letter-spacing: 0.12em;
+    margin: 6px 12px 10px;
+    opacity: 0.8;
 }
 
 .page-nav.vertical ul {
     list-style: none;
     margin: 0;
-    padding: 0 6px 8px 6px;
+    padding: 0 10px;
 }
 
 .page-nav.vertical li {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .page-nav.vertical li a {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 9px 12px;
-    border-radius: var(--radius-sm);
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 12px;
     background: transparent;
-    color: var(--text-primary);
+    color: var(--text-secondary);
+    font-weight: 500;
     text-decoration: none;
     border-left: 3px solid transparent;
     transition: all var(--transition-base);
@@ -826,12 +823,14 @@ header p {
 
 .page-nav.vertical li a:hover {
     background: var(--sidebar-hover);
+    color: var(--text-primary);
 }
 
 .page-nav.vertical li a.active {
     background: var(--nav-active-bg);
     color: var(--nav-active-color);
-    border-left: 3px solid var(--accent-purple);
+    font-weight: 600;
+    border-left: 3px solid var(--nav-active-color);
 }
 
 /* Sidebar nav item icon slot */
@@ -839,9 +838,9 @@ header p {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    font-size: 16px;
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
     flex-shrink: 0;
 }
 
