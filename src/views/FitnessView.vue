@@ -66,21 +66,27 @@
               />
             </svg>
             <div class="ring-label">
-              <span class="ring-steps">{{ store.todaySteps.toLocaleString() }}</span>
+              <span class="ring-steps">{{ activeDaySteps.toLocaleString() }}</span>
               <span class="ring-goal">of {{ store.fitnessStepGoal.toLocaleString() }}</span>
               <span class="ring-pct">{{ stepGoalPercentage }}%</span>
             </div>
           </div>
           <div class="walk-info">
-            <h3>Daily Steps Logging</h3>
-            <p>Every step counts. Log your steps below to track your movement and active walking calories.</p>
+            <h3>Daily Steps & Activity Backtrack</h3>
+            <p>Pick a date to track your active walking steps and view your gym routines for that day.</p>
+            
+            <div class="form-group" style="margin-bottom: 12px; max-width: 220px;">
+              <label>Logging Date</label>
+              <input type="date" v-model="backtrackDate" style="padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); outline: none; font-size: 13px;" />
+            </div>
+
             <div class="step-input-row">
               <div class="form-group" style="margin-bottom: 0;">
-                <label>Steps Today</label>
+                <label>Steps Logged</label>
                 <input type="number" v-model.number="stepsInput" @change="saveSteps" min="0" placeholder="e.g. 8500" />
               </div>
             </div>
-            <div class="walk-goal-row">
+            <div class="walk-goal-row" style="margin-top: 10px;">
               <span>Goal:</span>
               <input type="number" :value="store.fitnessStepGoal" @change="saveStepGoal" min="1000" step="500" />
               <span>steps</span>
@@ -265,8 +271,17 @@ const ringCircumference = 2 * Math.PI * ringRadius
 
 const DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
 
-const stepsInput = ref(store.todaySteps)
+const backtrackDate = ref(getTodayKey())
+const stepsInput = ref(0)
 const activeDay = ref(DAYS[new Date().getDay()])
+
+// Watch backtrackDate to load steps count and update activeDay for routines
+watch(backtrackDate, (newDate) => {
+  if (!newDate) return
+  const d = new Date(newDate + 'T00:00:00')
+  activeDay.value = DAYS[d.getDay()]
+  stepsInput.value = store.walkTrackerData[newDate] || 0
+}, { immediate: true })
 
 // Manual inputs
 const manualDate = ref(getTodayKey())
@@ -295,9 +310,13 @@ function deleteCustomExercise(index) {
 }
 
 // Walk computed Ring offset
+const activeDaySteps = computed(() => {
+  return store.walkTrackerData[backtrackDate.value] || 0
+})
+
 const stepGoalPercentage = computed(() => {
   if (store.fitnessStepGoal <= 0) return 0
-  return Math.min(100, Math.round((store.todaySteps / store.fitnessStepGoal) * 100))
+  return Math.min(100, Math.round((activeDaySteps.value / store.fitnessStepGoal) * 100))
 })
 
 const ringDashoffset = computed(() => {

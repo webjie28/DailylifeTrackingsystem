@@ -315,14 +315,12 @@ export const useAppStore = defineStore('app', {
     },
 
     // ── Fitness Tracking ──────────────────────────────────
-    updateSteps(steps) {
-      const tk = getTodayKey()
-      this.walkTrackerData[tk] = steps
+    updateSteps(steps, date = getTodayKey()) {
+      this.walkTrackerData[date] = steps
       localStorage.setItem('walkTrackerData', JSON.stringify(this.walkTrackerData))
     },
-    updateGymWorkout(calories, workout = 'Gym Session', duration = 3600) {
-      const tk = getTodayKey()
-      this.gymTrackerData[tk] = { workout, duration, calories }
+    updateGymWorkout(calories, workout = 'Gym Session', duration = 3600, date = getTodayKey()) {
+      this.gymTrackerData[date] = { workout, duration, calories }
       localStorage.setItem('gymTrackerData', JSON.stringify(this.gymTrackerData))
     },
     updateStepGoal(goal) {
