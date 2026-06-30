@@ -1,5 +1,15 @@
 <template>
   <div class="fitness-view">
+    <!-- Header -->
+    <div class="finance-header" style="margin-bottom: 24px;">
+      <div>
+        <h1 style="font-size: 32px; font-weight: 800; color: var(--text-primary); margin: 0;">Fitness</h1>
+        <p style="color: var(--text-muted); margin-top: 4px; font-size: 14px;">
+          Track your daily walking steps, custom gym routines, and active calorie burn goals
+        </p>
+      </div>
+    </div>
+
     <!-- Banner -->
     <div class="banner">
       <div class="banner-item">
@@ -83,7 +93,7 @@
             <div class="step-input-row">
               <div class="form-group" style="margin-bottom: 0;">
                 <label>Steps Logged</label>
-                <input type="number" v-model.number="stepsInput" @change="saveSteps" min="0" placeholder="e.g. 8500" />
+                <input type="number" v-model.number="stepsInput" @change="saveSteps" @keyup.enter="saveSteps" min="0" placeholder="e.g. 8500" />
               </div>
             </div>
             <div class="walk-goal-row" style="margin-top: 10px;">
@@ -224,11 +234,31 @@
           </form>
         </div>
 
-        <!-- 30-Day Trend Chart -->
+        <!-- 30-Day Steps Trend Chart -->
         <div class="panel">
-          <h3>30-Day Calorie Progress (Walk + Gym)</h3>
+          <h3>30-Day Steps Count Trend</h3>
           <div class="chart-wrap" style="margin-top: 10px;">
-            <canvas ref="fitnessChartCanvas"></canvas>
+            <canvas ref="stepsChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Recent Steps History Logs -->
+        <div class="panel">
+          <h3>Recent Steps Logs</h3>
+          <div class="water-history">
+            <div v-if="sortedStepsHistory.length === 0" class="empty-msg">No steps logged yet.</div>
+            <div v-else v-for="log in sortedStepsHistory" :key="log.date" class="water-history-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color-subtle); font-size: 14px;">
+              <span class="wh-date" style="font-weight: 600;">{{ log.date }}</span>
+              <span style="font-weight: 800; color: #22c55e;">{{ log.steps.toLocaleString() }} steps</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 30-Day Gym Calories Trend Chart -->
+        <div class="panel">
+          <h3>30-Day Gym Calories Trend</h3>
+          <div class="chart-wrap" style="margin-top: 10px;">
+            <canvas ref="gymChartCanvas"></canvas>
           </div>
         </div>
 
@@ -453,6 +483,14 @@ function logManualGym() {
   manualNote.value = ''
 }
 
+const sortedStepsHistory = computed(() => {
+  return Object.entries(store.walkTrackerData)
+    .map(([date, steps]) => ({ date, steps }))
+    .filter(log => log.steps > 0)
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 10)
+})
+
 const sortedGymHistory = computed(() => {
   return Object.entries(store.gymTrackerData)
     .map(([date, data]) => ({ date, ...data }))
@@ -461,42 +499,93 @@ const sortedGymHistory = computed(() => {
     .slice(0, 10)
 })
 
-// 30 Days trend chart
-function renderChart() {
-  if (!fitnessChartCanvas.value) return
-  if (fitnessChartInstance) {
-    fitnessChartInstance.destroy()
+// Canvas template refs and Chart instances
+const stepsChartCanvas = ref(null)
+const gymChartCanvas = ref(null)
+let stepsChartInstance = null
+let gymChartInstance = null
+
+// 30 Days trend charts
+function renderCharts() {
+  renderStepsChart()
+  renderGymChart()
+}
+
+function renderStepsChart() {
+  if (!stepsChartCanvas.value) return
+  if (stepsChartInstance) {
+    stepsChartInstance.destroy()
   }
 
-  const ctx = fitnessChartCanvas.value.getContext('2d')
+  const ctx = stepsChartCanvas.value.getContext('2d')
   const labels = []
-  const totals = []
+  const stepValues = []
 
   for (let i = 29; i >= 0; i--) {
     const d = new Date()
     d.setDate(d.getDate() - i)
     const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
 
-    const wCals = Math.round((store.walkTrackerData[key] || 0) * 0.04)
-    const gCals = store.gymTrackerData[key] ? (parseInt(store.gymTrackerData[key].calories) || 0) : 0
-    
     labels.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))
-    totals.push(wCals + gCals)
+    stepValues.push(store.walkTrackerData[key] || 0)
   }
 
-  fitnessChartInstance = new Chart(ctx, {
+  stepsChartInstance = new Chart(ctx, {
     type: 'line',
     data: {
       labels: labels,
       datasets: [{
-        label: 'Calories Burned (kcal)',
-        data: totals,
-        borderColor: '#7c3aed',
-        backgroundColor: 'rgba(124, 58, 237, 0.1)',
+        label: 'Steps Walked',
+        data: stepValues,
+        borderColor: '#22c55e',
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
         fill: true,
         tension: 0.35,
         pointRadius: 3,
-        pointBackgroundColor: '#7c3aed'
+        pointBackgroundColor: '#22c55e'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.15)' } }
+      }
+    }
+  })
+}
+
+function renderGymChart() {
+  if (!gymChartCanvas.value) return
+  if (gymChartInstance) {
+    gymChartInstance.destroy()
+  }
+
+  const ctx = gymChartCanvas.value.getContext('2d')
+  const labels = []
+  const gymValues = []
+
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+
+    labels.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))
+    const gCals = store.gymTrackerData[key] ? (parseInt(store.gymTrackerData[key].calories) || 0) : 0
+    gymValues.push(gCals)
+  }
+
+  gymChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Calories Burned (kcal)',
+        data: gymValues,
+        backgroundColor: '#7c3aed',
+        borderRadius: 4
       }]
     },
     options: {
@@ -512,12 +601,12 @@ function renderChart() {
 }
 
 onMounted(() => {
-  renderChart()
+  renderCharts()
 })
 
 watch([() => store.walkTrackerData, () => store.gymTrackerData], () => {
-  renderChart()
-  stepsInput.value = store.todaySteps
+  renderCharts()
+  stepsInput.value = store.walkTrackerData[backtrackDate.value] || 0
 }, { deep: true })
 </script>
 

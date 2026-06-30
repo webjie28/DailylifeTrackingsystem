@@ -45,7 +45,7 @@
         <ul>
           <li>
             <router-link to="/fitness" active-class="active">
-              Fitness Tracker
+              Fitness
             </router-link>
           </li>
           <li>
@@ -59,7 +59,7 @@
       <div class="nav-divider" aria-hidden="true"></div>
 
       <div class="nav-section">
-        <div class="nav-section-header">Finance</div>
+        <div class="nav-section-header font-bold text-gray-500 uppercase text-xs tracking-wider">Finance</div>
         <ul>
           <li>
             <router-link to="/finance" active-class="active">
@@ -81,7 +81,7 @@
         <ul>
           <li>
             <router-link to="/anime" active-class="active">
-              Anime Watchlist
+              Watchlist
             </router-link>
           </li>
           <li>

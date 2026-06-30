@@ -2,7 +2,7 @@
   <div class="anime-view">
     <div class="finance-header">
       <div>
-        <h1>Anime Watchlist</h1>
+        <h1>Watchlist</h1>
         <p style="color: var(--text-muted); margin-top: 4px; font-size: 14px;">
           Keep tabs on your favorite series and movies, log episodes, and rate completed shows
         </p>
