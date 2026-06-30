@@ -59,10 +59,10 @@
 
     <!-- Content Grid -->
     <div class="two-col">
-      <!-- Left Column: Steps Circular Progress and Workout Routines -->
+      <!-- Left Column: Steps Tracking & Logs -->
       <div class="left-col">
         <!-- Walk Hero with radial ring progress -->
-        <div class="walk-hero">
+        <div class="walk-hero" style="margin-bottom: 24px;">
           <div class="step-ring-wrap">
             <svg width="140" height="140" viewBox="0 0 140 140">
               <circle cx="70" cy="70" r="58" class="ring-bg" />
@@ -104,6 +104,29 @@
           </div>
         </div>
 
+        <!-- 30-Day Steps Trend Chart -->
+        <div class="panel">
+          <h3>30-Day Steps Count Trend</h3>
+          <div class="chart-wrap" style="margin-top: 10px;">
+            <canvas ref="stepsChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Recent Steps History Logs -->
+        <div class="panel">
+          <h3>Recent Steps Logs</h3>
+          <div class="water-history">
+            <div v-if="sortedStepsHistory.length === 0" class="empty-msg">No steps logged yet.</div>
+            <div v-else v-for="log in sortedStepsHistory" :key="log.date" class="water-history-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color-subtle); font-size: 14px;">
+              <span class="wh-date" style="font-weight: 600;">{{ log.date }}</span>
+              <span style="font-weight: 800; color: #22c55e;">{{ log.steps.toLocaleString() }} steps</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Gym Workouts, Charts and History -->
+      <div class="right-col">
         <!-- Gym Routine Checklist Panel -->
         <div class="panel">
           <div class="panel-header">
@@ -202,10 +225,7 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Right Column: Manual Logs, Charts and History -->
-      <div class="right-col">
         <!-- Manual Workouts Log Form -->
         <div class="panel">
           <h3>Log Gym Session / Manual Activity</h3>
@@ -234,26 +254,6 @@
           </form>
         </div>
 
-        <!-- 30-Day Steps Trend Chart -->
-        <div class="panel">
-          <h3>30-Day Steps Count Trend</h3>
-          <div class="chart-wrap" style="margin-top: 10px;">
-            <canvas ref="stepsChartCanvas"></canvas>
-          </div>
-        </div>
-
-        <!-- Recent Steps History Logs -->
-        <div class="panel">
-          <h3>Recent Steps Logs</h3>
-          <div class="water-history">
-            <div v-if="sortedStepsHistory.length === 0" class="empty-msg">No steps logged yet.</div>
-            <div v-else v-for="log in sortedStepsHistory" :key="log.date" class="water-history-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color-subtle); font-size: 14px;">
-              <span class="wh-date" style="font-weight: 600;">{{ log.date }}</span>
-              <span style="font-weight: 800; color: #22c55e;">{{ log.steps.toLocaleString() }} steps</span>
-            </div>
-          </div>
-        </div>
-
         <!-- 30-Day Gym Calories Trend Chart -->
         <div class="panel">
           <h3>30-Day Gym Calories Trend</h3>
@@ -267,18 +267,19 @@
           <h3>Recent Workout Logs</h3>
           <div class="water-history">
             <div v-if="sortedGymHistory.length === 0" class="empty-msg">No workout history logged yet.</div>
-            <div v-else v-for="log in sortedGymHistory" :key="log.date" class="water-history-item" style="align-items: flex-start; flex-direction: column; gap: 4px;">
-              <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-                <span class="wh-date">{{ log.date }} <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">({{ log.workout }})</span></span>
-                <span class="wh-cals" style="font-weight: 800; color: #f97316;">{{ log.calories }} kcal</span>
+            <div v-else>
+              <div v-for="log in sortedGymHistory" :key="log.date" class="water-history-item" style="align-items: flex-start; flex-direction: column; gap: 4px;">
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                  <span class="wh-date">{{ log.date }} <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">({{ log.workout }})</span></span>
+                  <span class="wh-cals" style="font-weight: 800; color: #f97316;">{{ log.calories }} kcal</span>
+                </div>
+                <p v-if="log.note" style="font-size: 12px; margin: 0; color: var(--text-secondary);">
+                  Note: {{ log.note }}
+                </p>
               </div>
-              <p v-if="log.note" style="font-size: 12px; margin: 0; color: var(--text-secondary);">
-                Note: {{ log.note }}
-              </p>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
