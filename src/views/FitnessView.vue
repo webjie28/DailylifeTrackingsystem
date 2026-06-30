@@ -326,12 +326,12 @@ const backtrackDate = ref(getTodayKey())
 const stepsInput = ref(0)
 const activeDay = ref(DAYS[new Date().getDay()])
 
-// Watch backtrackDate to load steps count and update activeDay for routines
+// Watch backtrackDate to load activeDay for routines and clear input field
 watch(backtrackDate, (newDate) => {
   if (!newDate) return
   const d = new Date(newDate + 'T00:00:00')
   activeDay.value = DAYS[d.getDay()]
-  stepsInput.value = store.walkTrackerData[newDate] || 0
+  stepsInput.value = null
 }, { immediate: true })
 
 // Manual inputs
@@ -439,14 +439,19 @@ function toggleExercise(day, index, cals) {
 
 // Log actions
 function saveSteps() {
+  if (stepsInput.value === null || stepsInput.value === undefined || stepsInput.value === '') {
+    return
+  }
   const steps = parseInt(stepsInput.value) || 0
   store.updateSteps(steps, backtrackDate.value)
-  stepsInput.value = 0
+  stepsInput.value = null
 }
 
 function editStepsLog(log) {
   backtrackDate.value = log.date
-  stepsInput.value = log.steps
+  setTimeout(() => {
+    stepsInput.value = log.steps
+  }, 50)
 }
 
 function deleteStepsLog(date) {
@@ -614,7 +619,6 @@ onMounted(() => {
 
 watch([() => store.walkTrackerData, () => store.gymTrackerData], () => {
   renderCharts()
-  stepsInput.value = store.walkTrackerData[backtrackDate.value] || 0
 }, { deep: true })
 </script>
 
