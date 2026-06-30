@@ -115,6 +115,22 @@ export const useAppStore = defineStore('app', {
       workTimeLogs = Array.isArray(parsed) ? parsed : []
     } catch { workTimeLogs = [] }
 
+    let gymRoutines = {
+      MONDAY: [],
+      TUESDAY: [],
+      WEDNESDAY: [],
+      THURSDAY: [],
+      FRIDAY: [],
+      SATURDAY: [],
+      SUNDAY: []
+    }
+    try {
+      const parsed = JSON.parse(localStorage.getItem('gymRoutines') || '{}')
+      if (parsed && typeof parsed === 'object') {
+        gymRoutines = { ...gymRoutines, ...parsed }
+      }
+    } catch { }
+
     const isClockedIn = localStorage.getItem('isClockedIn') === 'true'
     const activeClockInLogId = localStorage.getItem('activeClockInLogId') || null
 
@@ -135,6 +151,7 @@ export const useAppStore = defineStore('app', {
       walkTrackerData,
       gymTrackerData,
       gymCheckedItems,
+      gymRoutines,
       fitnessStepGoal: parseInt(localStorage.getItem('fitnessStepGoal') || '10000'),
       
       financeTransactions,
@@ -349,20 +366,67 @@ export const useAppStore = defineStore('app', {
     },
 
     // ── Anime Watchlist ───────────────────────────────────
-    addAnime(a) {
+    async fetchSharedAnimeWatchlist() {
+      try {
+        const docRef = doc(db, 'shared', 'watchlist')
+        const docSnap = await getDoc(docRef)
+        if (docSnap.exists()) {
+          const data = docSnap.data()
+          if (data.list) {
+            this.animeWatchlist = data.list
+            localStorage.setItem('animeWatchlist', JSON.stringify(this.animeWatchlist))
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching shared anime watchlist:', err)
+      }
+    },
+    async syncSharedAnimeWatchlist() {
+      try {
+        const docRef = doc(db, 'shared', 'watchlist')
+        await setDoc(docRef, { list: this.animeWatchlist }, { merge: true })
+      } catch (err) {
+        console.error('Error syncing shared anime watchlist:', err)
+      }
+    },
+    async addAnime(a) {
       this.animeWatchlist.push(a)
       localStorage.setItem('animeWatchlist', JSON.stringify(this.animeWatchlist))
+      await this.syncSharedAnimeWatchlist()
     },
-    updateAnime(id, updates) {
+    async updateAnime(id, updates) {
       const idx = this.animeWatchlist.findIndex(a => a.id === id)
       if (idx !== -1) {
         this.animeWatchlist[idx] = { ...this.animeWatchlist[idx], ...updates }
         localStorage.setItem('animeWatchlist', JSON.stringify(this.animeWatchlist))
+        await this.syncSharedAnimeWatchlist()
       }
     },
-    deleteAnime(id) {
+    async deleteAnime(id) {
       this.animeWatchlist = this.animeWatchlist.filter(a => a.id !== id)
       localStorage.setItem('animeWatchlist', JSON.stringify(this.animeWatchlist))
+      await this.syncSharedAnimeWatchlist()
+    },
+
+    // ── Gym Routines ──────────────────────────────────────
+    addGymExercise(day, exercise) {
+      if (!this.gymRoutines[day]) {
+        this.gymRoutines[day] = []
+      }
+      this.gymRoutines[day].push(exercise)
+      localStorage.setItem('gymRoutines', JSON.stringify(this.gymRoutines))
+    },
+    deleteGymExercise(day, index) {
+      if (this.gymRoutines[day]) {
+        this.gymRoutines[day].splice(index, 1)
+        localStorage.setItem('gymRoutines', JSON.stringify(this.gymRoutines))
+      }
+    },
+    updateGymExercise(day, index, updatedText, updatedCals) {
+      if (this.gymRoutines[day] && this.gymRoutines[day][index]) {
+        this.gymRoutines[day][index] = { text: updatedText, cals: updatedCals }
+        localStorage.setItem('gymRoutines', JSON.stringify(this.gymRoutines))
+      }
     },
 
     // ── Events Scheduler ──────────────────────────────────
@@ -552,6 +616,9 @@ export const useAppStore = defineStore('app', {
     async fetchUserData() {
       if (!this.user) return
       try {
+        // Fetch shared anime watchlist for everyone
+        await this.fetchSharedAnimeWatchlist()
+
         const docRef = doc(db, 'users', this.user.uid)
         const docSnap = await getDoc(docRef)
         if (docSnap.exists()) {
@@ -561,11 +628,11 @@ export const useAppStore = defineStore('app', {
           if (data.walkTrackerData) this.walkTrackerData = data.walkTrackerData
           if (data.gymTrackerData) this.gymTrackerData = data.gymTrackerData
           if (data.gymCheckedItems) this.gymCheckedItems = data.gymCheckedItems
+          if (data.gymRoutines) this.gymRoutines = data.gymRoutines
           if (data.fitnessStepGoal !== undefined) this.fitnessStepGoal = data.fitnessStepGoal
           if (data.financeTransactions) this.financeTransactions = data.financeTransactions
           if (data.savingsContributions) this.savingsContributions = data.savingsContributions
           if (data.savingsGoals) this.savingsGoals = data.savingsGoals
-          if (data.animeWatchlist) this.animeWatchlist = data.animeWatchlist
           if (data.eventsList) this.eventsList = data.eventsList
           if (data.longtermGoalsList) this.longtermGoalsList = data.longtermGoalsList
           if (data.studyBooksList) this.studyBooksList = data.studyBooksList
@@ -598,11 +665,11 @@ export const useAppStore = defineStore('app', {
           walkTrackerData: this.walkTrackerData,
           gymTrackerData: this.gymTrackerData,
           gymCheckedItems: this.gymCheckedItems,
+          gymRoutines: this.gymRoutines,
           fitnessStepGoal: this.fitnessStepGoal,
           financeTransactions: this.financeTransactions,
           savingsContributions: this.savingsContributions,
           savingsGoals: this.savingsGoals,
-          animeWatchlist: this.animeWatchlist,
           eventsList: this.eventsList,
           longtermGoalsList: this.longtermGoalsList,
           studyBooksList: this.studyBooksList,
@@ -626,6 +693,7 @@ export const useAppStore = defineStore('app', {
       localStorage.setItem('walkTrackerData', JSON.stringify(this.walkTrackerData))
       localStorage.setItem('gymTrackerData', JSON.stringify(this.gymTrackerData))
       localStorage.setItem('gymCheckedItems', JSON.stringify(this.gymCheckedItems))
+      localStorage.setItem('gymRoutines', JSON.stringify(this.gymRoutines))
       localStorage.setItem('fitnessStepGoal', this.fitnessStepGoal.toString())
       localStorage.setItem('financeTransactions', JSON.stringify(this.financeTransactions))
       localStorage.setItem('savingsContributions', JSON.stringify(this.savingsContributions))
@@ -654,6 +722,15 @@ export const useAppStore = defineStore('app', {
       this.walkTrackerData = {}
       this.gymTrackerData = {}
       this.gymCheckedItems = {}
+      this.gymRoutines = {
+        MONDAY: [],
+        TUESDAY: [],
+        WEDNESDAY: [],
+        THURSDAY: [],
+        FRIDAY: [],
+        SATURDAY: [],
+        SUNDAY: []
+      }
       this.fitnessStepGoal = 10000
       this.financeTransactions = []
       this.savingsContributions = []
@@ -677,6 +754,7 @@ export const useAppStore = defineStore('app', {
       localStorage.removeItem('walkTrackerData')
       localStorage.removeItem('gymTrackerData')
       localStorage.removeItem('gymCheckedItems')
+      localStorage.removeItem('gymRoutines')
       localStorage.removeItem('fitnessStepGoal')
       localStorage.removeItem('financeTransactions')
       localStorage.removeItem('savingsContributions')

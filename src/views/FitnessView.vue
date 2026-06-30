@@ -112,25 +112,70 @@
           </div>
 
           <!-- Exercises list for active day -->
-          <div v-if="PLAN[activeDay]" class="exercise-list">
+          <div class="exercise-list" style="margin-top: 16px;">
+            <!-- Exercise Add Form -->
+            <div style="margin-bottom: 20px; background: var(--bg-subtle); padding: 14px; border-radius: 16px; border: 1px solid var(--border-color);">
+              <h4 style="margin: 0 0 10px; font-size: 14px; font-weight: 700; color: var(--text-primary);">Add Exercise for {{ activeDay }}</h4>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <input 
+                  type="text" 
+                  v-model="newExText" 
+                  placeholder="e.g. Bench Press – 4×10" 
+                  style="flex: 1; min-width: 180px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); outline: none; font-size: 13px;"
+                />
+                <input 
+                  type="number" 
+                  v-model.number="newExCals" 
+                  placeholder="kcal" 
+                  style="width: 70px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); outline: none; font-size: 13px;"
+                />
+                <button 
+                  type="button"
+                  @click="addCustomExercise"
+                  class="btn btn-primary" 
+                  style="padding: 8px 16px; font-size: 12px;"
+                >
+                  + Add
+                </button>
+              </div>
+            </div>
+
+            <div v-if="!(store.gymRoutines[activeDay] && store.gymRoutines[activeDay].length)" class="empty-msg" style="padding: 20px 0;">
+              No exercises added for {{ activeDay }} yet. Use the form above to add your exercises!
+            </div>
+            
             <div 
-              v-for="(ex, index) in PLAN[activeDay]" 
+              v-else
+              v-for="(ex, index) in store.gymRoutines[activeDay]" 
               :key="index" 
               class="exercise-item" 
               :class="{ checked: isExerciseChecked(activeDay, index) }"
+              style="display: flex; justify-content: space-between; align-items: center;"
             >
-              <input 
-                type="checkbox" 
-                :id="'ex-' + activeDay + '-' + index"
-                :checked="isExerciseChecked(activeDay, index)"
-                @change="toggleExercise(activeDay, index, ex.cals)"
-              />
-              <label :for="'ex-' + activeDay + '-' + index">{{ ex.text }}</label>
-              <span class="cal-pill">+{{ ex.cals }} kcal</span>
+              <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                <input 
+                  type="checkbox" 
+                  :id="'ex-' + activeDay + '-' + index"
+                  :checked="isExerciseChecked(activeDay, index)"
+                  @change="toggleExercise(activeDay, index, ex.cals)"
+                />
+                <label :for="'ex-' + activeDay + '-' + index" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;">{{ ex.text }}</label>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="cal-pill">+{{ ex.cals }} kcal</span>
+                <button 
+                  type="button"
+                  @click="deleteCustomExercise(index)"
+                  style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; font-size: 12px;"
+                  title="Remove Exercise"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             <!-- Routine completion progress bar -->
-            <div class="progress-block">
+            <div v-if="store.gymRoutines[activeDay] && store.gymRoutines[activeDay].length" class="progress-block" style="margin-top: 20px;">
               <div class="progress-row">
                 <span>Routine Progress</span>
                 <span>{{ routineProgressPercent(activeDay) }}% Completed</span>
@@ -139,12 +184,6 @@
                 <div class="prog-fill" :style="{ width: routineProgressPercent(activeDay) + '%' }"></div>
               </div>
             </div>
-          </div>
-
-          <!-- Rest Day display -->
-          <div v-else class="rest-card">
-            <p>Today is scheduled as a Rest Day.</p>
-            <p style="font-size: 13px; font-weight: normal; margin-top: 4px;">Make sure to stretch or do light active walking!</p>
           </div>
         </div>
       </div>
@@ -216,70 +255,15 @@ import Chart from 'chart.js/auto'
 
 const store = useAppStore()
 
+// Add exercise inputs
+const newExText = ref('')
+const newExCals = ref(30)
+
 // Ring SVG calculations
 const ringRadius = 58
 const ringCircumference = 2 * Math.PI * ringRadius
 
 const DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
-
-const PLAN = {
-  MONDAY: [
-    { text: 'Machine Incline Press – 4×6-10', cals: 40 },
-    { text: 'Machine Chest Press – 3×8-12', cals: 35 },
-    { text: 'Machine Shoulder Press – 2×8-12', cals: 30 },
-    { text: 'Cable Lateral Raise – 3×15-20', cals: 20 },
-    { text: 'Machine Lateral Raise – 5×12-20', cals: 20 },
-    { text: 'Cable / Rope Pushdown – 3×12', cals: 25 },
-    { text: 'Overhead Tricep Extension – 3×12', cals: 25 },
-    { text: 'Incline Walk – 20 mins', cals: 100 },
-  ],
-  TUESDAY: [
-    { text: 'Assisted Pull-Up Machine – 4×6-10', cals: 40 },
-    { text: 'Lat Pulldown Machine – 4×8-12', cals: 35 },
-    { text: 'Single Arm Lat Pulldown – 3×10-12', cals: 35 },
-    { text: 'Chest Supported Row Machine – 3×8-12', cals: 35 },
-    { text: 'Straight Arm Pulldown – 3×15', cals: 25 },
-    { text: 'Rear Delt Fly – 3×15', cals: 20 },
-    { text: 'Machine Preacher Curl – 3×10-12', cals: 25 },
-    { text: 'Incline Walk – 15 mins', cals: 90 },
-  ],
-  WEDNESDAY: [
-    { text: 'Leg Press – 4×6-8', cals: 45 },
-    { text: 'Romanian Deadlift – 3×10', cals: 45 },
-    { text: 'Walking Lunges – 3×12 each', cals: 40 },
-    { text: 'Leg Curl Machine – 3×10-15', cals: 30 },
-    { text: 'Leg Extension Machine – 3×12-15', cals: 30 },
-    { text: 'Standing Calf Raise – 4×12-20', cals: 20 },
-    { text: 'Plank – 3×1 min', cals: 20 },
-    { text: 'Leg Raises – 3×12', cals: 20 },
-  ],
-  THURSDAY: [
-    { text: '10k steps', cals: 120 },
-    { text: 'Stretching', cals: 30 },
-    { text: 'Dead hang – 3× max', cals: 20 },
-    { text: '15 min HIIT (bike / jog intervals)', cals: 180 },
-  ],
-  FRIDAY: [
-    { text: 'Machine Lateral Raise – 5×12-20', cals: 20 },
-    { text: 'Cable Lateral Raise – 3×15-20', cals: 20 },
-    { text: 'Single Arm Lat Pulldown – 4×10-12', cals: 35 },
-    { text: 'Lat Pulldown Machine – 3×10-12', cals: 35 },
-    { text: 'Chest Supported Row Machine – 3×10-12', cals: 35 },
-    { text: 'Rear Delt Machine – 4×15-20', cals: 20 },
-    { text: 'Machine Incline Press – 3×10-12', cals: 35 },
-    { text: 'DB Curl – 3×12', cals: 25 },
-    { text: '20 min incline walk', cals: 100 },
-  ],
-  SATURDAY: [
-    { text: 'Leg Press – 3×15', cals: 40 },
-    { text: 'RDL – 3×12', cals: 40 },
-    { text: 'Leg Curl – 3×15', cals: 30 },
-    { text: 'Leg Extension – 3×15', cals: 30 },
-    { text: "Farmer's Walk – 3 rounds", cals: 35 },
-    { text: 'Incline Walk – 30 min', cals: 130 },
-  ],
-  SUNDAY: null
-}
 
 const stepsInput = ref(store.todaySteps)
 const activeDay = ref(DAYS[new Date().getDay()])
@@ -292,6 +276,23 @@ const manualNote = ref('')
 
 const fitnessChartCanvas = ref(null)
 let fitnessChartInstance = null
+
+// Custom exercise CRUD
+function addCustomExercise() {
+  if (!newExText.value.trim()) return
+  store.addGymExercise(activeDay.value, {
+    text: newExText.value.trim(),
+    cals: parseInt(newExCals.value) || 0
+  })
+  newExText.value = ''
+  newExCals.value = 30
+}
+
+function deleteCustomExercise(index) {
+  if (confirm('Are you sure you want to remove this exercise?')) {
+    store.deleteGymExercise(activeDay.value, index)
+  }
+}
 
 // Walk computed Ring offset
 const stepGoalPercentage = computed(() => {
@@ -341,39 +342,36 @@ function isExerciseChecked(day, index) {
 }
 
 function isDayCompleted(day) {
-  const plan = PLAN[day]
-  if (!plan) return false
+  const plan = store.gymRoutines[day] || []
+  if (!plan.length) return false
   const checkKey = `${getTodayKey()}_${day}`
   const dayChecks = store.gymCheckedItems[checkKey] || {}
   return plan.every((_, i) => !!dayChecks[i])
 }
 
 function routineProgressPercent(day) {
-  const plan = PLAN[day]
-  if (!plan) return 0
+  const plan = store.gymRoutines[day] || []
+  if (!plan.length) return 0
   const checkKey = `${getTodayKey()}_${day}`
   const dayChecks = store.gymCheckedItems[checkKey] || {}
   const completed = plan.filter((_, i) => !!dayChecks[i]).length
   return Math.round((completed / plan.length) * 100)
 }
 
-// Check/uncheck routines
+// Toggle exercise checkbox state
 function toggleExercise(day, index, cals) {
   const checkKey = `${getTodayKey()}_${day}`
   const currentDayChecks = { ...(store.gymCheckedItems[checkKey] || {}) }
   
-  // Toggle status
   currentDayChecks[index] = !currentDayChecks[index]
   store.setGymCheckedItem(checkKey, currentDayChecks)
 
-  // Auto update workout calories if editing activeDay routine for TODAY
   const todayDayName = DAYS[new Date().getDay()]
   if (day === todayDayName) {
-    const plan = PLAN[todayDayName]
+    const plan = store.gymRoutines[todayDayName] || []
     const updatedChecks = store.gymCheckedItems[checkKey] || {}
-    const autoCals = plan.reduce((s, ex, i) => s + (updatedChecks[i] ? ex.cals : 0), 0)
+    const autoCals = plan.reduce((s, ex, i) => s + (updatedChecks[i] ? (ex.cals || 0) : 0), 0)
     
-    // Merge with existing manual calories
     const tk = getTodayKey()
     const existing = store.gymTrackerData[tk] || {}
     
@@ -383,7 +381,6 @@ function toggleExercise(day, index, cals) {
       existing.duration || 3600
     )
     
-    // Keep internal values
     const freshGym = { ...(store.gymTrackerData) }
     freshGym[tk] = {
       workout: existing.workout || `${todayDayName} Routine`,

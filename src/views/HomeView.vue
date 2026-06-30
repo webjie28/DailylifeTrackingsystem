@@ -144,8 +144,11 @@
           </div>
         </div>
         <div class="chart-container">
-          <div class="chart-wrapper">
+          <div v-if="hasRealData" class="chart-wrapper">
             <canvas ref="chartCanvas"></canvas>
+          </div>
+          <div v-else class="empty-msg" style="padding: 60px 20px; text-align: center; font-size: 14px; color: var(--text-muted);">
+            📊 No activity recorded for this category yet. Your analytics chart will appear here once logged.
           </div>
         </div>
       </article>
@@ -321,6 +324,24 @@ const titles = {
 }
 
 const activeChartTitle = computed(() => titles[activeChart.value])
+
+const hasRealData = computed(() => {
+  if (activeChart.value === 'growth') {
+    return store.savingsContributions.length > 0
+  }
+  if (activeChart.value === 'expenses') {
+    return store.financeTransactions.some(t => t.type === 'expense')
+  }
+  if (activeChart.value === 'loans') {
+    return store.savingsGoals.length > 0
+  }
+  if (activeChart.value === 'calories') {
+    const hasGym = Object.values(store.gymTrackerData).some(v => v && v.calories > 0)
+    const hasWalk = Object.values(store.walkTrackerData).some(v => v && v > 0)
+    return hasGym || hasWalk
+  }
+  return false
+})
 
 function selectChart(chartKey) {
   activeChart.value = chartKey
