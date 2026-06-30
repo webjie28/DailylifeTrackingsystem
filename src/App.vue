@@ -135,13 +135,14 @@ body, h1, h2, h3, h4, h5, h6, input, button, select, textarea, p, span, a, label
 
 .splash-title {
   font-family: 'Plus Jakarta Sans', sans-serif !important;
-  font-size: 52px;
-  font-weight: 800 !important;
+  font-size: 54px;
+  font-weight: 900 !important;
   letter-spacing: 0.18em;
   margin-bottom: 12px;
-  background: linear-gradient(135deg, #ea580c 0%, #d97706 100%); /* Sunset portfolio colors */
+  background: linear-gradient(135deg, #e65c00 0%, #ff7b00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 12px rgba(230, 92, 0, 0.3));
   text-transform: uppercase;
   display: block;
 }

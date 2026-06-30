@@ -155,12 +155,13 @@ async function handleLogin() {
 
 .auth-logo {
   font-family: 'Plus Jakarta Sans', sans-serif !important;
-  font-size: 38px;
-  font-weight: 800 !important;
+  font-size: 42px;
+  font-weight: 900 !important;
   letter-spacing: 0.15em;
-  background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-blue) 100%);
+  background: linear-gradient(135deg, #e65c00 0%, #ff7b00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 10px rgba(230, 92, 0, 0.25));
   margin: 0 0 4px 0;
   text-transform: uppercase;
 }
