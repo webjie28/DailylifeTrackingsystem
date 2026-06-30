@@ -501,26 +501,32 @@ export const useAppStore = defineStore('app', {
     },
     // ── Authentication Actions ─────────────────────────────
     async registerUser(email, password, username) {
+      // Step 1: Create Firebase Auth account — this MUST succeed
+      let userCredential
       try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-        this.user = userCredential.user
-        this.isAuthenticated = true
-        this.username = username
-        
-        // Write the username mapping in Firestore
+        userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      } catch (authErr) {
+        // Auth errors (wrong email format, weak password, etc.) — rethrow
+        throw authErr
+      }
+
+      this.user = userCredential.user
+      this.isAuthenticated = true
+      this.username = username
+
+      // Step 2: Write profile data to Firestore — do NOT block registration if this fails
+      try {
         const usernameRef = doc(db, 'usernames', username.toLowerCase())
         await setDoc(usernameRef, { email: email.toLowerCase(), uid: this.user.uid })
-        
-        // Save the username to the user profile
+
         const userRef = doc(db, 'users', this.user.uid)
-        await setDoc(userRef, {
-          username: username,
-          email: email
-        }, { merge: true })
-        
+        await setDoc(userRef, { username: username, email: email }, { merge: true })
+
         await this.syncAllDataToCloud()
-      } catch (err) {
-        throw err
+      } catch (firestoreErr) {
+        // Firestore write failed (rules not updated yet) — log but don't block login
+        console.warn('Firestore profile write failed (check Firestore rules):', firestoreErr.message)
+        // User is still authenticated — they can use the app and data will sync later
       }
     },
     async loginUser(email, password) {

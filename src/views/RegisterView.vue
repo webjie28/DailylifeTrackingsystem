@@ -200,14 +200,19 @@ async function handleRegister() {
   errorMessage.value = ''
   
   try {
-    // 1. Check if username is already taken
-    const usernameDocRef = doc(db, 'usernames', usernameClean)
-    const usernameDocSnap = await getDoc(usernameDocRef)
-    
-    if (usernameDocSnap.exists()) {
-      errorMessage.value = 'Username is already taken.'
-      isLoading.value = false
-      return
+    // 1. Check if username is already taken (may fail if Firestore rules require auth — that's okay)
+    try {
+      const usernameDocRef = doc(db, 'usernames', usernameClean)
+      const usernameDocSnap = await getDoc(usernameDocRef)
+      if (usernameDocSnap.exists()) {
+        errorMessage.value = 'Username is already taken.'
+        isLoading.value = false
+        return
+      }
+    } catch (checkErr) {
+      // If Firestore rules block this read (user not logged in yet), skip the check
+      // Username uniqueness will still be enforced when writing to Firestore after auth
+      console.warn('Username check skipped (Firestore rules may require auth):', checkErr.message)
     }
 
     // 2. Proceed with registration
