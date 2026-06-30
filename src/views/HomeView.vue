@@ -64,9 +64,17 @@
             </span>
           </div>
           <div class="stat-card-right">
-            <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
-            </svg>
+            <div class="mini-ring-wrap" style="--ring-color: #f97316;">
+              <svg viewBox="0 0 36 36" class="mini-ring-svg">
+                <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
+                <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, calGoalPercent)" stroke-width="3"></circle>
+              </svg>
+              <div class="mini-ring-icon-center">
+                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
+                </svg>
+              </div>
+            </div>
           </div>
         </router-link>
 
@@ -80,10 +88,18 @@
             </span>
           </div>
           <div class="stat-card-right">
-            <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 8v8M8 12h8"/>
-            </svg>
+            <div class="mini-ring-wrap" style="--ring-color: #22c55e;">
+              <svg viewBox="0 0 36 36" class="mini-ring-svg">
+                <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
+                <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, stepsGoalPercent)" stroke-width="3"></circle>
+              </svg>
+              <div class="mini-ring-icon-center">
+                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 8v8M8 12h8"/>
+                </svg>
+              </div>
+            </div>
           </div>
         </router-link>
 
@@ -97,10 +113,18 @@
             </span>
           </div>
           <div class="stat-card-right">
-            <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-              <line x1="1" y1="10" x2="23" y2="10"/>
-            </svg>
+            <div class="mini-ring-wrap" style="--ring-color: #ef4444;">
+              <svg viewBox="0 0 36 36" class="mini-ring-svg">
+                <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
+                <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, expensesBudgetPercent)" stroke-width="3"></circle>
+              </svg>
+              <div class="mini-ring-icon-center">
+                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                  <line x1="1" y1="10" x2="23" y2="10"/>
+                </svg>
+              </div>
+            </div>
           </div>
         </router-link>
 
@@ -114,17 +138,23 @@
             </span>
           </div>
           <div class="stat-card-right">
-            <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <circle cx="12" cy="12" r="6"/>
-              <circle cx="12" cy="12" r="2"/>
-            </svg>
+            <div class="mini-ring-wrap" style="--ring-color: #3b82f6;">
+              <svg viewBox="0 0 36 36" class="mini-ring-svg">
+                <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
+                <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, savingsGoalsPercent)" stroke-width="3"></circle>
+              </svg>
+              <div class="mini-ring-icon-center">
+                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <circle cx="12" cy="12" r="6"/>
+                  <circle cx="12" cy="12" r="2"/>
+                </svg>
+              </div>
+            </div>
           </div>
         </router-link>
       </div>
     </section>
-
-
 
     <!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
     <section class="animate-in delay-250" style="margin-bottom: 36px;">
@@ -551,7 +581,7 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
     margin-bottom: 24px;
 }
 .stat-pastel-card {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Inter', sans-serif !important;
     border-radius: 20px;
     padding: 24px;
     display: flex;
@@ -627,12 +657,42 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
     align-items: center;
     justify-content: center;
     color: var(--time-accent, var(--accent-orange));
-    opacity: 0.85;
 }
 .stat-card-icon {
-    width: 38px;
-    height: 38px;
+    width: 20px;
+    height: 20px;
     stroke-width: 1.75;
+    opacity: 0.85;
+}
+
+/* ── Circular Progress Rings ───────────────────────────── */
+.mini-ring-wrap {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+}
+.mini-ring-svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+.mini-ring-svg .ring-bg {
+    stroke: var(--border-color-strong, rgba(0,0,0,0.08));
+    opacity: 0.3;
+}
+.mini-ring-svg .ring-fill {
+    stroke: var(--ring-color, #f97316);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.mini-ring-icon-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--time-text, var(--text-primary));
 }
 
 /* ── Time Tracker Widget Styling ────────────────────────── */
@@ -668,7 +728,7 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
   50% { opacity: 0.3; }
 }
 .timer-tick-display {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Inter', sans-serif !important;
     font-size: 40px;
     font-weight: 800;
     text-align: center;
@@ -764,7 +824,7 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
     margin-bottom: 20px;
 }
 .python-analytics-box h4 {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Inter', sans-serif !important;
     font-size: 12px;
     font-weight: 750;
     text-transform: uppercase;
@@ -828,7 +888,7 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
     padding-bottom: 16px;
 }
 .chart-tab-header h3 {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Inter', sans-serif !important;
     font-size: 18px;
     font-weight: 700;
     color: var(--time-text, var(--text-primary));
@@ -841,7 +901,7 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
     border-radius: 12px;
 }
 .chart-tab-btn {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Inter', sans-serif !important;
     background: transparent;
     border: none;
     padding: 6px 12px;
@@ -863,7 +923,7 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
 /* ── Action Buttons: Glassmorphism ─────────────────────── */
 .actions-minimal-row { display: flex; gap: 12px; margin-bottom: 32px; }
 .action-minimal-btn {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Inter', sans-serif !important;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -903,7 +963,7 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
     margin-bottom: 12px;
 }
 .focus-minimal-card h3 {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Inter', sans-serif !important;
     font-size: 14px;
     font-weight: 700;
     color: var(--time-text-muted, var(--text-secondary));
@@ -911,7 +971,7 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
     letter-spacing: 0.05em;
 }
 .focus-minimal-input {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: 'Inter', sans-serif !important;
     width: 100%;
     padding: 12px 16px;
     border: 1px solid var(--glass-border, rgba(255,255,255,0.2));
