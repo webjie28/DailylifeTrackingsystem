@@ -1,34 +1,81 @@
 <template>
   <div class="study-view">
-    <div class="finance-header">
+    <div class="study-header">
       <div>
-        <h1>Study &amp; Books</h1>
-        <p style="color: var(--text-muted); margin-top: 4px; font-size: 14px;">
-          Boost productivity with the Pomodoro Timer, manage study logs, and track reading books
+        <h1>Study Hub</h1>
+        <p class="study-subtitle">
+          Focus sessions, study logs, and reading progress — all in one place.
         </p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-primary" @click="showBookModal = true">+ Add Book</button>
+        <button class="btn btn-primary" @click="showBookModal = true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16" style="vertical-align: -2px; margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Book
+        </button>
       </div>
     </div>
 
-    <!-- Summary Stats -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">Total Study Time</div>
-        <div class="stat-value purple">{{ store.studyTotalTime }} mins</div>
+    <!-- Summary Stats with Mini Rings -->
+    <div class="stats-row animate-in delay-100">
+      <!-- Total Study Time -->
+      <div class="stat-card-glass">
+        <div class="stat-glass-left">
+          <div class="stat-glass-label">Total Study Time</div>
+          <div class="stat-glass-value">{{ store.studyTotalTime }} <span class="stat-unit">mins</span></div>
+        </div>
+        <div class="stat-glass-right">
+          <div class="mini-ring-wrap" style="--ring-color: #f97316;">
+            <svg viewBox="0 0 36 36" class="mini-ring-svg">
+              <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
+              <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, studyTimePercent)" stroke-width="3"></circle>
+            </svg>
+            <div class="mini-ring-icon-center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Books Completed</div>
-        <div class="stat-value green">{{ completedBooksCount }}</div>
+
+      <!-- Books Completed -->
+      <div class="stat-card-glass">
+        <div class="stat-glass-left">
+          <div class="stat-glass-label">Books Completed</div>
+          <div class="stat-glass-value" style="color: #22c55e;">{{ completedBooksCount }}</div>
+        </div>
+        <div class="stat-glass-right">
+          <div class="mini-ring-wrap" style="--ring-color: #22c55e;">
+            <svg viewBox="0 0 36 36" class="mini-ring-svg">
+              <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
+              <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, completionPercent)" stroke-width="3"></circle>
+            </svg>
+            <div class="mini-ring-icon-center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">Currently Reading</div>
-        <div class="stat-value orange">{{ readingBooksCount }}</div>
+
+      <!-- Currently Reading -->
+      <div class="stat-card-glass">
+        <div class="stat-glass-left">
+          <div class="stat-glass-label">Currently Reading</div>
+          <div class="stat-glass-value" style="color: #f97316;">{{ readingBooksCount }}</div>
+        </div>
+        <div class="stat-glass-right">
+          <div class="mini-ring-wrap" style="--ring-color: #3b82f6;">
+            <svg viewBox="0 0 36 36" class="mini-ring-svg">
+              <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
+              <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, readingPercent)" stroke-width="3"></circle>
+            </svg>
+            <div class="mini-ring-icon-center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="two-col">
+    <div class="two-col animate-in delay-200">
       <!-- Left Column: Pomodoro Timer and Session Notes -->
       <div class="left-col">
         <!-- Pomodoro Timer Panel -->
@@ -46,20 +93,24 @@
 
           <div class="timer-controls">
             <button class="btn-timer play" @click="toggleTimer">
-              {{ isRunning ? '⏸' : '▶' }}
+              <svg v-if="!isRunning" viewBox="0 0 24 24" fill="currentColor" width="26" height="26"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg v-else viewBox="0 0 24 24" fill="currentColor" width="26" height="26"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
             </button>
             <button class="btn-timer reset" @click="resetTimer">
-              Reset
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
             </button>
           </div>
-          <p style="font-size: 13px; color: var(--text-secondary); margin-top: 15px;">
+          <p class="timer-hint">
             Focus for 25 minutes, followed by a 5-minute break.
           </p>
         </div>
 
         <!-- Session Notes Panel -->
         <div class="panel">
-          <h3>Study Session Notes</h3>
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Study Session Notes
+          </h3>
           <div class="form-group" style="margin-bottom: 0;">
             <textarea 
               v-model="sessionNotes" 
@@ -74,10 +125,25 @@
       <!-- Right Column: Reading Tracker -->
       <div class="right-col">
         <div class="panel">
-          <h3>Reading Progress Tracker</h3>
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
+            Reading Progress Tracker
+          </h3>
           <div class="books-list">
-            <div v-if="store.studyBooksList.length === 0" class="empty-msg">
-              No books registered. Add a book to track your reading progress!
+            <!-- Enhanced Empty State -->
+            <div v-if="store.studyBooksList.length === 0" class="empty-state-books">
+              <div class="empty-state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/>
+                </svg>
+              </div>
+              <div class="empty-state-title">No Books Yet</div>
+              <div class="empty-state-text">Start building your reading list. Track progress page by page and celebrate when you finish.</div>
+              <button class="btn btn-primary btn-sm" @click="showBookModal = true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" style="vertical-align: -2px; margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add Your First Book
+              </button>
             </div>
             
             <div 
@@ -95,15 +161,17 @@
                   </div>
                 </div>
                 <div class="book-actions">
-                  <button class="btn-del" @click="openEditBook(book)" title="Edit Page Progress">Edit</button>
-                  <button class="btn-del" @click="deleteBook(book.id)" title="Remove Book">✕</button>
+                  <button class="btn-action-sm" @click="openEditBook(book)" title="Edit Page Progress">Edit</button>
+                  <button class="btn-action-sm btn-action-danger" @click="deleteBook(book.id)" title="Remove Book">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
                 </div>
               </div>
 
               <div class="book-amounts">
                 Page <strong>{{ book.currentPage }}</strong> of <strong>{{ book.totalPages }}</strong>
-                <span style="margin-left: 6px; font-weight: 700; text-transform: uppercase; font-size: 11px;" :class="book.status">
-                  · {{ book.status }}
+                <span class="book-status-pill" :class="book.status">
+                  {{ book.status }}
                 </span>
               </div>
 
@@ -111,8 +179,8 @@
                 <div class="goal-bar-fill" :style="{ width: book.percentage + '%' }"></div>
               </div>
 
-              <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--text-muted);">
-                <span>{{ book.percentage }}% Finished</span>
+              <div class="book-progress-footer">
+                <span>{{ book.percentage }}% Complete</span>
               </div>
             </div>
           </div>
@@ -162,6 +230,7 @@
       </div>
     </div>
   </div>
+
 </template>
 
 <script setup>
@@ -214,6 +283,24 @@ const completedBooksCount = computed(() => {
 
 const readingBooksCount = computed(() => {
   return store.studyBooksList.filter(b => b.status === 'reading').length
+})
+
+// Ring progress percentages for stat cards
+const studyTimePercent = computed(() => {
+  // Target: 120 mins per day as a goal reference
+  return Math.min(100, Math.round((store.studyTotalTime / 120) * 100))
+})
+
+const completionPercent = computed(() => {
+  const total = store.studyBooksList.length
+  if (total === 0) return 0
+  return Math.min(100, Math.round((completedBooksCount.value / total) * 100))
+})
+
+const readingPercent = computed(() => {
+  const total = store.studyBooksList.length
+  if (total === 0) return 0
+  return Math.min(100, Math.round((readingBooksCount.value / total) * 100))
 })
 
 // Timer controls
@@ -334,7 +421,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.finance-header {
+/* ── Page Header ───────────────────────────────────────── */
+.study-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -342,49 +430,117 @@ onUnmounted(() => {
   gap: 16px;
   margin-bottom: 28px;
 }
-.finance-header h1 {
+.study-header h1 {
+  font-family: 'Inter', sans-serif;
   font-size: 32px;
   font-weight: 800;
   color: var(--text-primary);
   margin: 0;
 }
+.study-subtitle {
+  font-family: 'Inter', sans-serif;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
 
+/* ── Animations ────────────────────────────────────────── */
+.animate-in {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease forwards;
+}
+.delay-100 { animation-delay: 0.08s; }
+.delay-200 { animation-delay: 0.16s; }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Glassmorphism Stat Cards ──────────────────────────── */
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
   margin-bottom: 28px;
 }
-.stat-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+.stat-card-glass {
+  font-family: 'Inter', sans-serif;
   border-radius: 20px;
-  padding: 18px 20px;
-  box-shadow: var(--shadow-sm);
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 130px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  background: var(--glass-bg, rgba(255,255,255,0.15));
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border, rgba(255,255,255,0.2));
+  color: var(--time-text, var(--text-primary));
+  box-shadow: 0 8px 32px rgba(0,0,0,0.06);
 }
-.stat-label {
-  font-size: 12px;
+.stat-card-glass:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+}
+.stat-glass-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stat-glass-label {
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+  color: var(--time-text-muted, var(--text-secondary));
+  opacity: 0.8;
 }
-.stat-value {
-  font-size: 26px;
+.stat-glass-value {
+  font-size: 28px;
   font-weight: 800;
-  color: var(--text-primary);
+  line-height: 1.2;
+  color: var(--time-text, var(--text-primary));
 }
-.stat-value.purple {
-  color: #7c3aed;
-}
-.stat-value.green {
-  color: #22c55e;
-}
-.stat-value.orange {
-  color: #f97316;
+.stat-unit {
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.6;
 }
 
+/* ── Mini Ring Progress ────────────────────────────────── */
+.mini-ring-wrap {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+.mini-ring-svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+.mini-ring-svg .ring-bg {
+  stroke: var(--border-color-strong, rgba(0,0,0,0.08));
+  opacity: 0.3;
+}
+.mini-ring-svg .ring-fill {
+  stroke: var(--ring-color, #f97316);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.mini-ring-icon-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--time-text, var(--text-primary));
+  opacity: 0.7;
+}
+
+/* ── Two Column Layout ─────────────────────────────────── */
 .two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -396,7 +552,9 @@ onUnmounted(() => {
   }
 }
 
+/* ── Panel Cards ───────────────────────────────────────── */
 .panel {
+  font-family: 'Inter', sans-serif;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 24px;
@@ -405,13 +563,16 @@ onUnmounted(() => {
   margin-bottom: 24px;
 }
 .panel h3 {
-  font-size: 18px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
   font-weight: 700;
   color: var(--text-heading);
   margin: 0 0 20px;
+  display: flex;
+  align-items: center;
 }
 
-/* Timer styles */
+/* ── Pomodoro Timer ────────────────────────────────────── */
 .timer-panel {
   padding: 40px 24px;
 }
@@ -419,12 +580,13 @@ onUnmounted(() => {
   margin-bottom: 18px;
 }
 .timer-mode-badge {
+  font-family: 'Inter', sans-serif;
   display: inline-block;
   padding: 6px 16px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .timer-mode-badge.focus-mode {
@@ -437,9 +599,9 @@ onUnmounted(() => {
 }
 
 .timer-display {
+  font-family: 'Inter', sans-serif;
   font-size: 78px;
   font-weight: 800;
-  font-family: 'Plus Jakarta Sans', sans-serif;
   color: var(--text-heading);
   line-height: 1;
   margin-bottom: 24px;
@@ -465,13 +627,14 @@ onUnmounted(() => {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: #7c3aed;
+  background: linear-gradient(135deg, #e65c00 0%, #ff7b00 100%);
   color: #fff;
   font-size: 24px;
 }
 .btn-timer.play:hover {
-  background: #5b21b6;
+  background: linear-gradient(135deg, #c2410c 0%, #e65c00 100%);
   transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(234, 88, 12, 0.35);
 }
 .btn-timer.reset {
   width: 52px;
@@ -486,8 +649,17 @@ onUnmounted(() => {
   background: var(--bg-card);
   transform: scale(1.05);
 }
+.timer-hint {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 15px;
+  opacity: 0.7;
+}
 
+/* ── Notes ─────────────────────────────────────────────── */
 .notes-textarea {
+  font-family: 'Inter', sans-serif;
   width: 100%;
   height: 200px;
   padding: 14px;
@@ -495,18 +667,18 @@ onUnmounted(() => {
   border: 1px solid var(--border-color-strong);
   background: var(--bg-input-inset);
   color: var(--text-primary);
-  font-family: inherit;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
   outline: none;
   resize: vertical;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .notes-textarea:focus {
-  border-color: #7c3aed;
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 3px var(--accent-purple-light);
 }
 
-/* Books tracker styles */
+/* ── Books Tracker ─────────────────────────────────────── */
 .books-list {
   display: flex;
   flex-direction: column;
@@ -514,15 +686,47 @@ onUnmounted(() => {
   max-height: 520px;
   overflow-y: auto;
 }
+
+/* Enhanced Empty State */
+.empty-state-books {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px;
+  gap: 12px;
+}
+.empty-state-icon {
+  color: var(--text-muted);
+  opacity: 0.25;
+  margin-bottom: 4px;
+}
+.empty-state-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.empty-state-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-muted);
+  max-width: 280px;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+/* Book Cards */
 .book-card {
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
-  border-radius: 20px;
+  border-radius: 16px;
   padding: 18px;
   transition: all 0.2s;
 }
 .book-card:hover {
   transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 .book-completed {
   border-color: rgba(34, 197, 94, 0.3);
@@ -540,19 +744,18 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
 }
-.book-icon {
-  font-size: 24px;
-}
 .book-text-details {
   display: flex;
   flex-direction: column;
 }
 .book-title {
-  font-weight: 750;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
   font-size: 15px;
   color: var(--text-primary);
 }
 .book-author {
+  font-family: 'Inter', sans-serif;
   font-size: 12px;
   color: var(--text-secondary);
 }
@@ -561,25 +764,65 @@ onUnmounted(() => {
   display: flex;
   gap: 4px;
 }
+.btn-action-sm {
+  font-family: 'Inter', sans-serif;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-action-sm:hover {
+  border-color: var(--accent-purple);
+  color: var(--accent-purple);
+  background: var(--accent-purple-light);
+}
+.btn-action-danger:hover {
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
 
 .book-amounts {
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   color: var(--text-secondary);
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.book-amounts .reading {
+.book-status-pill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.book-status-pill.reading {
+  background: rgba(249, 115, 22, 0.12);
   color: #f97316;
 }
-.book-amounts .completed {
+.book-status-pill.completed {
+  background: rgba(34, 197, 94, 0.12);
   color: #16a34a;
 }
-.book-amounts .to-read {
-  color: #7c3aed;
+.book-status-pill.to-read {
+  background: var(--accent-purple-light);
+  color: var(--accent-purple);
 }
 
 .goal-bar-wrap {
   height: 6px;
-  background: var(--bg-subtle);
+  background: var(--border-color-strong);
   border-radius: 99px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -587,22 +830,20 @@ onUnmounted(() => {
 .goal-bar-fill {
   height: 100%;
   border-radius: 99px;
-  background: linear-gradient(90deg, #7c3aed, #22c55e);
+  background: linear-gradient(90deg, #e65c00 0%, #ff7b00 100%);
+  transition: width 0.5s ease;
 }
 
-.btn-del {
-  background: transparent;
-  border: none;
+.book-progress-footer {
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px;
-  font-size: 14px;
-  transition: color 0.2s;
-}
-.btn-del:hover {
-  color: #ef4444;
 }
 
+/* ── Forms ─────────────────────────────────────────────── */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -610,11 +851,13 @@ onUnmounted(() => {
   margin-bottom: 14px;
 }
 .form-group label {
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 .form-group input, .form-group select {
+  font-family: 'Inter', sans-serif;
   padding: 10px 14px;
   border-radius: 12px;
   border: 1px solid var(--border-color-strong);
@@ -623,10 +866,11 @@ onUnmounted(() => {
   color: var(--text-primary);
   outline: none;
   width: 100%;
-  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 .form-group input:focus, .form-group select:focus {
-  border-color: #7c3aed;
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 3px var(--accent-purple-light);
 }
 .two-input {
   display: grid;
@@ -634,7 +878,9 @@ onUnmounted(() => {
   gap: 12px;
 }
 
+/* ── Buttons ───────────────────────────────────────────── */
 .btn {
+  font-family: 'Inter', sans-serif;
   padding: 10px 18px;
   border-radius: 12px;
   border: none;
@@ -642,13 +888,23 @@ onUnmounted(() => {
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 13px;
 }
 .btn-primary {
-  background: #7c3aed;
+  background: linear-gradient(135deg, #e65c00 0%, #ff7b00 100%);
   color: #fff;
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
 }
 .btn-primary:hover {
-  background: #5b21b6;
+  background: linear-gradient(135deg, #c2410c 0%, #e65c00 100%);
+  box-shadow: 0 6px 16px rgba(234, 88, 12, 0.35);
+  transform: translateY(-1px);
 }
 .btn-outline {
   background: var(--bg-card);
@@ -659,14 +915,7 @@ onUnmounted(() => {
   background: var(--bg-subtle);
 }
 
-.empty-msg {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-muted);
-  font-size: 14px;
-}
-
-/* Modals Overlay */
+/* ── Modals ────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -681,6 +930,7 @@ onUnmounted(() => {
   justify-content: center;
 }
 .modal-content {
+  font-family: 'Inter', sans-serif;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 24px;
@@ -691,6 +941,7 @@ onUnmounted(() => {
   animation: fadeInUp 0.3s ease;
 }
 .modal-content h3 {
+  font-family: 'Inter', sans-serif;
   font-size: 18px;
   font-weight: 700;
   color: var(--text-heading);
