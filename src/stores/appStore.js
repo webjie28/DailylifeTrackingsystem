@@ -115,6 +115,12 @@ export const useAppStore = defineStore('app', {
       workTimeLogs = Array.isArray(parsed) ? parsed : []
     } catch { workTimeLogs = [] }
 
+    let vTaperLogs = []
+    try {
+      const parsed = JSON.parse(localStorage.getItem('vTaperLogs') || '[]')
+      vTaperLogs = Array.isArray(parsed) ? parsed : []
+    } catch { vTaperLogs = [] }
+
     let gymRoutines = {
       MONDAY: [],
       TUESDAY: [],
@@ -173,6 +179,8 @@ export const useAppStore = defineStore('app', {
       workTimeLogs,
       isClockedIn,
       activeClockInLogId,
+      
+      vTaperLogs,
       
       dailyStreak: parseInt(localStorage.getItem('dailyStreak') || '0'),
       lastStreakDate: localStorage.getItem('lastStreakDate') || ''
@@ -342,6 +350,23 @@ export const useAppStore = defineStore('app', {
     setGymCheckedItem(exerciseKey, isChecked) {
       this.gymCheckedItems[exerciseKey] = isChecked
       localStorage.setItem('gymCheckedItems', JSON.stringify(this.gymCheckedItems))
+    },
+    saveVTaperLog(date, shoulders, waist, chest = 0) {
+      const idx = this.vTaperLogs.findIndex(l => l.date === date)
+      const ratio = shoulders > 0 && waist > 0 ? parseFloat((shoulders / waist).toFixed(3)) : 0
+      const log = { date, shoulders, waist, chest, ratio }
+      if (idx !== -1) {
+        this.vTaperLogs[idx] = log
+      } else {
+        this.vTaperLogs.push(log)
+      }
+      // Sort by date descending
+      this.vTaperLogs.sort((a, b) => b.date.localeCompare(a.date))
+      localStorage.setItem('vTaperLogs', JSON.stringify(this.vTaperLogs))
+    },
+    deleteVTaperLog(date) {
+      this.vTaperLogs = this.vTaperLogs.filter(l => l.date !== date)
+      localStorage.setItem('vTaperLogs', JSON.stringify(this.vTaperLogs))
     },
 
     // ── Finance ───────────────────────────────────────────
