@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="pageThemeClass">
     <!-- Smooth Animated Fixed Background Glowing Spheres -->
     <div class="bg-glow bg-glow-1"></div>
     <div class="bg-glow bg-glow-2"></div>
@@ -51,14 +51,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import Sidebar from './components/Sidebar.vue'
 import { useAppStore } from './stores/appStore'
 
 const store = useAppStore()
+const route = useRoute()
 const isSidebarCollapsed = ref(true)
 const showSplash = ref(true)
 const isSplashFading = ref(false)
+
+const pageThemeClass = computed(() => {
+  if (!route.path) return 'page-dashboard'
+  if (route.path === '/') return 'page-dashboard'
+  const name = route.path.replace('/', '')
+  return `page-${name}`
+})
 
 function toggleSidebar() {
   isSidebarCollapsed.value = !isSidebarCollapsed.value

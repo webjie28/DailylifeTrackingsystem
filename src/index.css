@@ -3,7 +3,11 @@
    Complete CSS with theming, animations & enhanced components
    ═══════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap');
+
+* {
+    font-family: 'Outfit', sans-serif !important;
+}
 
 /* ── CSS Custom Properties (Light Theme — Default) ────────────── */
 :root {
@@ -366,7 +370,7 @@
     z-index: -1;
     pointer-events: none;
     opacity: 0.22;
-    transition: all 0.8s ease;
+    transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .bg-glow-1 {
@@ -374,7 +378,7 @@
     left: -5%;
     width: 550px;
     height: 550px;
-    background: radial-gradient(circle, var(--accent-purple), transparent 75%);
+    background: radial-gradient(circle, var(--glow-color-1, var(--accent-purple)), transparent 75%);
 }
 
 .bg-glow-2 {
@@ -382,7 +386,29 @@
     right: -5%;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, var(--accent-blue), transparent 75%);
+    background: radial-gradient(circle, var(--glow-color-2, var(--accent-blue)), transparent 75%);
+}
+
+/* Page Glow Color Configurations based on Sidebar Category Theme */
+.page-dashboard {
+    --glow-color-1: #6366f1;
+    --glow-color-2: #3b82f6;
+}
+.page-study {
+    --glow-color-1: #f59e0b;
+    --glow-color-2: #e65c00;
+}
+.page-fitness, .page-water {
+    --glow-color-1: #10b981;
+    --glow-color-2: #06b6d4;
+}
+.page-finance, .page-savings {
+    --glow-color-1: #0ea5e9;
+    --glow-color-2: #14b8a6;
+}
+.page-anime, .page-events, .page-goals {
+    --glow-color-1: #ec4899;
+    --glow-color-2: #8b5cf6;
 }
 
 [data-theme="dark"] .bg-glow {
