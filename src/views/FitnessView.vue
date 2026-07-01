@@ -267,66 +267,6 @@
         </div>
       </div>
 
-      <!-- V-Taper Body Tracker -->
-      <div class="panel">
-        <h3>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon">
-            <path d="M12 2a3 3 0 0 0-3 3v2a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
-            <path d="M19 10c0-1.66-2-3-4.5-3h-5C7 7 5 8.34 5 10c0 1 .5 1.5 1.5 2.5L9 17v5h6v-5l2.5-4.5c1-1 1.5-1.5 1.5-2.5z"/>
-          </svg>
-          V-Taper Body Tracker
-        </h3>
-        
-        <form @submit.prevent="saveVTaper" class="vtaper-form">
-          <div class="two-input">
-            <div class="form-group">
-              <label>Shoulders (in)</label>
-              <input type="number" step="0.1" v-model.number="vtaperShoulders" placeholder="e.g. 48.5" required min="10" />
-            </div>
-            <div class="form-group">
-              <label>Waist (in)</label>
-              <input type="number" step="0.1" v-model.number="vtaperWaist" placeholder="e.g. 32.0" required min="10" />
-            </div>
-          </div>
-          <div class="two-input">
-            <div class="form-group">
-              <label>Chest (in) - Optional</label>
-              <input type="number" step="0.1" v-model.number="vtaperChest" placeholder="e.g. 40.0" />
-            </div>
-            <div class="form-group">
-              <label>Log Date</label>
-              <input type="date" v-model="vtaperDate" required />
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 4px;">Log V-Taper</button>
-        </form>
-
-        <div class="divider"></div>
-
-        <h4 class="sub-heading">V-Taper History</h4>
-        <div class="log-list">
-          <div v-if="!store.vTaperLogs || store.vTaperLogs.length === 0" class="empty-msg-sm">No measurements logged yet.</div>
-          <div v-else v-for="log in store.vTaperLogs" :key="log.date" class="log-item log-item-col">
-            <div class="log-item-top">
-              <span class="log-date">{{ log.date }}</span>
-              <div class="log-actions">
-                <span class="log-value purple" style="font-weight: 800; color: #6366f1;">{{ log.ratio }} Ratio</span>
-                <button type="button" @click="editVTaper(log)" class="btn-icon" title="Edit">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </button>
-                <button type="button" @click="deleteVTaper(log.date)" class="btn-icon btn-icon-danger" title="Delete">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-              </div>
-            </div>
-            <p class="log-note" style="font-size: 11px; margin-top: 2px;">
-              Shoulders: <strong>{{ log.shoulders }}″</strong> | Waist: <strong>{{ log.waist }}″</strong>
-              <span v-if="log.chest"> | Chest: <strong>{{ log.chest }}″</strong></span>
-            </p>
-          </div>
-        </div>
-      </div>
-
       <!-- Gym Summary -->
       <div class="panel">
         <h3>
@@ -750,45 +690,6 @@ const sortedGymHistory = computed(() => {
     .slice(0, 10)
 })
 
-// V-Taper Tracker States & Methods
-const vtaperShoulders = ref('')
-const vtaperWaist = ref('')
-const vtaperChest = ref('')
-const vtaperDate = ref(getTodayKey())
-
-function saveVTaper() {
-  const shoulders = parseFloat(vtaperShoulders.value) || 0
-  const waist = parseFloat(vtaperWaist.value) || 0
-  const chest = parseFloat(vtaperChest.value) || 0
-  const date = vtaperDate.value
-
-  if (shoulders <= 0 || waist <= 0) return
-
-  store.saveVTaperLog(date, shoulders, waist, chest)
-
-  vtaperShoulders.value = ''
-  vtaperWaist.value = ''
-  vtaperChest.value = ''
-}
-
-function editVTaper(log) {
-  vtaperDate.value = log.date
-  vtaperShoulders.value = log.shoulders
-  vtaperWaist.value = log.waist
-  vtaperChest.value = log.chest || ''
-}
-
-function deleteVTaper(date) {
-  if (confirm(`Are you sure you want to delete measurements for ${date}?`)) {
-    store.deleteVTaperLog(date)
-    if (vtaperDate.value === date) {
-      vtaperShoulders.value = ''
-      vtaperWaist.value = ''
-      vtaperChest.value = ''
-    }
-  }
-}
-
 // Canvas template refs and Chart instances
 const stepsChartCanvas = ref(null)
 const gymChartCanvas = ref(null)
@@ -1074,9 +975,8 @@ watch([() => store.walkTrackerData, () => store.gymTrackerData], () => {
 .chart-wrap { height: 240px; position: relative; }
 
 /* ── Footer Row ────────────────────────────────────────── */
-.footer-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 28px; }
-@media (max-width: 1100px) { .footer-row { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 750px) { .footer-row { grid-template-columns: 1fr; } }
+.footer-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 28px; }
+@media (max-width: 900px) { .footer-row { grid-template-columns: 1fr; } }
 
 /* ── Log Lists ─────────────────────────────────────────── */
 .log-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
