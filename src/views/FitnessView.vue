@@ -900,15 +900,4 @@ const sortedGymHistory = computed(() => {
 .btn-primary:hover { background: #4f46e5; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
 .empty-msg-sm { font-family: 'Inter', sans-serif; text-align: center; padding: 24px 12px; color: var(--text-muted); font-size: 13px; }
 
-/* ── Suggestions ───────────────────────────────────────── */
-.suggestions-dropdown {
-  position: absolute; left: 0; right: 0; background: var(--bg-card);
-  border: 1px solid var(--border-color-strong); border-radius: 12px;
-  box-shadow: var(--shadow-lg); z-index: 10; margin-top: 4px; max-height: 200px; overflow-y: auto;
-}
-.suggestion-item {
-  font-family: 'Inter', sans-serif; padding: 10px 14px; font-size: 13px;
-  color: var(--text-primary); cursor: pointer; transition: background 0.2s; text-align: left;
-}
-.suggestion-item:hover { background: var(--bg-subtle); color: #6366f1; }
 </style>

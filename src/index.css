@@ -294,6 +294,15 @@
     --bg-hover: #221b17;
     --border-color: rgba(255, 255, 255, 0.04);
     --border-color-strong: rgba(255, 255, 255, 0.1);
+
+    /* Accent Override */
+    --accent-purple: #f97316;
+    --accent-purple-hover: #ea580c;
+    --accent-purple-deep: #c2410c;
+    --accent-purple-light: rgba(249, 115, 22, 0.15);
+    --accent-purple-bg: rgba(249, 115, 22, 0.08);
+    --accent-purple-mid: rgba(249, 115, 22, 0.2);
+    --accent-purple-soft: rgba(249, 115, 22, 0.12);
 }
 
 /* Green Light Mode */
@@ -316,6 +325,15 @@
     --bg-hover: #16221a;
     --border-color: rgba(255, 255, 255, 0.04);
     --border-color-strong: rgba(255, 255, 255, 0.1);
+
+    /* Accent Override */
+    --accent-purple: #10b981;
+    --accent-purple-hover: #059669;
+    --accent-purple-deep: #047857;
+    --accent-purple-light: rgba(16, 185, 129, 0.15);
+    --accent-purple-bg: rgba(16, 185, 129, 0.08);
+    --accent-purple-mid: rgba(16, 185, 129, 0.2);
+    --accent-purple-soft: rgba(16, 185, 129, 0.12);
 }
 
 /* Blue Light Mode */
@@ -339,6 +357,15 @@
     --bg-hover: #203055;
     --border-color: rgba(255, 255, 255, 0.04);
     --border-color-strong: rgba(255, 255, 255, 0.1);
+
+    /* Accent Override */
+    --accent-purple: #3b82f6;
+    --accent-purple-hover: #2563eb;
+    --accent-purple-deep: #1d4ed8;
+    --accent-purple-light: rgba(59, 130, 246, 0.15);
+    --accent-purple-bg: rgba(59, 130, 246, 0.08);
+    --accent-purple-mid: rgba(59, 130, 246, 0.2);
+    --accent-purple-soft: rgba(59, 130, 246, 0.12);
 }
 
 /* ── Navy (Mid Dark Blue) Theme Overrides ──────────────────────── */
@@ -2198,4 +2225,33 @@ a {
     .home-actions {
         padding: 0 16px 32px;
     }
+}
+
+/* ── Global Autocomplete suggestions dropdown fix ── */
+.suggestions-dropdown {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    background-color: var(--bg-subtle, #ffffff) !important;
+    border: 1px solid var(--border-color-strong, rgba(148, 163, 184, 0.25)) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+    z-index: 99999 !important;
+    margin-top: 4px !important;
+    max-height: 180px !important;
+    overflow-y: auto !important;
+}
+.suggestion-item {
+    font-family: 'Inter', sans-serif !important;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+    color: var(--text-primary) !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+    text-align: left !important;
+}
+.suggestion-item:hover {
+    background-color: var(--bg-hover) !important;
+    color: var(--accent-purple) !important;
 }
