@@ -174,6 +174,9 @@ export const useAppStore = defineStore('app', {
       isClockedIn,
       activeClockInLogId,
       
+      isSidebarCollapsed: localStorage.getItem('isSidebarCollapsed') === 'true',
+      colorAccent: localStorage.getItem('colorAccent') || 'orange',
+      
       dailyStreak: parseInt(localStorage.getItem('dailyStreak') || '0'),
       lastStreakDate: localStorage.getItem('lastStreakDate') || ''
     }
@@ -342,6 +345,21 @@ export const useAppStore = defineStore('app', {
     setGymCheckedItem(exerciseKey, isChecked) {
       this.gymCheckedItems[exerciseKey] = isChecked
       localStorage.setItem('gymCheckedItems', JSON.stringify(this.gymCheckedItems))
+    },
+
+    toggleSidebar() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed
+      localStorage.setItem('isSidebarCollapsed', this.isSidebarCollapsed.toString())
+    },
+    setColorAccent(accent) {
+      this.colorAccent = accent
+      localStorage.setItem('colorAccent', accent)
+      document.documentElement.setAttribute('data-accent', accent)
+    },
+    setTheme(theme) {
+      this.theme = theme
+      localStorage.setItem('theme', theme)
+      document.documentElement.setAttribute('data-theme', theme)
     },
 
     // ── Finance ───────────────────────────────────────────

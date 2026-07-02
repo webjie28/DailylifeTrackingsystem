@@ -15,23 +15,13 @@
       </div>
     </div>
 
-    <!-- Toggle Menu Button -->
-    <button 
-      v-if="store.isAuthenticated"
-      id="toggleSidebar" 
-      class="toggle-sidebar-btn" 
-      @click="toggleSidebar"
-    >
-      ☰ Menu
-    </button>
-
-    <div class="app-shell" :class="{ 'no-sidebar': !store.isAuthenticated }">
+    <div class="app-shell" :class="{ 'sidebar-collapsed': store.isSidebarCollapsed }">
       <!-- Sidebar container with reactive collapsed class -->
       <div 
-        v-if="store.isAuthenticated"
+        v-if="!store.isAuthLoading"
         id="sidebar" 
         class="sidebar-container" 
-        :class="{ collapsed: isSidebarCollapsed }"
+        :class="{ collapsed: store.isSidebarCollapsed }"
       >
         <Sidebar />
       </div>
@@ -58,7 +48,6 @@ import { useAppStore } from './stores/appStore'
 
 const store = useAppStore()
 const route = useRoute()
-const isSidebarCollapsed = ref(true)
 const showSplash = ref(true)
 const isSplashFading = ref(false)
 
@@ -69,16 +58,16 @@ const pageThemeClass = computed(() => {
   return `page-${name}`
 })
 
-function toggleSidebar() {
-  isSidebarCollapsed.value = !isSidebarCollapsed.value
-}
-
 // Keep html attributes in sync with store state immediately
 watch(() => store.theme, (newTheme) => {
   document.documentElement.setAttribute('data-theme', newTheme)
 }, { immediate: true })
 
 onMounted(() => {
+  // Apply persisted theme and accent options to DOM root
+  document.documentElement.setAttribute('data-theme', store.theme || 'light')
+  document.documentElement.setAttribute('data-accent', store.colorAccent || 'orange')
+
   // Splash screen fadeout timer
   setTimeout(() => {
     isSplashFading.value = true

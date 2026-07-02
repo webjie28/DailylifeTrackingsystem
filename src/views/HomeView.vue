@@ -25,6 +25,7 @@
                 <th>Clock In</th>
                 <th>Clock Out</th>
                 <th>Hours</th>
+                <th>Status</th>
                 <th>Note</th>
                 <th></th>
               </tr>
@@ -39,6 +40,11 @@
                 </td>
                 <td class="log-td-hours">
                   {{ log.duration !== null && log.duration !== undefined ? formatDuration(log.duration) : '—' }}
+                </td>
+                <td>
+                  <span class="punctuality-badge" :class="getPunctualityStatus(log.clockIn).status">
+                    ● {{ getPunctualityStatus(log.clockIn).text }}
+                  </span>
                 </td>
                 <td class="log-note-td" :title="log.note">{{ log.note || '—' }}</td>
                 <td>
@@ -103,25 +109,39 @@
           </div>
         </router-link>
 
-        <!-- Expenses -->
-        <router-link to="/finance" class="stat-pastel-card">
-          <div class="stat-card-left">
-            <div class="stat-pastel-label">Expenses (Month)</div>
-            <div class="stat-pastel-value">₱{{ store.monthlyExpenses.toLocaleString() }}</div>
-            <span class="trend-pill" :class="expensesBudgetPercent > 100 ? 'danger' : (expensesBudgetPercent > 70 ? 'warning' : 'success')">
-              {{ expensesBudgetPercent }}% of budget
-            </span>
+        <!-- Watchlist Show Recommendation -->
+        <router-link to="/anime" class="stat-pastel-card">
+          <div class="stat-card-left" style="max-width: 70%;">
+            <div class="stat-pastel-label">Recommended Watch</div>
+            <div class="stat-pastel-value" style="font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;" :title="recommendedShow ? recommendedShow.title : 'Watchlist Empty'">
+              {{ recommendedShow ? recommendedShow.title : 'Plan a Show!' }}
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+              <span class="trend-pill success" style="margin-top: 0; font-size: 10px; padding: 2px 6px;">
+                {{ recommendedShow ? `Ep. ${recommendedShow.currentEpisode}/${recommendedShow.totalEpisodes}` : 'Empty list' }}
+              </span>
+              <button 
+                v-if="store.animeWatchlist.length > 1" 
+                class="shuffle-recommend-btn"
+                @click.prevent="shuffleRecommend"
+                title="Shuffle suggestion"
+              >
+                🎲 Shuffle
+              </button>
+            </div>
           </div>
           <div class="stat-card-right">
-            <div class="mini-ring-wrap" style="--ring-color: #ef4444;">
-              <svg viewBox="0 0 36 36" class="mini-ring-svg">
-                <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
-                <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, expensesBudgetPercent)" stroke-width="3"></circle>
-              </svg>
-              <div class="mini-ring-icon-center">
-                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                  <line x1="1" y1="10" x2="23" y2="10"/>
+            <div class="mini-ring-wrap" style="--ring-color: #ec4899;">
+              <div class="mini-ring-icon-center" style="position: static; width: auto; height: auto;">
+                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
+                  <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+                  <line x1="7" y1="2" x2="7" y2="22"/>
+                  <line x1="17" y1="2" x2="17" y2="22"/>
+                  <line x1="2" y1="12" x2="22" y2="12"/>
+                  <line x1="2" y1="7" x2="7" y2="7"/>
+                  <line x1="2" y1="17" x2="7" y2="17"/>
+                  <line x1="17" y1="17" x2="22" y2="17"/>
+                  <line x1="17" y1="7" x2="22" y2="7"/>
                 </svg>
               </div>
             </div>
@@ -182,6 +202,26 @@
           </div>
         </div>
       </article>
+    </section>
+
+    <!-- Permanent 30-Day Fitness Charts Row -->
+    <section class="animate-in delay-300" style="margin-bottom: 36px;">
+      <div class="charts-row">
+        <div class="panel chart-panel">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon" style="vertical-align: middle; margin-right: 8px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            30-Day Steps Trend
+          </h3>
+          <div class="chart-wrap" style="position: relative; height: 260px; width: 100%;"><canvas ref="stepsChartCanvas"></canvas></div>
+        </div>
+        <div class="panel chart-panel">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon" style="vertical-align: middle; margin-right: 8px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="9" y2="17"/><line x1="15" y1="13" x2="15" y2="17"/></svg>
+            30-Day Gym Calories
+          </h3>
+          <div class="chart-wrap" style="position: relative; height: 260px; width: 100%;"><canvas ref="gymChartCanvas"></canvas></div>
+        </div>
+      </div>
     </section>
   </div>
 </template>
@@ -316,6 +356,61 @@ watch(() => store.workTimeLogs, () => {
   runPythonAnalytics()
 }, { deep: true })
 
+// 🎬 Watchlist Show Recommendation Engine
+const recommendShowId = ref(localStorage.getItem('dailyShowRecommendId') || '')
+
+const recommendedShow = computed(() => {
+  const list = store.animeWatchlist.filter(a => a.status === 'planning' || a.status === 'watching')
+  if (list.length === 0) return null
+  
+  let current = list.find(a => a.id === recommendShowId.value)
+  if (!current) {
+    const randomIdx = Math.floor(Math.random() * list.length)
+    current = list[randomIdx]
+    recommendShowId.value = current.id
+    localStorage.setItem('dailyShowRecommendId', current.id)
+  }
+  return current
+})
+
+function shuffleRecommend() {
+  const list = store.animeWatchlist.filter(a => a.status === 'planning' || a.status === 'watching')
+  if (list.length <= 1) return
+  
+  const filteredList = list.filter(a => a.id !== recommendShowId.value)
+  const randomIdx = Math.floor(Math.random() * filteredList.length)
+  const nextShow = filteredList[randomIdx]
+  recommendShowId.value = nextShow.id
+  localStorage.setItem('dailyShowRecommendId', nextShow.id)
+}
+
+function getPunctualityStatus(clockInIso) {
+  if (!clockInIso) return { status: 'ontime', text: 'On Time' }
+  const clockIn = new Date(clockInIso)
+  
+  // Create 11:00 PM target on the same day as clock-in
+  let targetDate = new Date(clockIn)
+  targetDate.setHours(23, 0, 0, 0)
+  
+  // If clocked in between 12:00 AM and 5:00 AM, it counts as part of the previous night's 11:00 PM shift
+  if (clockIn.getHours() < 5) {
+    targetDate.setDate(targetDate.getDate() - 1)
+  }
+  
+  const diffMs = clockIn - targetDate
+  const diffMins = Math.floor(diffMs / 60000)
+  
+  if (diffMins > 0) {
+    if (diffMins >= 60) {
+      const hrs = Math.floor(diffMins / 60)
+      const mins = diffMins % 60
+      return { status: 'late', text: `Late ${hrs}h ${mins}m` }
+    }
+    return { status: 'late', text: `Late ${diffMins}m` }
+  }
+  return { status: 'ontime', text: 'On Time' }
+}
+
 function formatTime(isoStr) {
   if (!isoStr) return ''
   const d = new Date(isoStr)
@@ -335,27 +430,41 @@ onMounted(() => {
   runPythonAnalytics()
 })
 
-const activeChart = ref('growth')
+const activeChart = ref('steps')
 const chartCanvas = ref(null)
+const stepsChartCanvas = ref(null)
+const gymChartCanvas = ref(null)
 let chartInstance = null
+let stepsChartInstance = null
+let gymChartInstance = null
 
 const tabs = [
+  { key: 'steps', label: 'Steps Trend' },
+  { key: 'calories', label: 'Calories' },
+  { key: 'workload', label: 'Work Hours' },
   { key: 'growth', label: 'Savings' },
   { key: 'expenses', label: 'Expenses' },
-  { key: 'loans', label: 'Goals' },
-  { key: 'calories', label: 'Calories' }
+  { key: 'loans', label: 'Goals' }
 ]
 
 const titles = {
+  steps: 'Weekly Steps Trend (Last 7 Days)',
+  calories: 'Calories Burned Trend (30 Days)',
+  workload: 'Weekly Work Hours & Workload (Last 7 Days)',
   growth: 'Savings Growth Over Time',
   expenses: 'Expenses by Category',
-  loans: 'Savings Goals Progress',
-  calories: 'Calories Burned Trend (30 Days)'
+  loans: 'Savings Goals Progress'
 }
 
 const activeChartTitle = computed(() => titles[activeChart.value])
 
 const hasRealData = computed(() => {
+  if (activeChart.value === 'steps') {
+    return Object.values(store.walkTrackerData).some(v => v && v > 0)
+  }
+  if (activeChart.value === 'workload') {
+    return store.workTimeLogs.some(l => l.duration > 0)
+  }
   if (activeChart.value === 'growth') {
     return store.savingsContributions.length > 0
   }
@@ -388,9 +497,151 @@ function renderChart() {
 
   const ctx = chartCanvas.value.getContext('2d')
   
-  if (activeChart.value === 'growth') {
-    // Mock growth timeline
-    const data = [
+  if (activeChart.value === 'steps') {
+    const labels = []
+    const stepsData = []
+    const goalLineData = []
+    const targetSteps = store.fitnessStepGoal || 10000
+    
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+      
+      labels.push(d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }))
+      stepsData.push(store.walkTrackerData[key] || 0)
+      goalLineData.push(targetSteps)
+    }
+    
+    // Fallback sample data if empty
+    const isEmpty = stepsData.every(v => v === 0)
+    const displaySteps = !isEmpty ? stepsData : [8400, 11200, 9500, 6200, 12000, 7800, 9100]
+    
+    chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Steps Taken',
+            data: displaySteps,
+            backgroundColor: 'rgba(230, 92, 0, 0.75)',
+            borderColor: '#e65c00',
+            borderWidth: 1,
+            borderRadius: 8,
+            maxBarThickness: 35
+          },
+          {
+            label: 'Daily Goal',
+            data: goalLineData,
+            type: 'line',
+            borderColor: 'rgba(34, 197, 94, 0.8)',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            fill: false,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: 'top', labels: { boxWidth: 12, padding: 8 } }
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.15)' } }
+        }
+      }
+    })
+  } else if (activeChart.value === 'workload') {
+    const labels = []
+    const hoursData = []
+    const targetHoursData = []
+    const targetHours = 8 // Daily target hours (8 hours timesheet practice)
+    
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+      
+      labels.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))
+      
+      const dailyLogs = store.workTimeLogs.filter(l => l.date === dateStr && l.duration > 0)
+      const totalMins = dailyLogs.reduce((sum, l) => sum + (l.duration || 0), 0)
+      const totalHours = Math.round((totalMins / 60) * 10) / 10
+      
+      hoursData.push(totalHours)
+      targetHoursData.push(targetHours)
+    }
+    
+    // Generate fallback sample 30-day workload if empty
+    const isEmpty = hoursData.every(v => v === 0)
+    let displayHours = hoursData
+    if (isEmpty) {
+      displayHours = Array.from({ length: 30 }, (_, i) => {
+        // Generate random realistic hours between 3 and 9 for 8-hour goal practice completeness
+        const seed = Math.sin(i) * 3 + 6.0
+        return Math.round(Math.max(1.0, Math.min(10, seed)) * 10) / 10
+      })
+    }
+    
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Hours Logged',
+            data: displayHours,
+            borderColor: 'rgba(99, 102, 241, 0.95)',
+            backgroundColor: 'rgba(99, 102, 241, 0.12)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 2,
+            pointBackgroundColor: 'rgba(99, 102, 241, 1)'
+          },
+          {
+            label: 'Daily Goal (8h)',
+            data: targetHoursData,
+            borderColor: 'rgba(249, 115, 22, 0.7)',
+            borderWidth: 1.5,
+            borderDash: [5, 5],
+            fill: false,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true, position: 'top', labels: { boxWidth: 12, padding: 8 } }
+        },
+        scales: {
+          x: { 
+            grid: { display: false },
+            ticks: { maxTicksLimit: 10 } // Clean up X-axis density
+          },
+          y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.15)' }, ticks: { callback: v => `${v}h` } }
+        }
+      }
+    })
+  } else if (activeChart.value === 'growth') {
+    // Generate real cumulative savings data
+    let currentTotal = 0
+    const contribs = [...store.savingsContributions].sort((a, b) => new Date(a.date) - new Date(b.date))
+    
+    const rawData = contribs.map(c => {
+      const amt = parseFloat(c.amount) || 0
+      if (c.type === 'deposit') currentTotal += amt
+      else if (c.type === 'withdraw') currentTotal -= amt
+      return { label: new Date(c.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), value: currentTotal }
+    })
+    
+    // Fallback display if empty
+    const data = rawData.length > 0 ? rawData : [
       { label: 'Jan', value: 1000 },
       { label: 'Feb', value: 2500 },
       { label: 'Mar', value: 3500 },
@@ -404,12 +655,12 @@ function renderChart() {
         datasets: [{
           label: 'Savings Progress',
           data: data.map(p => p.value),
-          borderColor: '#7c3aed',
-          backgroundColor: 'rgba(124, 58, 237, 0.15)',
+          borderColor: 'rgba(99, 102, 241, 0.85)',
+          backgroundColor: 'rgba(99, 102, 241, 0.15)',
           fill: true,
           tension: 0.35,
           pointRadius: 4,
-          pointBackgroundColor: '#7c3aed',
+          pointBackgroundColor: 'rgba(99, 102, 241, 1)',
           pointBorderColor: '#ffffff'
         }]
       },
@@ -551,15 +802,132 @@ function renderChart() {
   }
 }
 
+function renderStepsChart() {
+  if (!stepsChartCanvas.value) return
+  if (stepsChartInstance) {
+    stepsChartInstance.destroy()
+  }
+
+  const ctx = stepsChartCanvas.value.getContext('2d')
+  const labels = []
+  const stepValues = []
+
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+
+    labels.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))
+    stepValues.push(store.walkTrackerData[key] || 0)
+  }
+
+  // Fallback sample data if empty
+  const isEmpty = stepValues.every(v => v === 0)
+  const displaySteps = !isEmpty ? stepValues : Array.from({ length: 30 }, (_, i) => {
+    const seed = Math.sin(i * 0.5) * 3000 + 7500
+    return Math.round(Math.max(1000, seed))
+  })
+
+  stepsChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Steps Walked',
+        data: displaySteps,
+        borderColor: '#6366f1',
+        backgroundColor: 'rgba(99, 102, 241, 0.08)',
+        fill: true,
+        tension: 0.35,
+        pointRadius: 2,
+        pointBackgroundColor: '#6366f1'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+        y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.1)' } }
+      }
+    }
+  })
+}
+
+function renderGymChart() {
+  if (!gymChartCanvas.value) return
+  if (gymChartInstance) {
+    gymChartInstance.destroy()
+  }
+
+  const ctx = gymChartCanvas.value.getContext('2d')
+  const labels = []
+  const gymValues = []
+
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date()
+    d.setDate(d.getDate() - i)
+    const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+
+    labels.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))
+    const gCals = store.gymTrackerData[key] ? (parseInt(store.gymTrackerData[key].calories) || 0) : 0
+    gymValues.push(gCals)
+  }
+
+  // Fallback sample data if empty
+  const isEmpty = gymValues.every(v => v === 0)
+  const displayGym = !isEmpty ? gymValues : Array.from({ length: 30 }, (_, i) => {
+    return i % 4 === 0 ? Math.round(350 + Math.sin(i) * 100) : 0
+  })
+
+  gymChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Calories Burned (kcal)',
+        data: displayGym,
+        backgroundColor: '#6366f1',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+        y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.1)' } }
+      }
+    }
+  })
+}
+
 onMounted(() => {
   renderChart()
+  renderStepsChart()
+  renderGymChart()
   runPythonAnalytics()
 })
 
 // Re-render chart if relevant store state updates
-watch([() => store.financeTransactions, () => store.savingsGoals, () => store.savingsContributions], () => {
-  renderChart()
-}, { deep: true })
+watch(
+  [
+    () => store.financeTransactions,
+    () => store.savingsGoals,
+    () => store.savingsContributions,
+    () => store.walkTrackerData,
+    () => store.gymTrackerData,
+    () => store.workTimeLogs
+  ],
+  () => {
+    renderChart()
+    renderStepsChart()
+    renderGymChart()
+  },
+  { deep: true }
+)
 </script>
 
 <style scoped>
@@ -635,6 +1003,26 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
     font-weight: 700;
     line-height: 1;
     margin-top: 4px;
+}
+.shuffle-recommend-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.2;
+    background: var(--glass-bg, rgba(255,255,255,0.1));
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.2));
+    color: var(--time-text, var(--text-primary));
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.shuffle-recommend-btn:hover {
+    background: var(--glass-hover, rgba(255,255,255,0.2));
+    border-color: var(--time-accent, var(--accent-purple));
+    transform: scale(1.03);
 }
 .trend-pill.success {
     background: rgba(34, 197, 94, 0.15);
@@ -991,6 +1379,70 @@ watch([() => store.financeTransactions, () => store.savingsGoals, () => store.sa
     border-color: var(--time-accent, var(--accent-purple));
     box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
     background: var(--glass-hover, rgba(255,255,255,0.2));
+}
+
+/* ── Permanent Charts Grid & Glass Panels ── */
+.charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+@media (max-width: 900px) {
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+}
+.chart-panel {
+    background: var(--glass-bg, rgba(255,255,255,0.18)) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.2)) !important;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.chart-panel h3 {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--time-text, var(--text-primary));
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.chart-panel h3 svg {
+    color: var(--time-accent, var(--accent-purple));
+}
+.chart-wrap {
+    position: relative;
+    height: 260px;
+    width: 100%;
+}
+
+/* ── Punctuality Badges ── */
+.punctuality-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    gap: 4px;
+}
+.punctuality-badge.ontime {
+    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+}
+.punctuality-badge.late {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
 }
 </style>
 
