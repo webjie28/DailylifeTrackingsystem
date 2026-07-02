@@ -30,22 +30,22 @@
     --text-faint: #b4afaa;
 
     /* Accent — Orange (Primary Accent) */
-    --accent-purple: #ea580c;
-    --accent-purple-hover: #c2410c;
-    --accent-purple-deep: #9a3408;
-    --accent-purple-light: rgba(234, 88, 12, 0.15);
-    --accent-purple-bg: rgba(234, 88, 12, 0.06);
-    --accent-purple-mid: rgba(234, 88, 12, 0.2);
-    --accent-purple-soft: rgba(234, 88, 12, 0.12);
+    --accent-purple: #ff5500;
+    --accent-purple-hover: #e04b00;
+    --accent-purple-deep: #b33c00;
+    --accent-purple-light: rgba(255, 85, 0, 0.15);
+    --accent-purple-bg: rgba(255, 85, 0, 0.06);
+    --accent-purple-mid: rgba(255, 85, 0, 0.2);
+    --accent-purple-soft: rgba(255, 85, 0, 0.12);
 
     /* Accent — Green */
-    --accent-green: #16a34a;
-    --accent-green-hover: #15803d;
-    --accent-green-light: #f0fdf4;
-    --accent-green-bg: #dcfce7;
+    --accent-green: #10b981;
+    --accent-green-hover: #059669;
+    --accent-green-light: rgba(16, 185, 129, 0.1);
+    --accent-green-bg: rgba(16, 185, 129, 0.15);
 
     /* Accent — Orange */
-    --accent-orange: #ea580c;
+    --accent-orange: #ff5500;
 
     /* Accent — Red */
     --accent-red: #dc2626;
@@ -151,22 +151,22 @@
     --text-faint: #57524e;
 
     /* Accent — Orange */
-    --accent-purple: #f97316;
-    --accent-purple-hover: #ea580c;
-    --accent-purple-deep: #c2410c;
-    --accent-purple-light: rgba(249, 115, 22, 0.15);
-    --accent-purple-bg: rgba(249, 115, 22, 0.1);
-    --accent-purple-mid: rgba(249, 115, 22, 0.2);
-    --accent-purple-soft: rgba(249, 115, 22, 0.12);
+    --accent-purple: #ffa043;
+    --accent-purple-hover: #ffb86c;
+    --accent-purple-deep: #cc7010;
+    --accent-purple-light: rgba(255, 160, 67, 0.2);
+    --accent-purple-bg: rgba(255, 160, 67, 0.12);
+    --accent-purple-mid: rgba(255, 160, 67, 0.25);
+    --accent-purple-soft: rgba(255, 160, 67, 0.15);
 
     /* Accent — Green */
     --accent-green: #4ade80;
-    --accent-green-hover: #22c55e;
-    --accent-green-light: rgba(74, 222, 128, 0.1);
-    --accent-green-bg: rgba(74, 222, 128, 0.15);
+    --accent-green-hover: #66eba3;
+    --accent-green-light: rgba(74, 222, 128, 0.2);
+    --accent-green-bg: rgba(74, 222, 128, 0.12);
 
     /* Accent — Orange */
-    --accent-orange: #f97316;
+    --accent-orange: #ffa043;
 
     /* Accent — Red */
     --accent-red: #f87171;
@@ -246,22 +246,22 @@
 
 /* ── Dynamic Accent Color Overrides (Sunset Orange, Green, Royal Blue) ── */
 [data-accent="orange"] {
-    --accent-purple: #e65c00;
-    --accent-purple-hover: #c94f00;
-    --accent-purple-deep: #9e3d00;
-    --accent-purple-light: rgba(230, 92, 0, 0.15);
-    --accent-purple-bg: rgba(230, 92, 0, 0.08);
-    --accent-purple-mid: rgba(230, 92, 0, 0.2);
-    --accent-purple-soft: rgba(230, 92, 0, 0.12);
+    --accent-purple: #ff5500;
+    --accent-purple-hover: #e04b00;
+    --accent-purple-deep: #b33c00;
+    --accent-purple-light: rgba(255, 85, 0, 0.15);
+    --accent-purple-bg: rgba(255, 85, 0, 0.08);
+    --accent-purple-mid: rgba(255, 85, 0, 0.2);
+    --accent-purple-soft: rgba(255, 85, 0, 0.12);
 }
 [data-accent="green"] {
-    --accent-purple: #16a34a;
-    --accent-purple-hover: #15803d;
-    --accent-purple-deep: #166534;
-    --accent-purple-light: rgba(22, 163, 74, 0.15);
-    --accent-purple-bg: rgba(22, 163, 74, 0.08);
-    --accent-purple-mid: rgba(22, 163, 74, 0.2);
-    --accent-purple-soft: rgba(22, 163, 74, 0.12);
+    --accent-purple: #10b981;
+    --accent-purple-hover: #059669;
+    --accent-purple-deep: #047857;
+    --accent-purple-light: rgba(16, 185, 129, 0.15);
+    --accent-purple-bg: rgba(16, 185, 129, 0.08);
+    --accent-purple-mid: rgba(16, 185, 129, 0.2);
+    --accent-purple-soft: rgba(16, 185, 129, 0.12);
 }
 [data-accent="blue"] {
     --accent-purple: #3b82f6;
@@ -282,8 +282,8 @@
     --bg-subtle: #faf4ed;
     --bg-body: linear-gradient(180deg, #fdf8f4 0%, #faf3eb 45%, #f4e8dc 100%);
     --bg-hover: #fff3e8;
-    --border-color: rgba(230, 92, 0, 0.08);
-    --border-color-strong: rgba(230, 92, 0, 0.15);
+    --border-color: rgba(255, 85, 0, 0.08);
+    --border-color-strong: rgba(255, 85, 0, 0.15);
 }
 /* Orange Dark Mode */
 [data-theme="dark"][data-accent="orange"] {
@@ -296,13 +296,13 @@
     --border-color-strong: rgba(255, 255, 255, 0.1);
 
     /* Accent Override */
-    --accent-purple: #f97316;
-    --accent-purple-hover: #ea580c;
-    --accent-purple-deep: #c2410c;
-    --accent-purple-light: rgba(249, 115, 22, 0.15);
-    --accent-purple-bg: rgba(249, 115, 22, 0.08);
-    --accent-purple-mid: rgba(249, 115, 22, 0.2);
-    --accent-purple-soft: rgba(249, 115, 22, 0.12);
+    --accent-purple: #ffa043;
+    --accent-purple-hover: #ffb86c;
+    --accent-purple-deep: #cc7010;
+    --accent-purple-light: rgba(255, 160, 67, 0.2);
+    --accent-purple-bg: rgba(255, 160, 67, 0.12);
+    --accent-purple-mid: rgba(255, 160, 67, 0.25);
+    --accent-purple-soft: rgba(255, 160, 67, 0.15);
 }
 
 /* Green Light Mode */
@@ -313,8 +313,8 @@
     --bg-subtle: #f0faf4;
     --bg-body: linear-gradient(180deg, #f7fdf9 0%, #edfcf1 45%, #defce8 100%);
     --bg-hover: #edfcf1;
-    --border-color: rgba(22, 163, 74, 0.08);
-    --border-color-strong: rgba(22, 163, 74, 0.15);
+    --border-color: rgba(16, 185, 129, 0.08);
+    --border-color-strong: rgba(16, 185, 129, 0.15);
 }
 /* Green Dark Mode */
 [data-theme="dark"][data-accent="green"] {
@@ -327,13 +327,13 @@
     --border-color-strong: rgba(255, 255, 255, 0.1);
 
     /* Accent Override */
-    --accent-purple: #10b981;
-    --accent-purple-hover: #059669;
-    --accent-purple-deep: #047857;
-    --accent-purple-light: rgba(16, 185, 129, 0.15);
-    --accent-purple-bg: rgba(16, 185, 129, 0.08);
-    --accent-purple-mid: rgba(16, 185, 129, 0.2);
-    --accent-purple-soft: rgba(16, 185, 129, 0.12);
+    --accent-purple: #4ade80;
+    --accent-purple-hover: #66eba3;
+    --accent-purple-deep: #16a34a;
+    --accent-purple-light: rgba(74, 222, 128, 0.2);
+    --accent-purple-bg: rgba(74, 222, 128, 0.12);
+    --accent-purple-mid: rgba(74, 222, 128, 0.25);
+    --accent-purple-soft: rgba(74, 222, 128, 0.15);
 }
 
 /* Blue Light Mode */
@@ -642,11 +642,11 @@
     --accent-purple-bg: rgba(167, 139, 250, 0.08);
     --accent-purple-mid: rgba(167, 139, 250, 0.2);
     --accent-purple-soft: rgba(167, 139, 250, 0.12);
-    --accent-green: #34d399;
-    --accent-green-hover: #10b981;
-    --accent-green-light: rgba(52, 211, 153, 0.1);
-    --accent-green-bg: rgba(52, 211, 153, 0.15);
-    --accent-orange: #fb923c;
+    --accent-green: #4ade80;
+    --accent-green-hover: #66eba3;
+    --accent-green-light: rgba(74, 222, 128, 0.2);
+    --accent-green-bg: rgba(74, 222, 128, 0.12);
+    --accent-orange: #ffa043;
     --accent-red: #f87171;
     --accent-red-bg: rgba(248, 113, 113, 0.15);
     --accent-red-border: rgba(248, 113, 113, 0.25);

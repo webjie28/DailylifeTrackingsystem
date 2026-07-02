@@ -34,14 +34,11 @@
       <!-- ── Navigation Sections ── -->
       <div class="nav-menu">
         <!-- PRODUCTIVITY SECTION -->
-        <div class="nav-section" :class="{ 'collapsed': !productivityOpen && !store.isSidebarCollapsed }">
-          <div class="nav-section-header" @click="productivityOpen = !productivityOpen">
+        <div class="nav-section">
+          <div class="nav-section-header">
             <span class="section-title">Overview</span>
-            <svg class="section-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
           </div>
-          <ul class="nav-list" v-show="productivityOpen">
+          <ul class="nav-list">
             <li class="nav-item">
               <router-link to="/" exact-active-class="active" class="nav-link">
                 <div class="nav-icon-wrap">
@@ -62,14 +59,11 @@
         <div class="nav-divider-thin" v-if="!store.isSidebarCollapsed"></div>
 
         <!-- STUDY & WATCHLIST SECTION (Focus & Leisure) -->
-        <div class="nav-section" :class="{ 'collapsed': !studyOpen && !store.isSidebarCollapsed }">
-          <div class="nav-section-header" @click="studyOpen = !studyOpen">
+        <div class="nav-section">
+          <div class="nav-section-header">
             <span class="section-title">Focus &amp; Leisure</span>
-            <svg class="section-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
           </div>
-          <ul class="nav-list" v-show="studyOpen">
+          <ul class="nav-list">
             <li class="nav-item">
               <router-link to="/study" active-class="active" class="nav-link">
                 <div class="nav-icon-wrap">
@@ -106,14 +100,11 @@
         <div class="nav-divider-thin" v-if="!store.isSidebarCollapsed"></div>
 
         <!-- HEALTH & FITNESS SECTION -->
-        <div class="nav-section" :class="{ 'collapsed': !healthOpen && !store.isSidebarCollapsed }">
-          <div class="nav-section-header" @click="healthOpen = !healthOpen">
+        <div class="nav-section">
+          <div class="nav-section-header">
             <span class="section-title">Health</span>
-            <svg class="section-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
           </div>
-          <ul class="nav-list" v-show="healthOpen">
+          <ul class="nav-list">
             <li class="nav-item">
               <router-link to="/fitness" active-class="active" class="nav-link">
                 <div class="nav-icon-wrap">
@@ -145,14 +136,11 @@
         <div class="nav-divider-thin" v-if="!store.isSidebarCollapsed"></div>
 
         <!-- FINANCE SECTION -->
-        <div class="nav-section" :class="{ 'collapsed': !financeOpen && !store.isSidebarCollapsed }">
-          <div class="nav-section-header" @click="financeOpen = !financeOpen">
+        <div class="nav-section">
+          <div class="nav-section-header">
             <span class="section-title">Finance</span>
-            <svg class="section-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
           </div>
-          <ul class="nav-list" v-show="financeOpen">
+          <ul class="nav-list">
             <li class="nav-item">
               <router-link to="/finance" active-class="active" class="nav-link">
                 <div class="nav-icon-wrap">
@@ -182,14 +170,11 @@
         <div class="nav-divider-thin" v-if="!store.isSidebarCollapsed"></div>
 
         <!-- ENTERTAINMENT SECTION -->
-        <div class="nav-section" :class="{ 'collapsed': !entertainmentOpen && !store.isSidebarCollapsed }">
-          <div class="nav-section-header" @click="entertainmentOpen = !entertainmentOpen">
+        <div class="nav-section">
+          <div class="nav-section-header">
             <span class="section-title">Planning</span>
-            <svg class="section-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
           </div>
-          <ul class="nav-list" v-show="entertainmentOpen">
+          <ul class="nav-list">
             <li class="nav-item">
               <router-link to="/events" active-class="active" class="nav-link">
                 <div class="nav-icon-wrap">
@@ -226,56 +211,34 @@
         <div class="settings-section" v-if="!store.isSidebarCollapsed">
           <span class="settings-hdr">Theme Options</span>
           
-          <!-- Color Accent Select Dots -->
-          <div class="accent-selector-row">
-            <span class="settings-sub-lbl">Color:</span>
-            <div class="color-dots-grid">
-              <button 
-                type="button" 
-                class="color-dot orange" 
-                :class="{ active: store.colorAccent === 'orange' }" 
-                @click="store.setColorAccent('orange')"
-                title="Orange (Sunset)"
-              ></button>
-              <button 
-                type="button" 
-                class="color-dot green" 
-                :class="{ active: store.colorAccent === 'green' }" 
-                @click="store.setColorAccent('green')"
-                title="Green (Nature)"
-              ></button>
-              <button 
-                type="button" 
-                class="color-dot blue" 
-                :class="{ active: store.colorAccent === 'blue' }" 
-                @click="store.setColorAccent('blue')"
-                title="Blue (Royal)"
-              ></button>
-            </div>
-          </div>
-
-          <!-- Light / Dark Mode Toggle Buttons -->
+          <!-- Segmented Control for 3 Themes -->
           <div class="mode-toggle-row">
-            <span class="settings-sub-lbl">Mode:</span>
-            <div class="mode-segmented-control">
+            <div class="mode-segmented-control-three">
               <button 
                 type="button" 
-                class="mode-btn" 
+                class="mode-btn-three" 
                 :class="{ active: store.theme === 'light' }" 
                 @click="store.setTheme('light')"
-                title="Light Mode"
+                title="White Mode"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                <span>Light</span>
+                <span>White</span>
               </button>
               <button 
                 type="button" 
-                class="mode-btn" 
-                :class="{ active: store.theme === 'dark' || store.theme === 'navy' }" 
-                @click="store.setTheme(store.colorAccent === 'blue' ? 'navy' : 'dark')"
+                class="mode-btn-three" 
+                :class="{ active: store.theme === 'navy' }" 
+                @click="store.setTheme('navy')"
+                title="Dark Blue Mode"
+              >
+                <span>DarkBlue</span>
+              </button>
+              <button 
+                type="button" 
+                class="mode-btn-three" 
+                :class="{ active: store.theme === 'dark' }" 
+                @click="store.setTheme('dark')"
                 title="Dark Mode"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 <span>Dark</span>
               </button>
             </div>
@@ -287,19 +250,10 @@
           <button 
             type="button" 
             class="collapsed-settings-btn"
-            @click="store.setColorAccent(store.colorAccent === 'orange' ? 'green' : store.colorAccent === 'green' ? 'blue' : 'orange')"
-            :title="'Accent: ' + store.colorAccent"
+            @click="store.setTheme(store.theme === 'light' ? 'navy' : store.theme === 'navy' ? 'dark' : 'light')"
+            :title="store.theme === 'light' ? 'Switch to DarkBlue' : store.theme === 'navy' ? 'Switch to Dark' : 'Switch to White'"
           >
-            <div class="color-indicator-dot" :class="store.colorAccent"></div>
-          </button>
-          <button 
-            type="button" 
-            class="collapsed-settings-btn"
-            @click="store.setTheme(store.theme === 'light' ? (store.colorAccent === 'blue' ? 'navy' : 'dark') : 'light')"
-            :title="store.theme === 'light' ? 'Switch to Dark' : 'Switch to Light'"
-          >
-            <svg v-if="store.theme === 'light'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            <div class="theme-indicator-dot" :class="store.theme"></div>
           </button>
         </div>
 
@@ -323,13 +277,6 @@ import { useAppStore } from '../stores/appStore'
 
 const store = useAppStore()
 const router = useRouter()
-
-// Collapsible Navigation sections
-const productivityOpen = ref(true)
-const studyOpen = ref(true)
-const healthOpen = ref(true)
-const financeOpen = ref(true)
-const entertainmentOpen = ref(true)
 
 const gravatarUrl = computed(() => {
   const name = encodeURIComponent(displayName.value)
@@ -504,20 +451,9 @@ async function handleLogout() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color-strong);
-  border-radius: 12px;
-  cursor: pointer;
+  padding: 6px 14px;
   user-select: none;
-  margin-bottom: 6px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow-sm);
-}
-.nav-section-header:hover {
-  background: var(--bg-hover);
-  border-color: var(--accent-purple);
-  transform: translateY(-1px);
+  margin-bottom: 4px;
 }
 .section-title {
   font-size: 11px;
@@ -525,16 +461,6 @@ async function handleLogout() {
   color: var(--text-heading);
   letter-spacing: 0.05em;
   text-transform: none; /* Friendly capitalized style */
-}
-.section-arrow-icon {
-  width: 14px;
-  height: 14px;
-  color: var(--text-secondary);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  transform: rotate(180deg); /* Expanded - chevron up */
-}
-.nav-section.collapsed .section-arrow-icon {
-  transform: rotate(0deg); /* Collapsed - chevron down */
 }
 
 /* ── Navigation Links ───────────────────────────────────── */
@@ -678,61 +604,29 @@ async function handleLogout() {
 }
 
 /* ── Theme Options Styling ── */
-.accent-selector-row,
 .mode-toggle-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  justify-content: center;
   margin-top: 6px;
+  width: 100%;
 }
-.settings-sub-lbl {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-secondary);
-}
-.color-dots-grid {
-  display: flex;
-  gap: 8px;
-}
-.color-dot {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
-}
-.color-dot.orange { background-color: #ea580c; }
-.color-dot.green { background-color: #22c55e; }
-.color-dot.blue { background-color: #6366f1; }
-
-.color-dot:hover {
-  transform: scale(1.15);
-}
-.color-dot.active {
-  border-color: var(--text-primary);
-  box-shadow: 0 0 0 2px var(--bg-card), var(--shadow-sm);
-}
-
-.mode-segmented-control {
+.mode-segmented-control-three {
   display: flex;
   background: var(--bg-subtle, rgba(0,0,0,0.03));
   border-radius: 12px;
   padding: 3px;
   border: 1px solid var(--border-color);
-  width: 130px;
+  width: 100%;
 }
-.mode-btn {
+.mode-btn-three {
   flex: 1;
   background: transparent;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 6px;
+  padding: 8px 4px;
   border-radius: 9px;
   color: var(--text-secondary);
   cursor: pointer;
@@ -740,10 +634,10 @@ async function handleLogout() {
   font-size: 11px;
   font-weight: 700;
 }
-.mode-btn:hover {
+.mode-btn-three:hover {
   color: var(--text-primary);
 }
-.mode-btn.active {
+.mode-btn-three.active {
   background: var(--bg-card);
   color: var(--text-primary);
   box-shadow: var(--shadow-sm);
@@ -773,14 +667,23 @@ async function handleLogout() {
   background: var(--bg-hover);
   color: var(--text-primary);
 }
-.color-indicator-dot {
+.theme-indicator-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
-.color-indicator-dot.orange { background-color: #ea580c; }
-.color-indicator-dot.green { background-color: #22c55e; }
-.color-indicator-dot.blue { background-color: #6366f1; }
+.theme-indicator-dot.light {
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+.theme-indicator-dot.navy {
+  background-color: #3b82f6;
+}
+.theme-indicator-dot.dark {
+  background-color: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
 
 /* ── Sign Out ── */
 .btn-logout-sidebar {
