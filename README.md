@@ -79,3 +79,15 @@ npm run dev
 ├── main.js              # Electron main process controller & IPC pipe
 └── vite.config.js       # Vite bundle bundler options
 ```
+
+---
+
+## 👥 Collaborators
+
+We are building this project together! Meet the collaborators behind **Daily Life Tracker (DLT)**:
+
+| [<img src="https://github.com/webjie28.png" width="80px;" style="border-radius: 50%;"/><br /><sub><b>Benjie</b></sub>](https://github.com/webjie28) | [<img src="https://github.com/jeinciong.png" width="80px;" style="border-radius: 50%;"/><br /><sub><b>John Emmanuel Inciong</b></sub>](https://github.com/jeinciong) |
+| :---: | :---: |
+| **Lead Developer** | **Collaborator** |
+| [@webjie28](https://github.com/webjie28) | [@jeinciong](https://github.com/jeinciong) |
+
