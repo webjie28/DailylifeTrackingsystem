@@ -513,9 +513,7 @@ function renderChart() {
       goalLineData.push(targetSteps)
     }
     
-    // Fallback sample data if empty
-    const isEmpty = stepsData.every(v => v === 0)
-    const displaySteps = !isEmpty ? stepsData : [8400, 11200, 9500, 6200, 12000, 7800, 9100]
+    const displaySteps = stepsData
     
     chartInstance = new Chart(ctx, {
       type: 'bar',
@@ -576,16 +574,7 @@ function renderChart() {
       targetHoursData.push(targetHours)
     }
     
-    // Generate fallback sample 30-day workload if empty
-    const isEmpty = hoursData.every(v => v === 0)
     let displayHours = hoursData
-    if (isEmpty) {
-      displayHours = Array.from({ length: 30 }, (_, i) => {
-        // Generate random realistic hours between 3 and 9 for 8-hour goal practice completeness
-        const seed = Math.sin(i) * 3 + 6.0
-        return Math.round(Math.max(1.0, Math.min(10, seed)) * 10) / 10
-      })
-    }
     
     chartInstance = new Chart(ctx, {
       type: 'line',
@@ -640,13 +629,7 @@ function renderChart() {
       return { label: new Date(c.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), value: currentTotal }
     })
     
-    // Fallback display if empty
-    const data = rawData.length > 0 ? rawData : [
-      { label: 'Jan', value: 1000 },
-      { label: 'Feb', value: 2500 },
-      { label: 'Mar', value: 3500 },
-      { label: 'Apr', value: 5000 }
-    ]
+    const data = rawData
     
     chartInstance = new Chart(ctx, {
       type: 'line',
@@ -684,11 +667,7 @@ function renderChart() {
     const labels = Object.keys(categoriesMap)
     const values = Object.values(categoriesMap)
     
-    // Fallback default sample data if empty
-    if (labels.length === 0) {
-      labels.push('Sample Food', 'Sample Utilities', 'Sample Other')
-      values.push(2500, 1500, 800)
-    }
+    // No fallback default sample data
     
     chartInstance = new Chart(ctx, {
       type: 'pie',
@@ -724,11 +703,7 @@ function renderChart() {
       return { label: g.name, progress }
     })
     
-    // Fallback sample data if empty
-    const displayData = data.length > 0 ? data : [
-      { label: 'Sample Travel', progress: 65 },
-      { label: 'Sample Gadget', progress: 30 }
-    ]
+    const displayData = data
     
     chartInstance = new Chart(ctx, {
       type: 'bar',
@@ -821,12 +796,7 @@ function renderStepsChart() {
     stepValues.push(store.walkTrackerData[key] || 0)
   }
 
-  // Fallback sample data if empty
-  const isEmpty = stepValues.every(v => v === 0)
-  const displaySteps = !isEmpty ? stepValues : Array.from({ length: 30 }, (_, i) => {
-    const seed = Math.sin(i * 0.5) * 3000 + 7500
-    return Math.round(Math.max(1000, seed))
-  })
+  const displaySteps = stepValues
 
   stepsChartInstance = new Chart(ctx, {
     type: 'line',
@@ -875,11 +845,7 @@ function renderGymChart() {
     gymValues.push(gCals)
   }
 
-  // Fallback sample data if empty
-  const isEmpty = gymValues.every(v => v === 0)
-  const displayGym = !isEmpty ? gymValues : Array.from({ length: 30 }, (_, i) => {
-    return i % 4 === 0 ? Math.round(350 + Math.sin(i) * 100) : 0
-  })
+  const displayGym = gymValues
 
   gymChartInstance = new Chart(ctx, {
     type: 'bar',
