@@ -420,20 +420,20 @@ export const useAppStore = defineStore('app', {
     async addAnime(a) {
       this.animeWatchlist.push(a)
       localStorage.setItem('animeWatchlist', JSON.stringify(this.animeWatchlist))
-      await this.syncSharedAnimeWatchlist()
+      await this.syncAllDataToCloud()
     },
     async updateAnime(id, updates) {
       const idx = this.animeWatchlist.findIndex(a => a.id === id)
       if (idx !== -1) {
         this.animeWatchlist[idx] = { ...this.animeWatchlist[idx], ...updates }
         localStorage.setItem('animeWatchlist', JSON.stringify(this.animeWatchlist))
-        await this.syncSharedAnimeWatchlist()
+        await this.syncAllDataToCloud()
       }
     },
     async deleteAnime(id) {
       this.animeWatchlist = this.animeWatchlist.filter(a => a.id !== id)
       localStorage.setItem('animeWatchlist', JSON.stringify(this.animeWatchlist))
-      await this.syncSharedAnimeWatchlist()
+      await this.syncAllDataToCloud()
     },
 
     // ── Gym Routines ──────────────────────────────────────
@@ -644,39 +644,41 @@ export const useAppStore = defineStore('app', {
     async fetchUserData() {
       if (!this.user) return
       try {
-        // Fetch shared anime watchlist for everyone
-        await this.fetchSharedAnimeWatchlist()
-
         const docRef = doc(db, 'users', this.user.uid)
         const docSnap = await getDoc(docRef)
         if (docSnap.exists()) {
           const data = docSnap.data()
-          if (data.dailyTasks) this.dailyTasks = data.dailyTasks
-          if (data.customCategories) this.customCategories = data.customCategories
-          if (data.walkTrackerData) this.walkTrackerData = data.walkTrackerData
-          if (data.gymTrackerData) this.gymTrackerData = data.gymTrackerData
-          if (data.gymCheckedItems) this.gymCheckedItems = data.gymCheckedItems
-          if (data.gymRoutines) this.gymRoutines = data.gymRoutines
-          if (data.fitnessStepGoal !== undefined) this.fitnessStepGoal = data.fitnessStepGoal
-          if (data.financeTransactions) this.financeTransactions = data.financeTransactions
-          if (data.savingsContributions) this.savingsContributions = data.savingsContributions
-          if (data.savingsGoals) this.savingsGoals = data.savingsGoals
-          if (data.eventsList) this.eventsList = data.eventsList
-          if (data.longtermGoalsList) this.longtermGoalsList = data.longtermGoalsList
-          if (data.studyBooksList) this.studyBooksList = data.studyBooksList
-          if (data.studySessionNotes !== undefined) this.studySessionNotes = data.studySessionNotes
-          if (data.studyTotalTime !== undefined) this.studyTotalTime = data.studyTotalTime
-          if (data.waterIntakeLog) this.waterIntakeLog = data.waterIntakeLog
-          if (data.waterDailyTarget !== undefined) this.waterDailyTarget = data.waterDailyTarget
-          if (data.workTimeLogs) this.workTimeLogs = data.workTimeLogs
-          if (data.isClockedIn !== undefined) this.isClockedIn = data.isClockedIn
-          if (data.activeClockInLogId !== undefined) this.activeClockInLogId = data.activeClockInLogId
-          if (data.dailyStreak !== undefined) this.dailyStreak = data.dailyStreak
-          if (data.lastStreakDate !== undefined) this.lastStreakDate = data.lastStreakDate
-          if (data.username) this.username = data.username
+          this.dailyTasks = data.dailyTasks || []
+          this.customCategories = data.customCategories || []
+          this.walkTrackerData = data.walkTrackerData || {}
+          this.gymTrackerData = data.gymTrackerData || {}
+          this.gymCheckedItems = data.gymCheckedItems || {}
+          this.gymRoutines = data.gymRoutines || {
+            MONDAY: [], TUESDAY: [], WEDNESDAY: [], THURSDAY: [], FRIDAY: [], SATURDAY: [], SUNDAY: []
+          }
+          this.fitnessStepGoal = data.fitnessStepGoal !== undefined ? data.fitnessStepGoal : 10000
+          this.financeTransactions = data.financeTransactions || []
+          this.savingsContributions = data.savingsContributions || []
+          this.savingsGoals = data.savingsGoals || []
+          this.animeWatchlist = data.animeWatchlist || []
+          this.eventsList = data.eventsList || []
+          this.longtermGoalsList = data.longtermGoalsList || []
+          this.studyBooksList = data.studyBooksList || []
+          this.studySessionNotes = data.studySessionNotes !== undefined ? data.studySessionNotes : ''
+          this.studyTotalTime = data.studyTotalTime !== undefined ? data.studyTotalTime : 0
+          this.waterIntakeLog = data.waterIntakeLog || {}
+          this.waterDailyTarget = data.waterDailyTarget !== undefined ? data.waterDailyTarget : 2000
+          this.workTimeLogs = data.workTimeLogs || []
+          this.isClockedIn = data.isClockedIn !== undefined ? data.isClockedIn : false
+          this.activeClockInLogId = data.activeClockInLogId !== undefined ? data.activeClockInLogId : null
+          this.dailyStreak = data.dailyStreak !== undefined ? data.dailyStreak : 0
+          this.lastStreakDate = data.lastStreakDate !== undefined ? data.lastStreakDate : ''
+          this.username = data.username || ''
 
           this.saveAllDataToLocalStorage()
         } else {
+          // New user: Reset state to zero first, then sync to cloud to create document
+          this.resetStoreData()
           await this.syncAllDataToCloud()
         }
       } catch (err) {
@@ -698,6 +700,7 @@ export const useAppStore = defineStore('app', {
           financeTransactions: this.financeTransactions,
           savingsContributions: this.savingsContributions,
           savingsGoals: this.savingsGoals,
+          animeWatchlist: this.animeWatchlist,
           eventsList: this.eventsList,
           longtermGoalsList: this.longtermGoalsList,
           studyBooksList: this.studyBooksList,

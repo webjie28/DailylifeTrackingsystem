@@ -15,10 +15,10 @@
       </div>
     </div>
 
-    <div class="app-shell" :class="{ 'sidebar-collapsed': store.isSidebarCollapsed }">
+    <div class="app-shell" :class="{ 'sidebar-collapsed': store.isSidebarCollapsed, 'no-sidebar': !store.isAuthenticated || route.meta.isGuest }">
       <!-- Sidebar container with reactive collapsed class -->
       <div 
-        v-if="!store.isAuthLoading"
+        v-if="store.isAuthenticated && !route.meta.isGuest"
         id="sidebar" 
         class="sidebar-container" 
         :class="{ collapsed: store.isSidebarCollapsed }"
