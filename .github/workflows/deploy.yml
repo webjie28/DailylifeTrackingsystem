@@ -1,3 +1,4 @@
+# CI/CD Deployment configuration for Vercel using official Vercel CLI steps
 name: Deploy to Vercel
 on: [push]
 env:
