@@ -303,7 +303,7 @@ function deleteEvent(id) {
   color: var(--text-primary);
 }
 .stat-value.purple {
-  color: #7c3aed;
+  color: var(--accent-purple);
 }
 .stat-value.green {
   color: #22c55e;
@@ -358,7 +358,7 @@ function deleteEvent(id) {
   font-family: inherit;
 }
 .form-group input:focus, .form-group select:focus {
-  border-color: #7c3aed;
+  border-color: var(--accent-purple);
 }
 .two-input {
   display: grid;
@@ -397,8 +397,8 @@ function deleteEvent(id) {
   transition: all 0.2s;
 }
 .tab-btn.active {
-  background: var(--bg-card);
-  color: #7c3aed;
+  background: var(--nav-active-bg);
+  color: var(--nav-active-color);
   box-shadow: var(--shadow-sm);
 }
 
@@ -448,7 +448,7 @@ function deleteEvent(id) {
 }
 /* Category badges colors */
 .event-date-badge.Personal { background: #3b82f6; }
-.event-date-badge.Study { background: #7c3aed; }
+.event-date-badge.Study { background: var(--accent-purple); }
 .event-date-badge.Fitness { background: #22c55e; }
 .event-date-badge.Entertainment { background: #ec4899; }
 .event-date-badge.Other { background: #f97316; }
@@ -496,7 +496,7 @@ function deleteEvent(id) {
   background: var(--bg-card);
 }
 .category-badge.Personal { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
-.category-badge.Study { color: #7c3aed; background: rgba(124, 58, 237, 0.1); }
+.category-badge.Study { color: var(--accent-purple); background: var(--accent-purple-light); }
 .category-badge.Fitness { color: #22c55e; background: rgba(34, 197, 94, 0.1); }
 .category-badge.Entertainment { color: #ec4899; background: rgba(236, 72, 153, 0.1); }
 .category-badge.Other { color: #f97316; background: rgba(249, 115, 22, 0.1); }
@@ -528,11 +528,11 @@ function deleteEvent(id) {
   transition: all 0.2s;
 }
 .btn-primary {
-  background: #7c3aed;
+  background: var(--accent-purple);
   color: #fff;
 }
 .btn-primary:hover {
-  background: #5b21b6;
+  background: var(--accent-purple-hover);
 }
 .btn-outline {
   background: var(--bg-card);
@@ -551,9 +551,9 @@ function deleteEvent(id) {
 }
 
 .event-item-editing {
-  border-color: #7c3aed !important;
+  border-color: var(--accent-purple) !important;
   background: var(--accent-purple-bg) !important;
-  box-shadow: 0 0 10px rgba(124, 58, 237, 0.15);
+  box-shadow: none;
 }
 
 .btn-edit-action {

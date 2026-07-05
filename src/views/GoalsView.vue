@@ -379,7 +379,7 @@ function importProjectGoal(proj) {
   color: var(--text-primary);
 }
 .stat-value.purple {
-  color: #7c3aed;
+  color: var(--accent-purple);
 }
 .stat-value.orange {
   color: #f97316;
@@ -446,7 +446,7 @@ function importProjectGoal(proj) {
 .goal-cat.cat-personal { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
 .goal-cat.cat-health { color: #22c55e; background: rgba(34, 197, 94, 0.1); }
 .goal-cat.cat-finance { color: #f97316; background: rgba(249, 115, 22, 0.1); }
-.goal-cat.cat-study { color: #7c3aed; background: rgba(124, 58, 237, 0.1); }
+.goal-cat.cat-study { color: var(--accent-purple); background: var(--accent-purple-light); }
 .goal-cat.cat-other { color: #64748b; background: rgba(100, 116, 139, 0.1); }
 
 .goal-milestones-box {
@@ -503,7 +503,7 @@ function importProjectGoal(proj) {
 .goal-bar-fill {
   height: 100%;
   border-radius: 99px;
-  background: linear-gradient(90deg, #7c3aed, #22c55e);
+  background: linear-gradient(90deg, var(--accent-purple), #22c55e);
   transition: width 0.4s ease;
 }
 
@@ -515,7 +515,7 @@ function importProjectGoal(proj) {
   font-weight: 700;
 }
 .goal-pct {
-  color: #7c3aed;
+  color: var(--accent-purple);
 }
 .goal-btn-delete {
   background: rgba(239, 68, 68, 0.05);
@@ -565,7 +565,7 @@ function importProjectGoal(proj) {
   font-family: inherit;
 }
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-  border-color: #7c3aed;
+  border-color: var(--accent-purple);
 }
 .milestones-textarea {
   resize: vertical;
@@ -587,11 +587,11 @@ function importProjectGoal(proj) {
   transition: all 0.2s;
 }
 .btn-primary {
-  background: #7c3aed;
+  background: var(--accent-purple);
   color: #fff;
 }
 .btn-primary:hover {
-  background: #5b21b6;
+  background: var(--accent-purple-hover);
 }
 .btn-outline {
   background: var(--bg-card);
@@ -684,8 +684,8 @@ function importProjectGoal(proj) {
     padding: 2px 8px;
     border-radius: 6px;
     text-transform: uppercase;
-    color: #7c3aed;
-    background: rgba(124, 58, 237, 0.1);
+    color: var(--accent-purple);
+    background: var(--accent-purple-light);
 }
 .recommend-desc {
     font-size: 13px;
@@ -706,6 +706,6 @@ function importProjectGoal(proj) {
     color: var(--text-muted);
 }
 .m-bullet {
-    color: var(--time-accent, #7c3aed);
+    color: var(--time-accent, var(--accent-purple));
 }
 </style>

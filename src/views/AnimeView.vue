@@ -399,7 +399,7 @@ function resetForm() {
   color: var(--text-primary);
 }
 .stat-value.purple {
-  color: #7c3aed;
+  color: var(--accent-purple);
 }
 .stat-value.orange {
   color: #f97316;
@@ -440,7 +440,7 @@ function resetForm() {
   font-family: inherit;
 }
 .form-group input:focus, .form-group select:focus {
-  border-color: #7c3aed;
+  border-color: var(--accent-purple);
 }
 .two-input {
   display: grid;
@@ -468,8 +468,8 @@ function resetForm() {
   transition: all 0.2s;
 }
 .tab-btn.active {
-  background: var(--bg-card);
-  color: #7c3aed;
+  background: var(--nav-active-bg);
+  color: var(--nav-active-color);
   box-shadow: var(--shadow-sm);
 }
 
@@ -515,8 +515,8 @@ function resetForm() {
 .format-badge {
   font-size: 10px;
   font-weight: 700;
-  background: rgba(124, 58, 237, 0.1);
-  color: #7c3aed;
+  background: var(--accent-purple-light);
+  color: var(--accent-purple);
   padding: 2px 6px;
   border-radius: 6px;
 }
@@ -557,9 +557,9 @@ function resetForm() {
   transition: all 0.2s;
 }
 .ep-btn:hover:not(:disabled) {
-  background: #7c3aed;
+  background: var(--accent-purple-hover);
   color: #fff;
-  border-color: #7c3aed;
+  border-color: var(--accent-purple-hover);
 }
 .ep-btn:disabled {
   opacity: 0.5;
@@ -580,7 +580,7 @@ function resetForm() {
 .goal-bar-fill {
   height: 100%;
   border-radius: 99px;
-  background: linear-gradient(90deg, #7c3aed, #22c55e);
+  background: linear-gradient(90deg, var(--accent-purple), #22c55e);
 }
 
 .anime-card-footer {
@@ -608,8 +608,8 @@ function resetForm() {
   background: rgba(34, 197, 94, 0.1);
 }
 .status-indicator-badge.planning {
-  color: #7c3aed;
-  background: rgba(124, 58, 237, 0.1);
+  color: var(--accent-purple);
+  background: var(--accent-purple-light);
 }
 .status-indicator-badge.dropped {
   color: #f87171;
@@ -639,11 +639,11 @@ function resetForm() {
   transition: all 0.2s;
 }
 .btn-primary {
-  background: #7c3aed;
+  background: var(--accent-purple);
   color: #fff;
 }
 .btn-primary:hover {
-  background: #5b21b6;
+  background: var(--accent-purple-hover);
 }
 .btn-outline {
   background: var(--bg-card);

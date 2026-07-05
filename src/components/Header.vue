@@ -226,14 +226,14 @@ onUnmounted(() => {
 }
 
 .clock-in-trigger {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+  background: var(--accent-purple);
+  box-shadow: var(--shadow-sm);
 }
 
 .clock-in-trigger:hover {
   transform: translateY(-1px) scale(1.02);
-  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.4);
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: var(--accent-purple-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .clock-out-trigger {

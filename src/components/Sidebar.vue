@@ -512,9 +512,9 @@ async function handleLogout() {
 
 /* Active Navigation Menu Style (Matches the high fidelity preview image) */
 .nav-link.active {
-  background: var(--nav-active-bg, rgba(99, 102, 241, 0.08));
-  color: var(--nav-active-color, #6366f1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+  background: var(--nav-active-bg, #cbd5e1);
+  color: var(--nav-active-color, #0f172a);
+  box-shadow: none;
 }
 
 /* ── Collapsed Sidebar Tooltips ────────────────────────── */

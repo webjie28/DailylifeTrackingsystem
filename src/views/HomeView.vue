@@ -696,7 +696,7 @@ function renderChart() {
         labels: labels,
         datasets: [{
           data: values,
-          backgroundColor: ['#7c3aed', '#22c55e', '#f97316', '#3b82f6', '#ec4899', '#14b8a6'],
+          backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--accent-purple').trim() || '#334155', '#22c55e', '#f97316', '#3b82f6', '#ec4899', '#14b8a6'],
           borderWidth: 0
         }]
       },
@@ -737,7 +737,7 @@ function renderChart() {
         datasets: [{
           label: 'Progress (%)',
           data: displayData.map(p => p.progress),
-          backgroundColor: '#7c3aed',
+          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-purple').trim() || '#334155',
           borderRadius: 12,
           maxBarThickness: 40
         }]

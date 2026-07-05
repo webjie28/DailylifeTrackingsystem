@@ -403,7 +403,7 @@ function deleteContribution(id) {
   color: #16a34a;
 }
 .stat-value.purple {
-  color: #7c3aed;
+  color: var(--accent-purple);
 }
 .stat-value.green {
   color: #22c55e;
@@ -487,7 +487,7 @@ function deleteContribution(id) {
 .goal-bar-fill {
   height: 100%;
   border-radius: 99px;
-  background: linear-gradient(90deg, #7c3aed, #22c55e);
+  background: linear-gradient(90deg, var(--accent-purple), #22c55e);
   transition: width 0.4s ease;
 }
 
@@ -499,7 +499,7 @@ function deleteContribution(id) {
   color: var(--text-muted);
 }
 .goal-pct {
-  color: #7c3aed;
+  color: var(--accent-purple);
 }
 
 .content-grid-split {
@@ -551,7 +551,7 @@ function deleteContribution(id) {
   font-family: inherit;
 }
 .form-group input:focus, .form-group select:focus {
-  border-color: #7c3aed;
+  border-color: var(--accent-purple);
 }
 .two-input {
   display: grid;
@@ -645,11 +645,11 @@ function deleteContribution(id) {
   transition: all 0.2s;
 }
 .btn-primary {
-  background: #7c3aed;
+  background: var(--accent-purple);
   color: #fff;
 }
 .btn-primary:hover {
-  background: #5b21b6;
+  background: var(--accent-purple-hover);
 }
 .btn-outline {
   background: var(--bg-card);
