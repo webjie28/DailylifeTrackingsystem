@@ -1,6 +1,8 @@
-# CI/CD Deployment configuration for Vercel using official Vercel CLI steps
 name: Deploy to Vercel
-on: [push]
+on:
+  push:
+    branches:
+      - main
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
