@@ -2,7 +2,7 @@
   <header class="dash-header animate-in">
     <!-- Clock In/Out Tracker Pill (Full Width) -->
     <div class="dash-header-tracker">
-      <div class="header-tracker-pill">
+      <div class="header-tracker-pill" :class="{ 'is-active': store.isClockedIn }">
         <!-- Left side: Live clock / Working status -->
         <div class="tracker-left-side">
           <svg class="tracker-clock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -137,15 +137,22 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s ease;
-  min-width: 380px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 320px;
+  max-width: 100%;
 }
 
-.header-tracker-pill:hover,
-.header-tracker-pill:focus-within {
+.header-tracker-pill.is-active {
+  width: 480px;
+  border-color: rgba(34, 197, 94, 0.4) !important;
+  background: rgba(34, 197, 94, 0.04) !important;
+  box-shadow: 0 10px 35px rgba(34, 197, 94, 0.12);
+}
+
+.header-tracker-pill:hover {
   background: var(--glass-hover, rgba(255, 255, 255, 0.12)) !important;
   border-color: rgba(255, 255, 255, 0.25) !important;
-  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
 }
 
 .tracker-left-side {
@@ -166,6 +173,17 @@ onUnmounted(() => {
   color: var(--text-secondary);
   opacity: 0.85;
   margin-right: 8px;
+  transition: all 0.3s ease;
+}
+
+.header-tracker-pill.is-active .tracker-clock-icon {
+  color: #22c55e;
+  animation: clockPulse 2s infinite alternate;
+}
+
+@keyframes clockPulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.15); opacity: 1; }
 }
 
 .live-clock-time {
