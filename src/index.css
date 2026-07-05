@@ -31,6 +31,7 @@
 
     /* Accent — Orange (Primary Accent) */
     --accent-purple: #ff5500;
+    --accent-purple-text: #ffffff;
     --accent-purple-hover: #e04b00;
     --accent-purple-deep: #b33c00;
     --accent-purple-light: rgba(255, 85, 0, 0.15);
@@ -152,6 +153,7 @@
 
     /* Accent — Orange */
     --accent-purple: #ffa043;
+    --accent-purple-text: #ffffff;
     --accent-purple-hover: #ffb86c;
     --accent-purple-deep: #cc7010;
     --accent-purple-light: rgba(255, 160, 67, 0.2);
@@ -288,6 +290,7 @@
 
     /* Accent — Blue (Primary in this theme) */
     --accent-purple: #3b82f6;
+    --accent-purple-text: #ffffff;
     --accent-purple-hover: #2563eb;
     --accent-purple-deep: #1d4ed8;
     --accent-purple-light: rgba(59, 130, 246, 0.18);
@@ -534,6 +537,7 @@
     --text-subtle: #a1a1aa;
     --text-faint: #52525b;
     --accent-purple: #f4f4f5;
+    --accent-purple-text: #18181b;
     --accent-purple-hover: #e4e4e7;
     --accent-purple-deep: #a1a1aa;
     --accent-purple-light: rgba(244, 244, 245, 0.12);
@@ -2162,4 +2166,13 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 input[type="number"] {
   -moz-appearance: textfield; /* Firefox */
+}
+
+/* Global buttons text color overrides for theme accessibility in Dark Mode */
+.btn-primary, 
+.btn-auth-submit,
+.btn-tracker-action,
+.card-footer button,
+.modal-form button[type="submit"] {
+    color: var(--accent-purple-text, #ffffff) !important;
 }

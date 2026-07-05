@@ -663,7 +663,7 @@ async function handleLogout() {
 }
 .mode-btn-three.active .color-dot {
   transform: scale(1.15);
-  outline: 2px solid var(--accent-purple);
+  outline: 1.5px solid var(--text-muted, #71717a);
   outline-offset: 2px;
 }
 
