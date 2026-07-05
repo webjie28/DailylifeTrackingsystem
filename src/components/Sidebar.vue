@@ -1,4 +1,5 @@
 <template>
+  <!-- Sidebar navigation layout with responsive collapse controls -->
   <div class="sidebar-wrapper" :class="{ 'collapsed': store.isSidebarCollapsed }">
     <!-- Floating Collapsible Arrow Button -->
     <button type="button" class="sidebar-collapse-toggle" @click="store.toggleSidebar()" aria-label="Toggle Sidebar">
