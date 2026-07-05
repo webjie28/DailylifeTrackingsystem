@@ -85,7 +85,10 @@
           <div v-if="sortedHistory.length === 0" class="empty-msg">No hydration logs yet. Keep drinking!</div>
           <div v-else v-for="log in sortedHistory" :key="log.date" class="water-history-item">
             <span class="water-history-date">{{ log.date }}</span>
-            <span class="water-history-amount">{{ log.amount }} ml</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="water-history-amount">{{ log.amount }} ml</span>
+              <button class="btn-del" @click="deleteLog(log.date)" title="Delete Log" style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; line-height: 1;">✕</button>
+            </div>
           </div>
         </div>
       </div>
@@ -146,6 +149,11 @@ function updateTarget(e) {
     return
   }
   store.updateWaterTarget(target)
+}
+
+function deleteLog(date) {
+  if (!confirm(`Are you sure you want to delete the log for ${date}?`)) return
+  store.deleteWaterLog(date)
 }
 </script>
 

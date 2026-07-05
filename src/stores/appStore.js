@@ -521,15 +521,23 @@ export const useAppStore = defineStore('app', {
       const tk = getTodayKey()
       this.waterIntakeLog[tk] = (this.waterIntakeLog[tk] || 0) + amount
       localStorage.setItem('waterIntakeLog', JSON.stringify(this.waterIntakeLog))
+      this.syncAllDataToCloud()
     },
     resetWaterToday() {
       const tk = getTodayKey()
       this.waterIntakeLog[tk] = 0
       localStorage.setItem('waterIntakeLog', JSON.stringify(this.waterIntakeLog))
+      this.syncAllDataToCloud()
     },
     updateWaterTarget(target) {
       this.waterDailyTarget = target
       localStorage.setItem('waterDailyTarget', target.toString())
+      this.syncAllDataToCloud()
+    },
+    deleteWaterLog(date) {
+      delete this.waterIntakeLog[date]
+      localStorage.setItem('waterIntakeLog', JSON.stringify(this.waterIntakeLog))
+      this.syncAllDataToCloud()
     },
     // ── Work Logs / Clock In/Out ──────────────────────────
     clockIn(note = '') {
