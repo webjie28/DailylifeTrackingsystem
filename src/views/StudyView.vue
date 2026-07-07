@@ -257,8 +257,9 @@
 
     <!-- Reading Timer Modal / Running Timer -->
     <div class="modal-overlay" v-if="showReadingModal" @click.self="!isReadingActive && (showReadingModal = false)">
-      <div class="modal-content text-center" style="max-width: 400px; text-align: center;">
-        <div v-if="!isReadingActive">
+      <div class="modal-content" :style="{ 'max-width': isReadingActive ? '950px' : '400px', 'width': '95%', 'padding': '24px' }">
+        <div v-if="!isReadingActive" style="text-align: center;">
+          <div style="font-size: 48px; margin-bottom: 8px;">{{ selectedLibBook?.emoji }}</div>
           <h3>📖 Read "{{ selectedLibBook?.title }}"</h3>
           <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
             Set your target reading time for this session.
@@ -281,23 +282,56 @@
           </div>
         </div>
 
-        <div v-else class="reading-active-session">
-          <div class="reading-emoji-pulse">📖</div>
-          <h3>Reading: {{ selectedLibBook?.title }}</h3>
-          <p class="reading-author">by {{ selectedLibBook?.author }}</p>
-          
-          <div class="timer-display" style="font-size: 56px; margin: 20px 0;">{{ formattedReadingTime }}</div>
+        <div v-else class="reading-session-layout">
+          <!-- Left: Scrollable Ebook Reader -->
+          <div class="reader-content-panel">
+            <div class="reader-header">
+              <div class="reader-meta">
+                <span class="reader-emoji">{{ selectedLibBook?.emoji }}</span>
+                <div>
+                  <h4 class="reader-title">{{ selectedLibBook?.title }}</h4>
+                  <p class="reader-author">by {{ selectedLibBook?.author }}</p>
+                </div>
+              </div>
+              <div class="chapter-selector-wrap">
+                <select v-model="activeChapterIndex" class="chapter-select">
+                  <option v-for="(ch, idx) in selectedLibBook?.chapters" :key="idx" :value="idx">
+                    {{ ch.title }}
+                  </option>
+                </select>
+              </div>
+            </div>
 
-          <div class="timer-controls" style="margin-bottom: 20px; display: flex; justify-content: center;">
-            <button class="btn-timer play" @click="toggleReadingPause" style="background: var(--accent-purple); color: #fff;">
-              <svg v-if="isReadingPaused" viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <svg v-else viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            </button>
+            <!-- Reading Body Text -->
+            <div class="reader-body">
+              <h3 class="reader-chapter-title">{{ selectedLibBook?.chapters[activeChapterIndex]?.title }}</h3>
+              <p class="reader-text-paragraph" v-for="(p, pi) in splitParagraphs(selectedLibBook?.chapters[activeChapterIndex]?.content)" :key="pi">
+                {{ p }}
+              </p>
+            </div>
           </div>
 
-          <button type="button" class="btn btn-outline" style="width: 100%; border-color: rgba(239,68,68,0.4); color: #ef4444;" @click="stopReadingSessionEarly">
-            Stop Session & Save
-          </button>
+          <!-- Right: Live Timer Status -->
+          <div class="reader-timer-panel">
+            <div class="reading-emoji-pulse">📖</div>
+            <h3 style="margin: 0; font-size: 16px;">Reading Session</h3>
+            <p style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin: 4px 0 24px;">Focus Time</p>
+            
+            <div class="timer-display" style="font-size: 46px; font-weight: 800; margin-bottom: 12px; line-height: 1; letter-spacing: -0.02em;">
+              {{ formattedReadingTime }}
+            </div>
+
+            <div class="timer-controls" style="margin-bottom: 24px; display: flex; justify-content: center;">
+              <button class="btn-timer play" @click="toggleReadingPause" style="background: var(--accent-purple); color: var(--accent-purple-text); width: 56px; height: 56px; border-radius: 50%;">
+                <svg v-if="isReadingPaused" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <svg v-else viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              </button>
+            </div>
+
+            <button type="button" class="btn btn-outline" style="width: 100%; border-color: rgba(239,68,68,0.3); color: #ef4444; font-size: 13px;" @click="stopReadingSessionEarly">
+              Stop Session & Save
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -308,6 +342,12 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '../stores/appStore'
+import { LIBRARY_BOOKS } from '../services/libraryBooks'
+
+const activeChapterIndex = ref(0)
+function splitParagraphs(text) {
+  return text ? text.split('\n\n') : []
+}
 
 const store = useAppStore()
 
@@ -487,15 +527,6 @@ function closeBookModal() {
   showBookModal.value = false
 }
 
-const LIBRARY_BOOKS = [
-  { id: 'lib_1', title: 'Atomic Habits', author: 'James Clear', emoji: '🌱', description: 'Build good habits and break bad ones.' },
-  { id: 'lib_2', title: 'Clean Code', author: 'Robert C. Martin', emoji: '💻', description: 'A handbook of agile software craftsmanship.' },
-  { id: 'lib_3', title: 'Deep Work', author: 'Cal Newport', emoji: '🧠', description: 'Rules for focused success in a distracted world.' },
-  { id: 'lib_4', title: 'The Psychology of Money', author: 'Morgan Housel', emoji: '💰', description: 'Timeless lessons on wealth, greed, and happiness.' },
-  { id: 'lib_5', title: 'Refactoring', author: 'Martin Fowler', emoji: '🔨', description: 'Improving the design of existing code.' },
-  { id: 'lib_6', title: 'Start with Why', author: 'Simon Sinek', emoji: '🎯', description: 'How great leaders inspire everyone to take action.' }
-]
-
 const showReadingModal = ref(false)
 const selectedLibBook = ref(null)
 const readingInputMins = ref(30)
@@ -517,6 +548,7 @@ function openReadingSetup(book) {
   selectedLibBook.value = book
   readingInputMins.value = 30
   readingInputHours.value = 0
+  activeChapterIndex.value = 0
   showReadingModal.value = true
   isReadingActive.value = false
   isReadingPaused.value = false
@@ -1179,5 +1211,107 @@ onUnmounted(() => {
   color: var(--text-secondary);
   margin-top: 4px;
   margin-bottom: 0;
+}
+
+/* ── Active Split Ebook Reader Layout ── */
+.reading-session-layout {
+  display: grid;
+  grid-template-columns: 2.2fr 0.8fr;
+  gap: 24px;
+  text-align: left;
+  min-height: 480px;
+}
+@media (max-width: 768px) {
+  .reading-session-layout {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+}
+.reader-content-panel {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color-strong);
+  padding-right: 24px;
+}
+@media (max-width: 768px) {
+  .reader-content-panel {
+    border-right: none;
+    padding-right: 0;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-color-strong);
+  }
+}
+.reader-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+.reader-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.reader-emoji {
+  font-size: 32px;
+}
+.reader-title {
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--text-primary);
+  margin: 0;
+}
+.reader-author {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.chapter-selector-wrap {
+  min-width: 200px;
+}
+.chapter-select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color-strong);
+  background: var(--bg-input-inset);
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+.reader-body {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 420px;
+  padding-top: 16px;
+  padding-right: 8px;
+}
+.reader-chapter-title {
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--text-heading);
+  margin: 0 0 14px;
+}
+.reader-text-paragraph {
+  font-size: 14px;
+  color: var(--text-body);
+  line-height: 1.7;
+  margin-bottom: 16px;
+  text-align: justify;
+}
+
+/* Right Timer Side panel */
+.reader-timer-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-left: 8px;
 }
 </style>
