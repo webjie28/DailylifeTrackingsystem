@@ -351,7 +351,15 @@ let fitnessChartInstance = null
 
 // Custom exercise CRUD
 function addCustomExercise() {
-  if (!newExText.value.trim()) return
+  const trimmedEx = newExText.value.trim()
+  if (!trimmedEx) return
+  
+  // Save to history suggestions
+  if (!customExerciseHistory.value.some(item => item.toLowerCase() === trimmedEx.toLowerCase())) {
+    customExerciseHistory.value.push(trimmedEx)
+    localStorage.setItem('customExerciseHistory', JSON.stringify(customExerciseHistory.value))
+  }
+
   const sets = parseInt(newExSets.value) || 0
   const reps = parseInt(newExReps.value) || 0
   const mins = parseInt(newExMins.value) || 0
@@ -365,7 +373,7 @@ function addCustomExercise() {
   }
   
   const suffix = details.length > 0 ? ` – ${details.join(' & ')}` : ''
-  const fullText = `${newExText.value.trim()}${suffix}`
+  const fullText = `${trimmedEx}${suffix}`
   
   store.addGymExercise(activeDay.value, {
     text: fullText,
@@ -590,25 +598,30 @@ const PREDEFINED_WORKOUTS = [
   'HIIT Workout'
 ]
 
+const customExerciseHistory = ref(JSON.parse(localStorage.getItem('customExerciseHistory') || '[]'))
 const showSuggestions = ref(false)
 
 const filteredSuggestions = computed(() => {
   const query = newExText.value ? newExText.value.trim().toLowerCase() : ''
   
-  // Unique workouts from history
+  // Unique workouts from logged gym history
   const historyWorkouts = Object.values(store.gymTrackerData)
     .map(log => log.workout)
     .filter(Boolean)
   
-  const allSuggestions = Array.from(new Set([...PREDEFINED_WORKOUTS, ...historyWorkouts]))
+  const allSuggestions = Array.from(new Set([
+    ...PREDEFINED_WORKOUTS,
+    ...customExerciseHistory.value,
+    ...historyWorkouts
+  ]))
 
   if (!query) {
-    return allSuggestions.slice(0, 6)
+    return allSuggestions.slice(0, 8)
   }
   
   return allSuggestions
     .filter(item => item.toLowerCase().includes(query))
-    .slice(0, 6)
+    .slice(0, 8)
 })
 
 function selectSuggestion(suggestion) {
