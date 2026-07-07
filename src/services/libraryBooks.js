@@ -245,21 +245,44 @@ export const LIBRARY_BOOKS = [
 ];
 
 /**
- * Fetch and parse the raw full text of a book from Gutenberg
- * Strips the Gutenberg header/footer and returns plain paragraphs
+ * Fetch and parse the raw full text of a book from Gutenberg.
+ * Tries multiple CORS proxies in sequence until one works.
  */
 export async function fetchBookText(textUrl) {
-  const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(textUrl)}`
-  const response = await fetch(proxyUrl)
-  if (!response.ok) throw new Error('Failed to fetch book text.')
-  const raw = await response.text()
+  // List of CORS proxy wrappers to try in order
+  const proxyBuilders = [
+    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    (url) => `https://thingproxy.freeboard.io/fetch/${url}`,
+    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  ]
+
+  let raw = null
+  let lastError = null
+
+  for (const buildProxy of proxyBuilders) {
+    try {
+      const proxyUrl = buildProxy(textUrl)
+      const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const text = await response.text()
+      // Sanity check: must look like a real book (has some Gutenberg marker or decent length)
+      if (text.length > 1000) {
+        raw = text
+        break
+      }
+    } catch (e) {
+      lastError = e
+    }
+  }
+
+  if (!raw) throw new Error(lastError?.message || 'All proxies failed.')
 
   // Strip Gutenberg header (everything before *** START OF THE PROJECT GUTENBERG EBOOK ***)
   const startMarker = raw.indexOf('*** START OF THE PROJECT GUTENBERG EBOOK')
   const endMarker = raw.indexOf('*** END OF THE PROJECT GUTENBERG EBOOK')
   let body = raw
   if (startMarker !== -1) {
-    // Skip past the START marker line
     const startIdx = raw.indexOf('\n', startMarker) + 1
     body = endMarker !== -1 ? raw.slice(startIdx, endMarker) : raw.slice(startIdx)
   }
