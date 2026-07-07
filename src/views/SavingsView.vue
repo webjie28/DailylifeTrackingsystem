@@ -46,16 +46,11 @@
           :class="{ 'goal-completed': goal.isCompleted }"
         >
           <div class="goal-top">
-            <div class="goal-title-wrap">
+            <div class="goal-title-wrap" style="flex: 1; padding-right: 8px;">
               <span class="goal-name">{{ goal.name }}</span>
-              <span v-if="goal.isCompleted" class="complete-badge">✓ COMPLETE</span>
+              <span v-if="goal.isCompleted" class="complete-badge" style="margin-left: 6px;">✓ COMPLETE</span>
             </div>
-            <div class="goal-actions">
-              <button class="btn btn-primary btn-sm" @click="openAddContrib(goal.id, goal.name)">
-                + Save
-              </button>
-              <button class="btn-danger-sm" @click="deleteGoal(goal.id)">✕</button>
-            </div>
+            <button class="btn-danger-sm" @click="deleteGoal(goal.id)" style="margin-top: 2px;">✕</button>
           </div>
 
           <div class="goal-amounts">
@@ -70,10 +65,14 @@
             <div class="goal-bar-fill" :style="{ width: goal.percentage + '%' }"></div>
           </div>
 
-          <div class="goal-footer">
+          <div class="goal-footer" style="margin-bottom: 12px;">
             <span class="goal-pct">{{ goal.percentage }}%</span>
             <span v-if="goal.date" class="goal-due">Target: {{ goal.date }}</span>
           </div>
+
+          <button class="btn btn-primary btn-sm" @click="openAddContrib(goal.id, goal.name)" style="width: 100%;">
+            + Save
+          </button>
         </div>
       </div>
     </div>

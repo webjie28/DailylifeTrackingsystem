@@ -223,6 +223,31 @@
         </div>
       </div>
     </section>
+
+    <!-- Recommended Books for You -->
+    <section class="animate-in delay-350" style="margin-bottom: 36px;">
+      <div class="panel" style="padding: 24px;">
+        <h3 style="margin-bottom: 18px; display: flex; align-items: center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: middle; margin-right: 8px; opacity: 0.7;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
+          Recommended Reading List
+        </h3>
+        <div class="recommended-books-grid">
+          <div v-for="book in RECOMMENDED_BOOKS" :key="book.title" class="rec-book-card">
+            <div class="rec-book-header-row">
+              <span class="rec-book-icon">📖</span>
+              <div>
+                <h4 class="rec-book-title">{{ book.title }}</h4>
+                <p class="rec-book-author">by {{ book.author }}</p>
+              </div>
+            </div>
+            <p class="rec-book-genre">Genre: {{ book.genre }}</p>
+            <router-link to="/study" class="btn btn-primary btn-sm rec-book-btn" style="margin-top: auto;">
+              Go to Study Hub
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -233,6 +258,13 @@ import { useAppStore } from '../stores/appStore'
 import Chart from 'chart.js/auto'
 
 const store = useAppStore()
+
+const RECOMMENDED_BOOKS = [
+  { title: 'Atomic Habits', author: 'James Clear', genre: 'Self-Improvement' },
+  { title: 'Deep Work', author: 'Cal Newport', genre: 'Productivity' },
+  { title: 'Clean Code', author: 'Robert C. Martin', genre: 'Software Engineering' },
+  { title: 'The Psychology of Money', author: 'Morgan Housel', genre: 'Finance & Wealth' }
+]
 
 const calGoalPercent = computed(() => {
   const target = 500 // Active calorie burn target
@@ -1409,6 +1441,59 @@ watch(
 .punctuality-badge.late {
     background: rgba(239, 68, 68, 0.15);
     color: #ef4444;
+}
+
+/* ── Recommended Books grid and cards ── */
+.recommended-books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+.rec-book-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 18px;
+  border-radius: 16px;
+  transition: all 0.25s ease;
+}
+.rec-book-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-purple);
+  box-shadow: var(--shadow-sm);
+}
+.rec-book-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rec-book-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.rec-book-title {
+  font-size: 14px;
+  font-weight: 750;
+  color: var(--text-primary);
+  margin: 0;
+}
+.rec-book-author {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.rec-book-genre {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.rec-book-btn {
+  width: 100%;
+  text-align: center;
+  display: block;
 }
 </style>
 

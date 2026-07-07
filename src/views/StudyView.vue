@@ -229,6 +229,78 @@
         </form>
       </div>
     </div>
+    <!-- Library Bookshelf -->
+    <div class="panel bookshelf-panel animate-in delay-300" style="margin-top: 24px;">
+      <h3 style="margin-bottom: 18px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
+        Library Bookshelf
+      </h3>
+      <div class="library-grid">
+        <div 
+          v-for="book in LIBRARY_BOOKS" 
+          :key="book.id" 
+          class="library-card"
+          @click="openReadingSetup(book)"
+        >
+          <div class="library-card-emoji">{{ book.emoji }}</div>
+          <div class="library-card-body">
+            <h4 class="library-book-title">{{ book.title }}</h4>
+            <p class="library-book-author">by {{ book.author }}</p>
+            <p class="library-book-desc">{{ book.description }}</p>
+          </div>
+          <button class="btn btn-primary btn-sm library-read-btn">
+            📖 Start Reading
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reading Timer Modal / Running Timer -->
+    <div class="modal-overlay" v-if="showReadingModal" @click.self="!isReadingActive && (showReadingModal = false)">
+      <div class="modal-content text-center" style="max-width: 400px; text-align: center;">
+        <div v-if="!isReadingActive">
+          <h3>📖 Read "{{ selectedLibBook?.title }}"</h3>
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
+            Set your target reading time for this session.
+          </p>
+          <div class="two-input" style="margin-bottom: 20px;">
+            <div class="form-group">
+              <label>Hours</label>
+              <input type="number" v-model.number="readingInputHours" min="0" max="10" placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label>Minutes</label>
+              <input type="number" v-model.number="readingInputMins" min="0" max="59" placeholder="30" />
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn btn-primary" style="flex: 1;" @click="startReadingSession">
+              Start Reading
+            </button>
+            <button type="button" class="btn btn-outline" @click="showReadingModal = false">Cancel</button>
+          </div>
+        </div>
+
+        <div v-else class="reading-active-session">
+          <div class="reading-emoji-pulse">📖</div>
+          <h3>Reading: {{ selectedLibBook?.title }}</h3>
+          <p class="reading-author">by {{ selectedLibBook?.author }}</p>
+          
+          <div class="timer-display" style="font-size: 56px; margin: 20px 0;">{{ formattedReadingTime }}</div>
+
+          <div class="timer-controls" style="margin-bottom: 20px; display: flex; justify-content: center;">
+            <button class="btn-timer play" @click="toggleReadingPause" style="background: var(--accent-purple); color: #fff;">
+              <svg v-if="isReadingPaused" viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <svg v-else viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+            </button>
+          </div>
+
+          <button type="button" class="btn btn-outline" style="width: 100%; border-color: rgba(239,68,68,0.4); color: #ef4444;" @click="stopReadingSessionEarly">
+            Stop Session & Save
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
 </template>
@@ -415,8 +487,94 @@ function closeBookModal() {
   showBookModal.value = false
 }
 
+const LIBRARY_BOOKS = [
+  { id: 'lib_1', title: 'Atomic Habits', author: 'James Clear', emoji: '🌱', description: 'Build good habits and break bad ones.' },
+  { id: 'lib_2', title: 'Clean Code', author: 'Robert C. Martin', emoji: '💻', description: 'A handbook of agile software craftsmanship.' },
+  { id: 'lib_3', title: 'Deep Work', author: 'Cal Newport', emoji: '🧠', description: 'Rules for focused success in a distracted world.' },
+  { id: 'lib_4', title: 'The Psychology of Money', author: 'Morgan Housel', emoji: '💰', description: 'Timeless lessons on wealth, greed, and happiness.' },
+  { id: 'lib_5', title: 'Refactoring', author: 'Martin Fowler', emoji: '🔨', description: 'Improving the design of existing code.' },
+  { id: 'lib_6', title: 'Start with Why', author: 'Simon Sinek', emoji: '🎯', description: 'How great leaders inspire everyone to take action.' }
+]
+
+const showReadingModal = ref(false)
+const selectedLibBook = ref(null)
+const readingInputMins = ref(30)
+const readingInputHours = ref(0)
+const isReadingActive = ref(false)
+const isReadingPaused = ref(false)
+const readingTimeRemaining = ref(0)
+const totalReadingSessionSecs = ref(0)
+let readingTimerId = null
+
+const formattedReadingTime = computed(() => {
+  const h = Math.floor(readingTimeRemaining.value / 3600).toString().padStart(2, '0')
+  const m = Math.floor((readingTimeRemaining.value % 3600) / 60).toString().padStart(2, '0')
+  const s = (readingTimeRemaining.value % 60).toString().padStart(2, '0')
+  return h !== '00' ? `${h}:${m}:${s}` : `${m}:${s}`
+})
+
+function openReadingSetup(book) {
+  selectedLibBook.value = book
+  readingInputMins.value = 30
+  readingInputHours.value = 0
+  showReadingModal.value = true
+  isReadingActive.value = false
+  isReadingPaused.value = false
+}
+
+function startReadingSession() {
+  const totalMins = (parseInt(readingInputHours.value) || 0) * 60 + (parseInt(readingInputMins.value) || 0)
+  if (totalMins <= 0) {
+    alert('Please enter a valid reading duration.')
+    return
+  }
+
+  totalReadingSessionSecs.value = totalMins * 60
+  readingTimeRemaining.value = totalMins * 60
+  isReadingActive.value = true
+  isReadingPaused.value = false
+
+  if (readingTimerId) clearInterval(readingTimerId)
+  readingTimerId = setInterval(() => {
+    if (!isReadingPaused.value) {
+      if (readingTimeRemaining.value > 0) {
+        readingTimeRemaining.value--
+      } else {
+        clearInterval(readingTimerId)
+        readingTimerId = null
+        isReadingActive.value = false
+        showReadingModal.value = false
+
+        store.addStudyMinutes(totalMins)
+        alert(`🎉 Congratulations! You completed your reading session for "${selectedLibBook.value.title}" of ${totalMins} minutes!`)
+      }
+    }
+  }, 1000)
+}
+
+function toggleReadingPause() {
+  isReadingPaused.value = !isReadingPaused.value
+}
+
+function stopReadingSessionEarly() {
+  if (confirm('Do you want to end your reading session early? The minutes you read so far will still be saved.')) {
+    if (readingTimerId) clearInterval(readingTimerId)
+    readingTimerId = null
+    isReadingActive.value = false
+    showReadingModal.value = false
+
+    const secondsRead = totalReadingSessionSecs.value - readingTimeRemaining.value
+    const minsRead = Math.floor(secondsRead / 60)
+    if (minsRead > 0) {
+      store.addStudyMinutes(minsRead)
+      alert(`Saved ${minsRead} minutes of reading for "${selectedLibBook.value.title}"!`)
+    }
+  }
+}
+
 onUnmounted(() => {
   if (timerId) clearInterval(timerId)
+  if (readingTimerId) clearInterval(readingTimerId)
 })
 </script>
 
@@ -947,5 +1105,79 @@ onUnmounted(() => {
   color: var(--text-heading);
   margin-top: 0;
   margin-bottom: 20px;
+}
+/* ── Library Bookshelf Styling ── */
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+.library-card {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+.library-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-purple);
+}
+.library-card-emoji {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+.library-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+.library-book-title {
+  font-size: 14px;
+  font-weight: 750;
+  color: var(--text-primary);
+  margin: 0;
+}
+.library-book-author {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.library-book-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 6px 0 0;
+}
+.library-read-btn {
+  width: 100%;
+}
+
+/* Reading Active Session in modal */
+.reading-emoji-pulse {
+  font-size: 48px;
+  animation: readingEmojiFloat 2s infinite ease-in-out;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+@keyframes readingEmojiFloat {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px) scale(1.05); }
+  100% { transform: translateY(0); }
+}
+.reading-author {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  margin-bottom: 0;
 }
 </style>
