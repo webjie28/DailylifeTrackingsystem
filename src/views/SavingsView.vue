@@ -104,7 +104,10 @@
           </div>
           <div class="form-group">
             <label>Notes (Optional)</label>
-            <input type="text" v-model="contribNote" placeholder="e.g. Spare cash from weekly budget" />
+            <input type="text" v-model="contribNote" list="contribNoteList" placeholder="e.g. Spare cash from weekly budget" />
+            <datalist id="contribNoteList">
+              <option v-for="n in uniqueContribNotes" :key="n" :value="n"></option>
+            </datalist>
           </div>
           <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
             Log Contribution
@@ -151,7 +154,10 @@
         <form @submit.prevent="createGoal">
           <div class="form-group">
             <label>Goal Name</label>
-            <input type="text" v-model="goalName" placeholder="e.g. New Laptop, Japan Travel" required />
+            <input type="text" v-model="goalName" list="goalNameList" placeholder="e.g. New Laptop, Japan Travel" required />
+            <datalist id="goalNameList">
+              <option v-for="gName in uniqueGoalNames" :key="gName" :value="gName"></option>
+            </datalist>
           </div>
           <div class="form-group">
             <label>Target Amount (₱)</label>
@@ -186,7 +192,7 @@
           </div>
           <div class="form-group">
             <label>Note (Optional)</label>
-            <input type="text" v-model="modalContribNote" placeholder="e.g. Bonus, savings envelope" />
+            <input type="text" v-model="modalContribNote" list="contribNoteList" placeholder="e.g. Bonus, savings envelope" />
           </div>
           <div style="display: flex; gap: 10px; margin-top: 20px;">
             <button type="submit" class="btn btn-primary" style="flex: 1;">Log Savings</button>
@@ -207,6 +213,16 @@ const store = useAppStore()
 // Modals display flags
 const showAddGoalModal = ref(false)
 const showAddContribModal = ref(false)
+
+const uniqueGoalNames = computed(() => {
+  const list = store.savingsGoals || []
+  return Array.from(new Set(list.map(g => g.name?.trim()).filter(Boolean)))
+})
+
+const uniqueContribNotes = computed(() => {
+  const list = store.savingsContributions || []
+  return Array.from(new Set(list.map(c => c.note?.trim()).filter(Boolean)))
+})
 
 // Create Goal inputs
 const goalName = ref('')

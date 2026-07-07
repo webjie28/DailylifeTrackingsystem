@@ -80,7 +80,10 @@
         <form @submit.prevent="saveTransaction">
           <div class="form-group">
             <label>Description</label>
-            <input type="text" v-model="txDesc" placeholder="e.g. Starbucks, Salary" required />
+            <input type="text" v-model="txDesc" list="txDescList" placeholder="e.g. Starbucks, Salary" required />
+            <datalist id="txDescList">
+              <option v-for="d in uniqueDescriptions" :key="d" :value="d"></option>
+            </datalist>
           </div>
 
           <div class="two-input">
@@ -105,7 +108,10 @@
 
           <div class="form-group">
             <label>Note (Optional)</label>
-            <input type="text" v-model="txNote" placeholder="e.g. Lunch with friends" />
+            <input type="text" v-model="txNote" list="txNoteList" placeholder="e.g. Lunch with friends" />
+            <datalist id="txNoteList">
+              <option v-for="n in uniqueNotes" :key="n" :value="n"></option>
+            </datalist>
           </div>
 
           <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -352,6 +358,16 @@ const availableCategories = computed(() => {
 // Auto select default category when type toggles
 watch(txType, (newType) => {
   txCategory.value = newType === 'income' ? 'Salary' : 'Food'
+})
+
+const uniqueDescriptions = computed(() => {
+  const list = store.financeTransactions || []
+  return Array.from(new Set(list.map(t => t.description?.trim()).filter(Boolean)))
+})
+
+const uniqueNotes = computed(() => {
+  const list = store.financeTransactions || []
+  return Array.from(new Set(list.map(t => t.note?.trim()).filter(Boolean)))
 })
 
 // Financial metrics

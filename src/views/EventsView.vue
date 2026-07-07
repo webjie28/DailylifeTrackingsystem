@@ -36,7 +36,10 @@
         <form @submit.prevent="saveEvent">
           <div class="form-group">
             <label>Event Title</label>
-            <input type="text" v-model="eventTitle" placeholder="e.g. Gym Assessment, Coding Exam" required />
+            <input type="text" v-model="eventTitle" list="eventTitleList" placeholder="e.g. Gym Assessment, Coding Exam" required />
+            <datalist id="eventTitleList">
+              <option v-for="t in uniqueEventTitles" :key="t" :value="t"></option>
+            </datalist>
           </div>
 
           <div class="two-input">
@@ -146,6 +149,11 @@ const eventCategory = ref('Personal')
 const editingEventId = ref(null)
 
 const activeTab = ref('all')
+
+const uniqueEventTitles = computed(() => {
+  const list = store.eventsList || []
+  return Array.from(new Set(list.map(e => e.title?.trim()).filter(Boolean)))
+})
 
 const upcomingEventsCount = computed(() => {
   return store.eventsList.filter(e => !isEventPassed(e)).length
