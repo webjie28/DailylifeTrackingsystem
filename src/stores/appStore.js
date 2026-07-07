@@ -165,6 +165,7 @@ export const useAppStore = defineStore('app', {
       studyBooksList,
       studySessionNotes: localStorage.getItem('studySessionNotes') || '',
       studyTotalTime: parseInt(localStorage.getItem('studyTotalTime') || '0'),
+      readingLogs: JSON.parse(localStorage.getItem('readingLogs') || '[]'),
       
       waterIntakeLog,
       waterDailyTarget: parseInt(localStorage.getItem('waterDailyTarget') || '2000'),
@@ -514,6 +515,16 @@ export const useAppStore = defineStore('app', {
     saveStudyNotes(notes) {
       this.studySessionNotes = notes
       localStorage.setItem('studySessionNotes', notes)
+    },
+    addReadingLog(log) {
+      // log: { bookId, bookTitle, minsRead, pageNumber, totalPages, date }
+      this.readingLogs.unshift(log)
+      if (this.readingLogs.length > 100) this.readingLogs = this.readingLogs.slice(0, 100)
+      localStorage.setItem('readingLogs', JSON.stringify(this.readingLogs))
+    },
+    clearReadingLogs() {
+      this.readingLogs = []
+      localStorage.removeItem('readingLogs')
     },
 
     // ── Water Intake ──────────────────────────────────────

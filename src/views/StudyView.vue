@@ -75,36 +75,34 @@
       </div>
     </div>
 
-    <div class="two-col animate-in delay-200">
-      <!-- Left Column: Pomodoro Timer and Session Notes -->
-      <div class="left-col">
-        <!-- Pomodoro Timer Panel -->
-        <div class="panel timer-panel" style="text-align: center;">
-          <div class="timer-mode-badge-wrap">
-            <span 
-              class="timer-mode-badge"
-              :class="{ 'break-mode': isBreak, 'focus-mode': !isBreak }"
-            >
-              {{ isBreak ? 'Break Time' : 'Focus Session' }}
-            </span>
+    <!-- Library Bookshelf — top section -->
+    <div class="panel bookshelf-panel animate-in delay-150" style="margin-bottom: 24px;">
+      <h3 style="margin-bottom: 18px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
+        Library Bookshelf
+        <span style="font-size: 12px; font-weight: 400; color: var(--text-muted); margin-left: 8px;">({{ LIBRARY_BOOKS.length }} books — click to read)</span>
+      </h3>
+      <div class="library-grid">
+        <div
+          v-for="book in LIBRARY_BOOKS"
+          :key="book.id"
+          class="library-card"
+          @click="openReadingSetup(book)"
+        >
+          <div class="library-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           </div>
-          
-          <div class="timer-display">{{ formattedTime }}</div>
-
-          <div class="timer-controls">
-            <button class="btn-timer play" @click="toggleTimer">
-              <svg v-if="!isRunning" viewBox="0 0 24 24" fill="currentColor" width="26" height="26"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <svg v-else viewBox="0 0 24 24" fill="currentColor" width="26" height="26"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            </button>
-            <button class="btn-timer reset" @click="resetTimer">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-            </button>
+          <div class="library-card-body">
+            <h4 class="library-book-title">{{ book.title }}</h4>
+            <span class="library-book-genre">{{ book.genre }}</span>
           </div>
-          <p class="timer-hint">
-            Focus for 25 minutes, followed by a 5-minute break.
-          </p>
         </div>
+      </div>
+    </div>
 
+    <div class="two-col animate-in delay-200">
+      <!-- Left Column: Session Notes + Reading Log -->
+      <div class="left-col">
         <!-- Session Notes Panel -->
         <div class="panel">
           <h3>
@@ -112,10 +110,10 @@
             Study Session Notes
           </h3>
           <div class="form-group" style="margin-bottom: 0;">
-            <textarea 
-              v-model="sessionNotes" 
+            <textarea
+              v-model="sessionNotes"
               @input="saveNotes"
-              class="notes-textarea" 
+              class="notes-textarea"
               placeholder="Jot down formulas, ideas, summaries, or homework to-dos from your study session..."
             ></textarea>
           </div>
@@ -229,26 +227,28 @@
         </form>
       </div>
     </div>
-    <!-- Library Bookshelf -->
-    <div class="panel bookshelf-panel animate-in delay-300" style="margin-top: 24px;">
-      <h3 style="margin-bottom: 18px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
-        Library Bookshelf
-        <span style="font-size: 12px; font-weight: 400; color: var(--text-muted); margin-left: 8px;">({{ LIBRARY_BOOKS.length }} books)</span>
-      </h3>
-      <div class="library-grid">
-        <div 
-          v-for="book in LIBRARY_BOOKS" 
-          :key="book.id" 
-          class="library-card"
-          @click="openReadingSetup(book)"
-        >
-          <div class="library-card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    <!-- Reading History Log -->
+    <div class="panel reading-log-panel animate-in delay-400" style="margin-top: 24px;" v-if="store.readingLogs.length > 0">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+        <h3 style="margin: 0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Reading History
+        </h3>
+        <button class="btn-action-sm btn-action-danger" @click="store.clearReadingLogs()" style="font-size: 11px;">Clear All</button>
+      </div>
+      <div class="reading-log-list">
+        <div v-for="(log, idx) in store.readingLogs" :key="idx" class="reading-log-item">
+          <div class="reading-log-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           </div>
-          <div class="library-card-body">
-            <h4 class="library-book-title">{{ book.title }}</h4>
-            <span class="library-book-genre">{{ book.genre }}</span>
+          <div class="reading-log-body">
+            <div class="reading-log-title">{{ log.bookTitle }}</div>
+            <div class="reading-log-meta">
+              Stopped at page <strong>{{ log.pageNumber }}</strong>
+              <span v-if="log.totalPages"> of ~{{ log.totalPages }}</span>
+              &nbsp;·&nbsp; {{ log.minsRead }} min{{ log.minsRead !== 1 ? 's' : '' }} read
+              &nbsp;·&nbsp; {{ log.date }}
+            </div>
           </div>
         </div>
       </div>
@@ -631,8 +631,21 @@ function startReadingSession() {
         isReadingActive.value = false
         showReadingModal.value = false
 
+        // Add to global total study time
         store.addStudyMinutes(totalMins)
-        alert(`🎉 Congratulations! You completed your reading session for "${selectedLibBook.value.title}" of ${totalMins} minutes!`)
+
+        // Record reading log
+        const logObj = {
+          bookId: selectedLibBook.value.id,
+          bookTitle: selectedLibBook.value.title,
+          minsRead: totalMins,
+          pageNumber: currentPage.value,
+          totalPages: totalPages.value,
+          date: new Date().toLocaleString()
+        }
+        store.addReadingLog(logObj)
+
+        alert(`🎉 Congratulations! You completed your reading session for "${selectedLibBook.value.title}" of ${totalMins} minutes! Stopped at page ${currentPage.value}.`)
       }
     }
   }, 1000)
@@ -651,10 +664,23 @@ function stopReadingSessionEarly() {
 
     const secondsRead = totalReadingSessionSecs.value - readingTimeRemaining.value
     const minsRead = Math.floor(secondsRead / 60)
-    if (minsRead > 0) {
-      store.addStudyMinutes(minsRead)
-      alert(`Saved ${minsRead} minutes of reading for "${selectedLibBook.value.title}"!`)
+    
+    // Even if minsRead is 0, we still record the page where they stopped
+    const actualMinsToSave = Math.max(1, minsRead) 
+    
+    store.addStudyMinutes(actualMinsToSave)
+    
+    const logObj = {
+      bookId: selectedLibBook.value.id,
+      bookTitle: selectedLibBook.value.title,
+      minsRead: actualMinsToSave,
+      pageNumber: currentPage.value,
+      totalPages: totalPages.value,
+      date: new Date().toLocaleString()
     }
+    store.addReadingLog(logObj)
+
+    alert(`Saved ${actualMinsToSave} minutes of reading for "${selectedLibBook.value.title}"! Stopped at page ${currentPage.value}.`)
   }
 }
 
