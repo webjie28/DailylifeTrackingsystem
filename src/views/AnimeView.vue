@@ -313,9 +313,18 @@ function editAnime(id) {
 }
 
 function deleteAnime(id) {
-  if (!confirm('Remove this anime from your watchlist?')) return
-  store.deleteAnime(id)
-  if (editingId.value === id) closeModal()
+  const item = store.animeWatchlist.find(a => a && a.id === id)
+  const title = item ? item.title : 'this entry'
+  
+  store.showConfirm({
+    title: 'Remove Watchlist Entry?',
+    message: `Are you sure you want to remove "${title}" from your watchlist?`,
+    confirmText: 'Remove',
+    onConfirm: () => {
+      store.deleteAnime(id)
+      if (editingId.value === id) closeModal()
+    }
+  })
 }
 
 function incrementEpisode(anime) {

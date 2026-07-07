@@ -37,6 +37,29 @@
         </div>
       </main>
     </div>
+
+    <!-- Global Confirmation Modal Dialog -->
+    <div class="modal-overlay" v-if="store.confirmDialog.show" @click.self="store.confirmDialog.onCancel" style="z-index: 9999;">
+      <div class="modal-content" style="max-width: 420px; padding: 32px; text-align: center; border-radius: 24px; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: var(--shadow-2xl); animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(239, 68, 68, 0.12); color: #ef4444; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; font-size: 24px;">
+          ⚠️
+        </div>
+        <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 19px; font-weight: 750; color: var(--text-primary);">
+          {{ store.confirmDialog.title }}
+        </h3>
+        <p style="font-size: 13.5px; color: var(--text-muted); margin: 0 0 24px; line-height: 1.5;">
+          {{ store.confirmDialog.message }}
+        </p>
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn-outline" style="flex: 1; padding: 10px;" @click="store.confirmDialog.onCancel">
+            {{ store.confirmDialog.cancelText }}
+          </button>
+          <button class="btn" style="flex: 1; background: #ef4444; color: white; padding: 10px;" @click="store.confirmDialog.onConfirm">
+            {{ store.confirmDialog.confirmText }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 

@@ -179,7 +179,18 @@ export const useAppStore = defineStore('app', {
       colorAccent: localStorage.getItem('colorAccent') || 'orange',
       
       dailyStreak: parseInt(localStorage.getItem('dailyStreak') || '0'),
-      lastStreakDate: localStorage.getItem('lastStreakDate') || ''
+      lastStreakDate: localStorage.getItem('lastStreakDate') || '',
+      
+      // Global Confirmation Dialog
+      confirmDialog: {
+        show: false,
+        title: 'Are you sure?',
+        message: 'This action cannot be undone.',
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        onConfirm: null,
+        onCancel: null
+      }
     }
   },
   
@@ -525,6 +536,23 @@ export const useAppStore = defineStore('app', {
     clearReadingLogs() {
       this.readingLogs = []
       localStorage.removeItem('readingLogs')
+    },
+    showConfirm(options) {
+      this.confirmDialog = {
+        show: true,
+        title: options.title || 'Are you sure?',
+        message: options.message || 'This action cannot be undone.',
+        confirmText: options.confirmText || 'Confirm',
+        cancelText: options.cancelText || 'Cancel',
+        onConfirm: () => {
+          if (options.onConfirm) options.onConfirm()
+          this.confirmDialog.show = false
+        },
+        onCancel: () => {
+          if (options.onCancel) options.onCancel()
+          this.confirmDialog.show = false
+        }
+      }
     },
 
     // ── Water Intake ──────────────────────────────────────

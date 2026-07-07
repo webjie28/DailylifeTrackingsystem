@@ -461,9 +461,18 @@ function editTransaction(id) {
 }
 
 function deleteTransaction(id) {
-  if (!confirm('Delete this transaction?')) return
-  store.deleteTransaction(id)
-  if (editingId.value === id) cancelEdit()
+  const tx = store.financeTransactions.find(t => t.id === id)
+  const desc = tx ? tx.description : 'this transaction'
+  
+  store.showConfirm({
+    title: 'Delete Transaction?',
+    message: `Are you sure you want to delete "${desc}"?`,
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteTransaction(id)
+      if (editingId.value === id) cancelEdit()
+    }
+  })
 }
 
 function cancelEdit() {
@@ -479,9 +488,15 @@ function resetForm() {
 }
 
 function clearAll() {
-  if (!confirm('Clear ALL transactions? This cannot be undone.')) return
-  store.financeTransactions = []
-  localStorage.setItem('financeTransactions', '[]')
+  store.showConfirm({
+    title: 'Clear All History?',
+    message: 'Are you sure you want to clear ALL transactions? This cannot be undone.',
+    confirmText: 'Clear All',
+    onConfirm: () => {
+      store.financeTransactions = []
+      localStorage.setItem('financeTransactions', '[]')
+    }
+  })
   cancelEdit()
 }
 
