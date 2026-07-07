@@ -148,27 +148,30 @@
           </div>
         </router-link>
 
-        <!-- Savings -->
-        <router-link to="/savings" class="stat-pastel-card">
-          <div class="stat-card-left">
-            <div class="stat-pastel-label">Total Savings</div>
-            <div class="stat-pastel-value">₱{{ store.totalSavings.toLocaleString() }}</div>
-            <span class="trend-pill" :class="savingsGoalsPercent > 0 ? 'success' : 'neutral'">
-              {{ savingsGoalsPercent > 0 ? savingsGoalsPercent + '% of target' : 'No active targets' }}
-            </span>
+        <!-- Recommended Book (Replaces Total Savings card in status row) -->
+        <router-link to="/study" class="stat-pastel-card">
+          <div class="stat-card-left" style="max-width: 70%;">
+            <div class="stat-pastel-label">Recommended Book</div>
+            <div class="stat-pastel-value" style="font-size: 18px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;" :title="recommendedBook ? recommendedBook.title : 'No Books'">
+              {{ recommendedBook ? recommendedBook.title : 'Read a Book!' }}
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+              <span class="trend-pill success" style="margin-top: 0; font-size: 10px; padding: 2px 6px;">
+                {{ recommendedBook ? recommendedBook.genre : 'Empty list' }}
+              </span>
+              <button 
+                class="shuffle-recommend-btn"
+                @click.prevent="shuffleBookRecommend"
+                title="Shuffle book recommendation"
+              >
+                🎲 Shuffle
+              </button>
+            </div>
           </div>
           <div class="stat-card-right">
-            <div class="mini-ring-wrap" style="--ring-color: #3b82f6;">
-              <svg viewBox="0 0 36 36" class="mini-ring-svg">
-                <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
-                <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, savingsGoalsPercent)" stroke-width="3"></circle>
-              </svg>
-              <div class="mini-ring-icon-center">
-                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <circle cx="12" cy="12" r="6"/>
-                  <circle cx="12" cy="12" r="2"/>
-                </svg>
+            <div class="mini-ring-wrap" style="--ring-color: #8b5cf6;">
+              <div class="mini-ring-icon-center" style="position: static; width: auto; height: auto;">
+                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
               </div>
             </div>
           </div>
@@ -204,7 +207,7 @@
       </article>
     </section>
 
-    <!-- Permanent 30-Day Fitness Charts Row -->
+    <!-- Permanent 30-Day Fitness & Savings Charts Row -->
     <section class="animate-in delay-300" style="margin-bottom: 36px;">
       <div class="charts-row">
         <div class="panel chart-panel">
@@ -221,37 +224,12 @@
           </h3>
           <div class="chart-wrap" style="position: relative; height: 260px; width: 100%;"><canvas ref="gymChartCanvas"></canvas></div>
         </div>
-      </div>
-    </section>
-
-    <!-- Recommended Books for Today -->
-    <section class="animate-in delay-350" style="margin-bottom: 36px;">
-      <div class="panel" style="padding: 24px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
-          <h3 style="margin: 0; display: flex; align-items: center;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" style="vertical-align: middle; margin-right: 10px; color: var(--accent-purple);"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
-            Recommended Books for Today
+        <div class="panel chart-panel">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon" style="vertical-align: middle; margin-right: 8px; color: #22c55e;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Savings Goals Progress
           </h3>
-          <router-link to="/study" class="btn btn-primary btn-sm">
-            📖 Go to Study Hub
-          </router-link>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
-          <div v-for="book in RECOMMENDED_BOOKS" :key="book.title" 
-               style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px;">
-            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(var(--accent-purple-rgb, 139,92,246), 0.1); color: var(--accent-purple); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
-              📖
-            </div>
-            <div style="min-width: 0; flex: 1;">
-              <h4 style="margin: 0; font-size: 13.5px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                {{ book.title }}
-              </h4>
-              <p style="margin: 2px 0 0; font-size: 11px; color: var(--text-muted);">
-                by {{ book.author }} · <span style="font-weight: 500;">{{ book.genre }}</span>
-              </p>
-            </div>
-          </div>
+          <div class="chart-wrap" style="position: relative; height: 260px; width: 100%;"><canvas ref="savingsChartCanvas"></canvas></div>
         </div>
       </div>
     </section>
@@ -264,15 +242,33 @@ import Header from '../components/Header.vue'
 import { useAppStore } from '../stores/appStore'
 import Chart from 'chart.js/auto'
 
+import { LIBRARY_BOOKS } from '../services/libraryBooks'
+
 const store = useAppStore()
 
-const RECOMMENDED_BOOKS = [
-  { title: 'Frankenstein', author: 'Mary Shelley', genre: 'Gothic Horror' },
-  { title: 'The Adventures of Sherlock Holmes', author: 'Arthur Conan Doyle', genre: 'Mystery' },
-  { title: 'Pride and Prejudice', author: 'Jane Austen', genre: 'Romance' },
-  { title: 'Dracula', author: 'Bram Stoker', genre: 'Horror' },
-  { title: 'Moby Dick', author: 'Herman Melville', genre: 'Adventure' }
-]
+// Book Recommendation Logic
+const recommendBookId = ref(localStorage.getItem('dailyBookRecommendId') || '')
+
+const recommendedBook = computed(() => {
+  if (!LIBRARY_BOOKS || LIBRARY_BOOKS.length === 0) return null
+  let current = LIBRARY_BOOKS.find(b => b.id === recommendBookId.value)
+  if (!current) {
+    const randomIdx = Math.floor(Math.random() * LIBRARY_BOOKS.length)
+    current = LIBRARY_BOOKS[randomIdx]
+    recommendBookId.value = current.id
+    localStorage.setItem('dailyBookRecommendId', current.id)
+  }
+  return current
+})
+
+function shuffleBookRecommend() {
+  if (!LIBRARY_BOOKS || LIBRARY_BOOKS.length <= 1) return
+  const filteredList = LIBRARY_BOOKS.filter(b => b.id !== recommendBookId.value)
+  const randomIdx = Math.floor(Math.random() * filteredList.length)
+  const nextBook = filteredList[randomIdx]
+  recommendBookId.value = nextBook.id
+  localStorage.setItem('dailyBookRecommendId', nextBook.id)
+}
 
 const calGoalPercent = computed(() => {
   const target = 500 // Active calorie burn target
@@ -474,9 +470,11 @@ const activeChart = ref('steps')
 const chartCanvas = ref(null)
 const stepsChartCanvas = ref(null)
 const gymChartCanvas = ref(null)
+const savingsChartCanvas = ref(null)
 let chartInstance = null
 let stepsChartInstance = null
 let gymChartInstance = null
+let savingsChartInstance = null
 
 const tabs = [
   { key: 'steps', label: 'Steps Trend' },
@@ -910,10 +908,63 @@ function renderGymChart() {
   })
 }
 
+function renderSavingsChart() {
+  if (!savingsChartCanvas.value) return
+  if (savingsChartInstance) {
+    savingsChartInstance.destroy()
+  }
+
+  const ctx = savingsChartCanvas.value.getContext('2d')
+  const labels = store.savingsGoals.map(g => g.name || 'Unnamed')
+  const currentValues = store.savingsGoals.map(g => {
+    return store.savingsContributions
+      .filter(c => c.goalId === g.id)
+      .reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0)
+  })
+  const targetValues = store.savingsGoals.map(g => parseFloat(g.target) || 0)
+
+  savingsChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Current Saved (₱)',
+          data: currentValues,
+          backgroundColor: 'rgba(34, 197, 94, 0.85)',
+          borderColor: '#22c55e',
+          borderWidth: 1,
+          borderRadius: 6
+        },
+        {
+          label: 'Target Goal (₱)',
+          data: targetValues,
+          backgroundColor: 'rgba(148, 163, 184, 0.15)',
+          borderColor: '#cbd5e1',
+          borderWidth: 1,
+          borderRadius: 6
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.1)' } }
+      }
+    }
+  })
+}
+
 onMounted(() => {
   renderChart()
   renderStepsChart()
   renderGymChart()
+  renderSavingsChart()
   runPythonAnalytics()
 })
 
@@ -931,6 +982,7 @@ watch(
     renderChart()
     renderStepsChart()
     renderGymChart()
+    renderSavingsChart()
   },
   { deep: true }
 )
@@ -1390,14 +1442,9 @@ watch(
 /* ── Permanent Charts Grid & Glass Panels ── */
 .charts-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
     gap: 24px;
     margin-bottom: 28px;
-}
-@media (max-width: 900px) {
-    .charts-row {
-        grid-template-columns: 1fr;
-    }
 }
 .chart-panel {
     background: var(--glass-bg, rgba(255,255,255,0.18)) !important;
