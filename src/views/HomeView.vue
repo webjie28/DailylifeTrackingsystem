@@ -224,26 +224,33 @@
       </div>
     </section>
 
-    <!-- Recommended Books for You -->
+    <!-- Recommended Books for Today -->
     <section class="animate-in delay-350" style="margin-bottom: 36px;">
       <div class="panel" style="padding: 24px;">
-        <h3 style="margin-bottom: 18px; display: flex; align-items: center;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: middle; margin-right: 8px; opacity: 0.7;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
-          Recommended Reading List
-        </h3>
-        <div class="recommended-books-grid">
-          <div v-for="book in RECOMMENDED_BOOKS" :key="book.title" class="rec-book-card">
-            <div class="rec-book-header-row">
-              <span class="rec-book-icon">📖</span>
-              <div>
-                <h4 class="rec-book-title">{{ book.title }}</h4>
-                <p class="rec-book-author">by {{ book.author }}</p>
-              </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 20px;">
+          <h3 style="margin: 0; display: flex; align-items: center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20" style="vertical-align: middle; margin-right: 10px; color: var(--accent-purple);"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
+            Recommended Books for Today
+          </h3>
+          <router-link to="/study" class="btn btn-primary btn-sm">
+            📖 Go to Study Hub
+          </router-link>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+          <div v-for="book in RECOMMENDED_BOOKS" :key="book.title" 
+               style="background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px;">
+            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(var(--accent-purple-rgb, 139,92,246), 0.1); color: var(--accent-purple); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
+              📖
             </div>
-            <p class="rec-book-genre">Genre: {{ book.genre }}</p>
-            <router-link to="/study" class="btn btn-primary btn-sm rec-book-btn" style="margin-top: auto;">
-              Go to Study Hub
-            </router-link>
+            <div style="min-width: 0; flex: 1;">
+              <h4 style="margin: 0; font-size: 13.5px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                {{ book.title }}
+              </h4>
+              <p style="margin: 2px 0 0; font-size: 11px; color: var(--text-muted);">
+                by {{ book.author }} · <span style="font-weight: 500;">{{ book.genre }}</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -260,10 +267,11 @@ import Chart from 'chart.js/auto'
 const store = useAppStore()
 
 const RECOMMENDED_BOOKS = [
-  { title: 'Atomic Habits', author: 'James Clear', genre: 'Self-Improvement' },
-  { title: 'Deep Work', author: 'Cal Newport', genre: 'Productivity' },
-  { title: 'Clean Code', author: 'Robert C. Martin', genre: 'Software Engineering' },
-  { title: 'The Psychology of Money', author: 'Morgan Housel', genre: 'Finance & Wealth' }
+  { title: 'Frankenstein', author: 'Mary Shelley', genre: 'Gothic Horror' },
+  { title: 'The Adventures of Sherlock Holmes', author: 'Arthur Conan Doyle', genre: 'Mystery' },
+  { title: 'Pride and Prejudice', author: 'Jane Austen', genre: 'Romance' },
+  { title: 'Dracula', author: 'Bram Stoker', genre: 'Horror' },
+  { title: 'Moby Dick', author: 'Herman Melville', genre: 'Adventure' }
 ]
 
 const calGoalPercent = computed(() => {
