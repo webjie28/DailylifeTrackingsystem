@@ -48,7 +48,7 @@
                 </td>
                 <td class="log-note-td" :title="log.note">{{ log.note || '—' }}</td>
                 <td>
-                  <button class="btn-del-log" @click="store.deleteWorkLog(log.id)">✕</button>
+                  <button class="btn-del-log" @click="confirmDeleteWorkLog(log)">✕</button>
                 </td>
               </tr>
             </tbody>
@@ -418,6 +418,18 @@ function shuffleRecommend() {
   const nextShow = filteredList[randomIdx]
   recommendShowId.value = nextShow.id
   localStorage.setItem('dailyShowRecommendId', nextShow.id)
+}
+
+function confirmDeleteWorkLog(log) {
+  const logLabel = log.date || 'this work session'
+  store.showConfirm({
+    title: 'Delete Work Log?',
+    message: `Are you sure you want to delete the work log for "${logLabel}"?`,
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteWorkLog(log.id)
+    }
+  })
 }
 
 function getPunctualityStatus(clockInIso) {
