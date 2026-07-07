@@ -522,7 +522,7 @@ function renderCharts() {
         labels: labels,
         datasets: [{
           data: values,
-          backgroundColor: ['#7c3aed', '#22c55e', '#f97316', '#3b82f6', '#ec4899', '#14b8a6', '#eab308'],
+          backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--accent-purple').trim() || '#334155', '#22c55e', '#f97316', '#3b82f6', '#ec4899', '#14b8a6', '#eab308'],
           borderWidth: 0
         }]
       },
@@ -989,7 +989,7 @@ function saveScannedTransaction() {
   font-family: inherit;
 }
 .form-group input:focus, .form-group select:focus {
-  border-color: #7c3aed;
+  border-color: var(--accent-purple);
 }
 .two-input {
   display: grid;
@@ -1118,11 +1118,11 @@ function saveScannedTransaction() {
   transition: all 0.2s;
 }
 .btn-primary {
-  background: #7c3aed;
+  background: var(--accent-purple);
   color: #fff;
 }
 .btn-primary:hover {
-  background: #5b21b6;
+  background: var(--accent-purple-hover);
 }
 .btn-outline {
   background: var(--bg-card);

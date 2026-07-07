@@ -212,7 +212,7 @@
         <div class="settings-section" v-if="!store.isSidebarCollapsed">
           <span class="settings-hdr">Theme Options</span>
           
-          <!-- Segmented Control for 3 Themes -->
+          <!-- Segmented Control for 3 Themes (Color Picker circles) -->
           <div class="mode-toggle-row">
             <div class="mode-segmented-control-three">
               <button 
@@ -222,7 +222,7 @@
                 @click="store.setTheme('light')"
                 title="White Mode"
               >
-                <span>White</span>
+                <span class="color-dot light-dot"></span>
               </button>
               <button 
                 type="button" 
@@ -231,7 +231,7 @@
                 @click="store.setTheme('navy')"
                 title="Dark Blue Mode"
               >
-                <span>DarkBlue</span>
+                <span class="color-dot navy-dot"></span>
               </button>
               <button 
                 type="button" 
@@ -240,7 +240,7 @@
                 @click="store.setTheme('dark')"
                 title="Dark Mode"
               >
-                <span>Dark</span>
+                <span class="color-dot dark-dot"></span>
               </button>
             </div>
           </div>
@@ -512,9 +512,9 @@ async function handleLogout() {
 
 /* Active Navigation Menu Style (Matches the high fidelity preview image) */
 .nav-link.active {
-  background: var(--nav-active-bg, rgba(99, 102, 241, 0.08));
-  color: var(--nav-active-color, #6366f1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+  background: var(--nav-active-bg, #cbd5e1);
+  color: var(--nav-active-color, #0f172a);
+  box-shadow: none;
 }
 
 /* ── Collapsed Sidebar Tooltips ────────────────────────── */
@@ -614,11 +614,12 @@ async function handleLogout() {
 }
 .mode-segmented-control-three {
   display: flex;
-  background: var(--bg-subtle, rgba(0,0,0,0.03));
-  border-radius: 12px;
-  padding: 3px;
+  background: var(--bg-input-inset, rgba(0,0,0,0.03));
+  border-radius: 99px;
+  padding: 4px;
   border: 1px solid var(--border-color);
   width: 100%;
+  gap: 4px;
 }
 .mode-btn-three {
   flex: 1;
@@ -627,21 +628,43 @@ async function handleLogout() {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 4px;
-  border-radius: 9px;
-  color: var(--text-secondary);
+  padding: 8px 0;
+  border-radius: 99px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 11px;
-  font-weight: 700;
-}
-.mode-btn-three:hover {
-  color: var(--text-primary);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .mode-btn-three.active {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
+  background: var(--bg-card, #ffffff) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid var(--border-color-strong);
+}
+.color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+}
+.light-dot {
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+}
+.navy-dot {
+  background-color: #3b82f6;
+  border: 1px solid #1d4ed8;
+}
+.dark-dot {
+  background-color: #27272a;
+  border: 1px solid #52525b;
+}
+.mode-btn-three:hover .color-dot {
+  transform: scale(1.2);
+}
+.mode-btn-three.active .color-dot {
+  transform: scale(1.15);
+  outline: 1.5px solid var(--text-muted, #71717a);
+  outline-offset: 2px;
 }
 
 /* Collapsed Settings UI */

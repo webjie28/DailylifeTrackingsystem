@@ -8,14 +8,14 @@
         </p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-primary" @click="openAddModal">+ Add Anime</button>
+        <button class="btn btn-primary" @click="openAddModal">Add to Watchlist</button>
       </div>
     </div>
 
     <!-- Summary Stats -->
     <div class="stats-row">
       <div class="stat-card">
-        <div class="stat-label">Total Anime</div>
+        <div class="stat-label">Total Shows</div>
         <div class="stat-value purple">{{ (store.animeWatchlist || []).length }}</div>
       </div>
       <div class="stat-card">
@@ -74,7 +74,7 @@
             </div>
           </div>
 
-          <div class="anime-progress-row">
+          <div class="anime-progress-row" v-if="anime.format !== 'Movie'">
             <span class="progress-lbl">Progress:</span>
             <div class="episode-controls">
               <button 
@@ -97,7 +97,7 @@
             </div>
           </div>
 
-          <div class="goal-bar-wrap" style="margin-top: 10px; margin-bottom: 10px;">
+          <div class="goal-bar-wrap" style="margin-top: 10px; margin-bottom: 10px;" v-if="anime.format !== 'Movie'">
             <div class="goal-bar-fill" :style="{ width: calculateProgressPercentage(anime) + '%' }"></div>
           </div>
 
@@ -118,13 +118,13 @@
       <div class="modal-card">
         <button class="modal-close" @click="closeModal">×</button>
         <div class="modal-header">
-          <h3>{{ editingId ? 'Edit Anime' : 'Add New Anime' }}</h3>
+          <h3>{{ editingId ? 'Edit Entry' : 'Add New Entry' }}</h3>
         </div>
         <div class="modal-body">
           <form @submit.prevent="saveAnime">
             <div class="form-group">
-              <label>Anime Title</label>
-              <input type="text" v-model="animeTitle" placeholder="e.g. Demon Slayer" required />
+              <label>Title</label>
+              <input type="text" v-model="animeTitle" placeholder="e.g. Moneyball, Breaking Bad" required />
             </div>
 
             <div class="two-input">
@@ -134,6 +134,7 @@
                   <option value="TV">TV Series</option>
                   <option value="Movie">Movie</option>
                   <option value="OVA">OVA / Special</option>
+                  <option value="KDrama">KDrama</option>
                 </select>
               </div>
               <div class="form-group">
@@ -147,7 +148,7 @@
               </div>
             </div>
 
-            <div class="two-input">
+            <div class="two-input" v-if="animeFormat !== 'Movie'">
               <div class="form-group">
                 <label>Current Episode</label>
                 <input type="number" v-model.number="animeCurrentEpisode" min="0" placeholder="0" />
@@ -168,7 +169,7 @@
 
             <div style="display: flex; gap: 10px; margin-top: 20px;">
               <button type="submit" class="btn btn-primary" style="width: 100%;">
-                {{ editingId ? 'Update Anime' : 'Save Anime' }}
+                {{ editingId ? 'Update Entry' : 'Save Entry' }}
               </button>
             </div>
           </form>
@@ -253,13 +254,19 @@ function formatStatusLabel(s) {
 // CRUD
 function saveAnime() {
   if (!animeTitle.value.trim()) {
-    alert('Please enter an anime title.')
+    alert('Please enter a title.')
     return
   }
 
-  const total = parseInt(animeTotalEpisodes.value) || 0
+  let total = parseInt(animeTotalEpisodes.value) || 0
   let current = parseInt(animeCurrentEpisode.value) || 0
-  if (total > 0 && current > total) current = total
+
+  if (animeFormat.value === 'Movie') {
+    total = 1
+    current = animeStatus.value === 'completed' ? 1 : 0
+  } else {
+    if (total > 0 && current > total) current = total
+  }
 
   // Auto set status to completed if episodes reach max
   let status = animeStatus.value
@@ -399,7 +406,7 @@ function resetForm() {
   color: var(--text-primary);
 }
 .stat-value.purple {
-  color: #7c3aed;
+  color: var(--accent-purple);
 }
 .stat-value.orange {
   color: #f97316;
@@ -440,7 +447,7 @@ function resetForm() {
   font-family: inherit;
 }
 .form-group input:focus, .form-group select:focus {
-  border-color: #7c3aed;
+  border-color: var(--accent-purple);
 }
 .two-input {
   display: grid;
@@ -468,8 +475,8 @@ function resetForm() {
   transition: all 0.2s;
 }
 .tab-btn.active {
-  background: var(--bg-card);
-  color: #7c3aed;
+  background: var(--nav-active-bg);
+  color: var(--nav-active-color);
   box-shadow: var(--shadow-sm);
 }
 
@@ -515,8 +522,8 @@ function resetForm() {
 .format-badge {
   font-size: 10px;
   font-weight: 700;
-  background: rgba(124, 58, 237, 0.1);
-  color: #7c3aed;
+  background: var(--accent-purple-light);
+  color: var(--accent-purple);
   padding: 2px 6px;
   border-radius: 6px;
 }
@@ -557,9 +564,9 @@ function resetForm() {
   transition: all 0.2s;
 }
 .ep-btn:hover:not(:disabled) {
-  background: #7c3aed;
+  background: var(--accent-purple-hover);
   color: #fff;
-  border-color: #7c3aed;
+  border-color: var(--accent-purple-hover);
 }
 .ep-btn:disabled {
   opacity: 0.5;
@@ -580,7 +587,7 @@ function resetForm() {
 .goal-bar-fill {
   height: 100%;
   border-radius: 99px;
-  background: linear-gradient(90deg, #7c3aed, #22c55e);
+  background: linear-gradient(90deg, var(--accent-purple), #22c55e);
 }
 
 .anime-card-footer {
@@ -608,8 +615,8 @@ function resetForm() {
   background: rgba(34, 197, 94, 0.1);
 }
 .status-indicator-badge.planning {
-  color: #7c3aed;
-  background: rgba(124, 58, 237, 0.1);
+  color: var(--accent-purple);
+  background: var(--accent-purple-light);
 }
 .status-indicator-badge.dropped {
   color: #f87171;
@@ -639,11 +646,11 @@ function resetForm() {
   transition: all 0.2s;
 }
 .btn-primary {
-  background: #7c3aed;
+  background: var(--accent-purple);
   color: #fff;
 }
 .btn-primary:hover {
-  background: #5b21b6;
+  background: var(--accent-purple-hover);
 }
 .btn-outline {
   background: var(--bg-card);

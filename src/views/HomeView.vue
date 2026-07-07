@@ -148,27 +148,30 @@
           </div>
         </router-link>
 
-        <!-- Savings -->
-        <router-link to="/savings" class="stat-pastel-card">
-          <div class="stat-card-left">
-            <div class="stat-pastel-label">Total Savings</div>
-            <div class="stat-pastel-value">₱{{ store.totalSavings.toLocaleString() }}</div>
-            <span class="trend-pill" :class="savingsGoalsPercent > 0 ? 'success' : 'neutral'">
-              {{ savingsGoalsPercent > 0 ? savingsGoalsPercent + '% of target' : 'No active targets' }}
-            </span>
+        <!-- Recommended Book (Replaces Total Savings card in status row) -->
+        <router-link to="/study" class="stat-pastel-card">
+          <div class="stat-card-left" style="max-width: 70%;">
+            <div class="stat-pastel-label">Recommended Book</div>
+            <div class="stat-pastel-value" style="font-size: 18px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;" :title="recommendedBook ? recommendedBook.title : 'No Books'">
+              {{ recommendedBook ? recommendedBook.title : 'Read a Book!' }}
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+              <span class="trend-pill success" style="margin-top: 0; font-size: 10px; padding: 2px 6px;">
+                {{ recommendedBook ? recommendedBook.genre : 'Empty list' }}
+              </span>
+              <button 
+                class="shuffle-recommend-btn"
+                @click.prevent="shuffleBookRecommend"
+                title="Shuffle book recommendation"
+              >
+                🎲 Shuffle
+              </button>
+            </div>
           </div>
           <div class="stat-card-right">
-            <div class="mini-ring-wrap" style="--ring-color: #3b82f6;">
-              <svg viewBox="0 0 36 36" class="mini-ring-svg">
-                <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
-                <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, savingsGoalsPercent)" stroke-width="3"></circle>
-              </svg>
-              <div class="mini-ring-icon-center">
-                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <circle cx="12" cy="12" r="6"/>
-                  <circle cx="12" cy="12" r="2"/>
-                </svg>
+            <div class="mini-ring-wrap" style="--ring-color: #8b5cf6;">
+              <div class="mini-ring-icon-center" style="position: static; width: auto; height: auto;">
+                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
               </div>
             </div>
           </div>
@@ -204,7 +207,7 @@
       </article>
     </section>
 
-    <!-- Permanent 30-Day Fitness Charts Row -->
+    <!-- Permanent 30-Day Fitness & Savings Charts Row -->
     <section class="animate-in delay-300" style="margin-bottom: 36px;">
       <div class="charts-row">
         <div class="panel chart-panel">
@@ -221,6 +224,13 @@
           </h3>
           <div class="chart-wrap" style="position: relative; height: 260px; width: 100%;"><canvas ref="gymChartCanvas"></canvas></div>
         </div>
+        <div class="panel chart-panel">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon" style="vertical-align: middle; margin-right: 8px; color: #22c55e;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Savings Goals Progress
+          </h3>
+          <div class="chart-wrap" style="position: relative; height: 260px; width: 100%;"><canvas ref="savingsChartCanvas"></canvas></div>
+        </div>
       </div>
     </section>
   </div>
@@ -232,7 +242,33 @@ import Header from '../components/Header.vue'
 import { useAppStore } from '../stores/appStore'
 import Chart from 'chart.js/auto'
 
+import { LIBRARY_BOOKS } from '../services/libraryBooks'
+
 const store = useAppStore()
+
+// Book Recommendation Logic
+const recommendBookId = ref(localStorage.getItem('dailyBookRecommendId') || '')
+
+const recommendedBook = computed(() => {
+  if (!LIBRARY_BOOKS || LIBRARY_BOOKS.length === 0) return null
+  let current = LIBRARY_BOOKS.find(b => b.id === recommendBookId.value)
+  if (!current) {
+    const randomIdx = Math.floor(Math.random() * LIBRARY_BOOKS.length)
+    current = LIBRARY_BOOKS[randomIdx]
+    recommendBookId.value = current.id
+    localStorage.setItem('dailyBookRecommendId', current.id)
+  }
+  return current
+})
+
+function shuffleBookRecommend() {
+  if (!LIBRARY_BOOKS || LIBRARY_BOOKS.length <= 1) return
+  const filteredList = LIBRARY_BOOKS.filter(b => b.id !== recommendBookId.value)
+  const randomIdx = Math.floor(Math.random() * filteredList.length)
+  const nextBook = filteredList[randomIdx]
+  recommendBookId.value = nextBook.id
+  localStorage.setItem('dailyBookRecommendId', nextBook.id)
+}
 
 const calGoalPercent = computed(() => {
   const target = 500 // Active calorie burn target
@@ -434,9 +470,11 @@ const activeChart = ref('steps')
 const chartCanvas = ref(null)
 const stepsChartCanvas = ref(null)
 const gymChartCanvas = ref(null)
+const savingsChartCanvas = ref(null)
 let chartInstance = null
 let stepsChartInstance = null
 let gymChartInstance = null
+let savingsChartInstance = null
 
 const tabs = [
   { key: 'steps', label: 'Steps Trend' },
@@ -513,9 +551,7 @@ function renderChart() {
       goalLineData.push(targetSteps)
     }
     
-    // Fallback sample data if empty
-    const isEmpty = stepsData.every(v => v === 0)
-    const displaySteps = !isEmpty ? stepsData : [8400, 11200, 9500, 6200, 12000, 7800, 9100]
+    const displaySteps = stepsData
     
     chartInstance = new Chart(ctx, {
       type: 'bar',
@@ -576,16 +612,7 @@ function renderChart() {
       targetHoursData.push(targetHours)
     }
     
-    // Generate fallback sample 30-day workload if empty
-    const isEmpty = hoursData.every(v => v === 0)
     let displayHours = hoursData
-    if (isEmpty) {
-      displayHours = Array.from({ length: 30 }, (_, i) => {
-        // Generate random realistic hours between 3 and 9 for 8-hour goal practice completeness
-        const seed = Math.sin(i) * 3 + 6.0
-        return Math.round(Math.max(1.0, Math.min(10, seed)) * 10) / 10
-      })
-    }
     
     chartInstance = new Chart(ctx, {
       type: 'line',
@@ -640,13 +667,7 @@ function renderChart() {
       return { label: new Date(c.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), value: currentTotal }
     })
     
-    // Fallback display if empty
-    const data = rawData.length > 0 ? rawData : [
-      { label: 'Jan', value: 1000 },
-      { label: 'Feb', value: 2500 },
-      { label: 'Mar', value: 3500 },
-      { label: 'Apr', value: 5000 }
-    ]
+    const data = rawData
     
     chartInstance = new Chart(ctx, {
       type: 'line',
@@ -684,11 +705,7 @@ function renderChart() {
     const labels = Object.keys(categoriesMap)
     const values = Object.values(categoriesMap)
     
-    // Fallback default sample data if empty
-    if (labels.length === 0) {
-      labels.push('Sample Food', 'Sample Utilities', 'Sample Other')
-      values.push(2500, 1500, 800)
-    }
+    // No fallback default sample data
     
     chartInstance = new Chart(ctx, {
       type: 'pie',
@@ -696,7 +713,7 @@ function renderChart() {
         labels: labels,
         datasets: [{
           data: values,
-          backgroundColor: ['#7c3aed', '#22c55e', '#f97316', '#3b82f6', '#ec4899', '#14b8a6'],
+          backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--accent-purple').trim() || '#334155', '#22c55e', '#f97316', '#3b82f6', '#ec4899', '#14b8a6'],
           borderWidth: 0
         }]
       },
@@ -724,11 +741,7 @@ function renderChart() {
       return { label: g.name, progress }
     })
     
-    // Fallback sample data if empty
-    const displayData = data.length > 0 ? data : [
-      { label: 'Sample Travel', progress: 65 },
-      { label: 'Sample Gadget', progress: 30 }
-    ]
+    const displayData = data
     
     chartInstance = new Chart(ctx, {
       type: 'bar',
@@ -737,7 +750,7 @@ function renderChart() {
         datasets: [{
           label: 'Progress (%)',
           data: displayData.map(p => p.progress),
-          backgroundColor: '#7c3aed',
+          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-purple').trim() || '#334155',
           borderRadius: 12,
           maxBarThickness: 40
         }]
@@ -821,12 +834,7 @@ function renderStepsChart() {
     stepValues.push(store.walkTrackerData[key] || 0)
   }
 
-  // Fallback sample data if empty
-  const isEmpty = stepValues.every(v => v === 0)
-  const displaySteps = !isEmpty ? stepValues : Array.from({ length: 30 }, (_, i) => {
-    const seed = Math.sin(i * 0.5) * 3000 + 7500
-    return Math.round(Math.max(1000, seed))
-  })
+  const displaySteps = stepValues
 
   stepsChartInstance = new Chart(ctx, {
     type: 'line',
@@ -875,11 +883,7 @@ function renderGymChart() {
     gymValues.push(gCals)
   }
 
-  // Fallback sample data if empty
-  const isEmpty = gymValues.every(v => v === 0)
-  const displayGym = !isEmpty ? gymValues : Array.from({ length: 30 }, (_, i) => {
-    return i % 4 === 0 ? Math.round(350 + Math.sin(i) * 100) : 0
-  })
+  const displayGym = gymValues
 
   gymChartInstance = new Chart(ctx, {
     type: 'bar',
@@ -904,10 +908,70 @@ function renderGymChart() {
   })
 }
 
+function renderSavingsChart() {
+  if (!savingsChartCanvas.value) return
+  if (savingsChartInstance) {
+    savingsChartInstance.destroy()
+  }
+
+  const ctx = savingsChartCanvas.value.getContext('2d')
+  
+  // Truncate long labels so they stay clean on the left axis
+  const labels = store.savingsGoals.map(g => {
+    const name = g.name || 'Unnamed'
+    return name.length > 18 ? name.slice(0, 18) + '...' : name
+  })
+
+  const currentValues = store.savingsGoals.map(g => {
+    return store.savingsContributions
+      .filter(c => c.goalId === g.id)
+      .reduce((sum, c) => sum + (parseFloat(c.amount) || 0), 0)
+  })
+  const targetValues = store.savingsGoals.map(g => parseFloat(g.target) || 0)
+
+  savingsChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Current Saved (₱)',
+          data: currentValues,
+          backgroundColor: 'rgba(34, 197, 94, 0.85)',
+          borderColor: '#22c55e',
+          borderWidth: 1,
+          borderRadius: 4
+        },
+        {
+          label: 'Target Goal (₱)',
+          data: targetValues,
+          backgroundColor: 'rgba(148, 163, 184, 0.15)',
+          borderColor: '#cbd5e1',
+          borderWidth: 1,
+          borderRadius: 4
+        }
+      ]
+    },
+    options: {
+      indexAxis: 'y', // Makes the chart horizontal
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+      },
+      scales: {
+        x: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+        y: { grid: { display: false } }
+      }
+    }
+  })
+}
+
 onMounted(() => {
   renderChart()
   renderStepsChart()
   renderGymChart()
+  renderSavingsChart()
   runPythonAnalytics()
 })
 
@@ -925,6 +989,7 @@ watch(
     renderChart()
     renderStepsChart()
     renderGymChart()
+    renderSavingsChart()
   },
   { deep: true }
 )
@@ -1384,14 +1449,9 @@ watch(
 /* ── Permanent Charts Grid & Glass Panels ── */
 .charts-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
     gap: 24px;
     margin-bottom: 28px;
-}
-@media (max-width: 900px) {
-    .charts-row {
-        grid-template-columns: 1fr;
-    }
 }
 .chart-panel {
     background: var(--glass-bg, rgba(255,255,255,0.18)) !important;
@@ -1443,6 +1503,59 @@ watch(
 .punctuality-badge.late {
     background: rgba(239, 68, 68, 0.15);
     color: #ef4444;
+}
+
+/* ── Recommended Books grid and cards ── */
+.recommended-books-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+.rec-book-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  padding: 18px;
+  border-radius: 16px;
+  transition: all 0.25s ease;
+}
+.rec-book-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-purple);
+  box-shadow: var(--shadow-sm);
+}
+.rec-book-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rec-book-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.rec-book-title {
+  font-size: 14px;
+  font-weight: 750;
+  color: var(--text-primary);
+  margin: 0;
+}
+.rec-book-author {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.rec-book-genre {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.rec-book-btn {
+  width: 100%;
+  text-align: center;
+  display: block;
 }
 </style>
 

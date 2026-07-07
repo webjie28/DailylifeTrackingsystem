@@ -182,14 +182,18 @@
             <div v-for="sug in filteredSuggestions" :key="sug" class="suggestion-item" @mousedown="selectSuggestion(sug)">{{ sug }}</div>
           </div>
         </div>
-        <div class="two-input">
-          <div class="form-group">
+        <div class="three-input" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+          <div class="form-group" style="margin-bottom: 0;">
             <label>Sets</label>
-            <input type="number" v-model.number="newExSets" min="1" @keyup.enter="addCustomExercise" />
+            <input type="number" v-model.number="newExSets" min="0" placeholder="0" @keyup.enter="addCustomExercise" />
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-bottom: 0;">
             <label>Reps</label>
-            <input type="number" v-model.number="newExReps" min="1" @keyup.enter="addCustomExercise" />
+            <input type="number" v-model.number="newExReps" min="0" placeholder="0" @keyup.enter="addCustomExercise" />
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Minutes</label>
+            <input type="number" v-model.number="newExMins" min="0" placeholder="0" @keyup.enter="addCustomExercise" />
           </div>
         </div>
         <button type="button" @click="addCustomExercise" class="btn btn-primary" style="width: 100%;">
@@ -310,8 +314,9 @@ const store = useAppStore()
 
 // Add exercise inputs
 const newExText = ref('')
-const newExSets = ref(4)
-const newExReps = ref(12)
+const newExSets = ref(null)
+const newExReps = ref(null)
+const newExMins = ref(null)
 
 // Ring SVG calculations (large ring in walk hero)
 const ringRadius = 58
@@ -347,17 +352,29 @@ let fitnessChartInstance = null
 // Custom exercise CRUD
 function addCustomExercise() {
   if (!newExText.value.trim()) return
-  const sets = parseInt(newExSets.value) || 4
-  const reps = parseInt(newExReps.value) || 12
-  const fullText = `${newExText.value.trim()} – ${sets}×${reps}`
+  const sets = parseInt(newExSets.value) || 0
+  const reps = parseInt(newExReps.value) || 0
+  const mins = parseInt(newExMins.value) || 0
+  
+  let details = []
+  if (sets > 0 || reps > 0) {
+    details.push(`${sets}×${reps}`)
+  }
+  if (mins > 0) {
+    details.push(`${mins} mins`)
+  }
+  
+  const suffix = details.length > 0 ? ` – ${details.join(' & ')}` : ''
+  const fullText = `${newExText.value.trim()}${suffix}`
   
   store.addGymExercise(activeDay.value, {
     text: fullText,
     cals: 0
   })
   newExText.value = ''
-  newExSets.value = 4
-  newExReps.value = 12
+  newExSets.value = null
+  newExReps.value = null
+  newExMins.value = null
 }
 
 function deleteCustomExercise(index) {

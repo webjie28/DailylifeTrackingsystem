@@ -7,12 +7,6 @@
           Focus sessions, study logs, and reading progress — all in one place.
         </p>
       </div>
-      <div class="header-actions">
-        <button class="btn btn-primary" @click="showBookModal = true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16" style="vertical-align: -2px; margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add Book
-        </button>
-      </div>
     </div>
 
     <!-- Summary Stats with Mini Rings -->
@@ -75,158 +69,159 @@
       </div>
     </div>
 
-    <div class="two-col animate-in delay-200">
-      <!-- Left Column: Pomodoro Timer and Session Notes -->
-      <div class="left-col">
-        <!-- Pomodoro Timer Panel -->
-        <div class="panel timer-panel" style="text-align: center;">
-          <div class="timer-mode-badge-wrap">
-            <span 
-              class="timer-mode-badge"
-              :class="{ 'break-mode': isBreak, 'focus-mode': !isBreak }"
-            >
-              {{ isBreak ? 'Break Time' : 'Focus Session' }}
-            </span>
+    <!-- Library Bookshelf — top section -->
+    <div class="panel bookshelf-panel animate-in delay-150" style="margin-bottom: 24px;">
+      <h3 style="margin-bottom: 18px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
+        Library Bookshelf
+        <span style="font-size: 12px; font-weight: 400; color: var(--text-muted); margin-left: 8px;">({{ LIBRARY_BOOKS.length }} books — click to read)</span>
+      </h3>
+      <div class="library-grid">
+        <div
+          v-for="book in LIBRARY_BOOKS"
+          :key="book.id"
+          class="library-card"
+          @click="openReadingSetup(book)"
+        >
+          <div class="library-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           </div>
-          
-          <div class="timer-display">{{ formattedTime }}</div>
-
-          <div class="timer-controls">
-            <button class="btn-timer play" @click="toggleTimer">
-              <svg v-if="!isRunning" viewBox="0 0 24 24" fill="currentColor" width="26" height="26"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              <svg v-else viewBox="0 0 24 24" fill="currentColor" width="26" height="26"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-            </button>
-            <button class="btn-timer reset" @click="resetTimer">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-            </button>
-          </div>
-          <p class="timer-hint">
-            Focus for 25 minutes, followed by a 5-minute break.
-          </p>
-        </div>
-
-        <!-- Session Notes Panel -->
-        <div class="panel">
-          <h3>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            Study Session Notes
-          </h3>
-          <div class="form-group" style="margin-bottom: 0;">
-            <textarea 
-              v-model="sessionNotes" 
-              @input="saveNotes"
-              class="notes-textarea" 
-              placeholder="Jot down formulas, ideas, summaries, or homework to-dos from your study session..."
-            ></textarea>
+          <div class="library-card-body">
+            <h4 class="library-book-title">{{ book.title }}</h4>
+            <span class="library-book-genre">{{ book.genre }}</span>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Right Column: Reading Tracker -->
-      <div class="right-col">
-        <div class="panel">
-          <h3>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
-            Reading Progress Tracker
-          </h3>
-          <div class="books-list">
-            <!-- Enhanced Empty State -->
-            <div v-if="store.studyBooksList.length === 0" class="empty-state-books">
-              <div class="empty-state-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                  <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/>
-                </svg>
-              </div>
-              <div class="empty-state-title">No Books Yet</div>
-              <div class="empty-state-text">Start building your reading list. Track progress page by page and celebrate when you finish.</div>
-              <button class="btn btn-primary btn-sm" @click="showBookModal = true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14" style="vertical-align: -2px; margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Add Your First Book
-              </button>
-            </div>
-            
-            <div 
-              v-else 
-              v-for="book in booksWithProgress" 
-              :key="book.id" 
-              class="book-card"
-              :class="{ 'book-completed': book.status === 'completed' }"
-            >
-              <div class="book-top">
-                <div class="book-info-wrap">
-                  <div class="book-text-details">
-                    <div class="book-title">{{ book.title }}</div>
-                    <div class="book-author">by {{ book.author }}</div>
-                  </div>
-                </div>
-                <div class="book-actions">
-                  <button class="btn-action-sm" @click="openEditBook(book)" title="Edit Page Progress">Edit</button>
-                  <button class="btn-action-sm btn-action-danger" @click="deleteBook(book.id)" title="Remove Book">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                  </button>
-                </div>
-              </div>
-
-              <div class="book-amounts">
-                Page <strong>{{ book.currentPage }}</strong> of <strong>{{ book.totalPages }}</strong>
-                <span class="book-status-pill" :class="book.status">
-                  {{ book.status }}
-                </span>
-              </div>
-
-              <div class="goal-bar-wrap">
-                <div class="goal-bar-fill" :style="{ width: book.percentage + '%' }"></div>
-              </div>
-
-              <div class="book-progress-footer">
-                <span>{{ book.percentage }}% Complete</span>
-              </div>
+    <!-- Reading History Log -->
+    <div class="panel reading-log-panel animate-in delay-400" style="margin-top: 24px;" v-if="store.readingLogs.length > 0">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+        <h3 style="margin: 0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Reading History
+        </h3>
+        <button class="btn-action-sm btn-action-danger" @click="store.clearReadingLogs()" style="font-size: 11px;">Clear All</button>
+      </div>
+      <div class="reading-log-list">
+        <div v-for="(log, idx) in store.readingLogs" :key="idx" class="reading-log-item">
+          <div class="reading-log-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
+          <div class="reading-log-body">
+            <div class="reading-log-title">{{ log.bookTitle }}</div>
+            <div class="reading-log-meta">
+              Stopped at page <strong>{{ log.pageNumber }}</strong>
+              <span v-if="log.totalPages"> of ~{{ log.totalPages }}</span>
+              &nbsp;·&nbsp; {{ log.minsRead }} min{{ log.minsRead !== 1 ? 's' : '' }} read
+              &nbsp;·&nbsp; {{ log.date }}
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Modals -->
-    <!-- Add / Edit Book Modal -->
-    <div class="modal-overlay" v-if="showBookModal" @click.self="closeBookModal">
-      <div class="modal-content">
-        <h3>{{ editingBookId ? 'Edit Book Progress' : 'Add New Book to Library' }}</h3>
-        <form @submit.prevent="saveBook">
-          <div class="form-group">
-            <label>Book Title</label>
-            <input type="text" v-model="bookTitle" placeholder="e.g. Clean Code, Atomic Habits" required />
+    <!-- Reading Timer Modal / Running Timer -->
+    <div class="modal-overlay" v-if="showReadingModal" @click.self="!isReadingActive && (showReadingModal = false)">
+      <div class="modal-content" :style="{ 'max-width': isReadingActive ? '1080px' : '440px', 'width': '96%', 'padding': '28px' }">
+
+        <!-- Setup Screen (before starting) -->
+        <div v-if="!isReadingActive" style="text-align: center;">
+          <div style="font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary);">
+            📖 {{ selectedLibBook?.title }}
           </div>
-          <div class="form-group">
-            <label>Author</label>
-            <input type="text" v-model="bookAuthor" placeholder="e.g. James Clear" />
+          <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">
+            by {{ selectedLibBook?.author }}
           </div>
-          <div class="two-input">
+
+          <!-- Loading / error while fetching book -->
+          <div v-if="isBookLoading" style="padding: 28px 0; color: var(--text-muted); font-size: 14px;">
+            <div class="book-load-spinner"></div>
+            Loading full book text…
+          </div>
+          <div v-else-if="bookLoadingError" style="padding: 16px; color: #ef4444; font-size: 13px; background: rgba(239,68,68,0.08); border-radius: 8px; margin: 16px 0;">
+            ⚠ {{ bookLoadingError }}
+          </div>
+          <div v-else-if="bookParagraphs.length > 0" style="font-size: 12px; color: var(--text-muted); margin: 8px 0 20px; padding: 8px 12px; background: rgba(var(--accent-purple-rgb, 139,92,246), 0.08); border-radius: 8px;">
+            ✅ {{ bookParagraphs.length.toLocaleString() }} paragraphs loaded — full book ready!
+          </div>
+
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
+            Set your target reading time for this session.
+          </p>
+          <div class="two-input" style="margin-bottom: 20px;">
             <div class="form-group">
-              <label>Current Page</label>
-              <input type="number" v-model.number="bookCurrentPage" min="0" placeholder="0" required />
+              <label>Hours</label>
+              <input type="number" v-model.number="readingInputHours" min="0" max="10" placeholder="0" />
             </div>
             <div class="form-group">
-              <label>Total Pages</label>
-              <input type="number" v-model.number="bookTotalPages" min="1" placeholder="100" required />
+              <label>Minutes</label>
+              <input type="number" v-model.number="readingInputMins" min="0" max="59" placeholder="30" />
             </div>
           </div>
-          <div class="form-group">
-            <label>Reading Status</label>
-            <select v-model="bookStatus">
-              <option value="reading">Reading</option>
-              <option value="completed">Completed</option>
-              <option value="to-read">To Read</option>
-            </select>
-          </div>
-          <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button type="submit" class="btn btn-primary" style="flex: 1;">
-              {{ editingBookId ? 'Update Progress' : 'Add Book' }}
+          <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn btn-primary" style="flex: 1;" @click="startReadingSession" :disabled="isBookLoading || bookParagraphs.length === 0">
+              {{ isBookLoading ? 'Loading…' : 'Start Reading' }}
             </button>
-            <button type="button" class="btn btn-outline" @click="closeBookModal">Cancel</button>
+            <button type="button" class="btn btn-outline" @click="showReadingModal = false">Cancel</button>
           </div>
-        </form>
+        </div>
+
+        <!-- Active Reading Session -->
+        <div v-else class="reading-session-layout">
+          <!-- Left: Full-text reader -->
+          <div class="reader-content-panel">
+            <div class="reader-header">
+              <div class="reader-meta">
+                <div>
+                  <h4 class="reader-title">{{ selectedLibBook?.title }}</h4>
+                  <p class="reader-author">by {{ selectedLibBook?.author }}</p>
+                </div>
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted);">
+                Page {{ currentPage }} / {{ totalPages }}
+              </div>
+            </div>
+
+            <!-- Reading Body Text -->
+            <div class="reader-body">
+              <p class="reader-text-paragraph" v-for="(p, pi) in visibleParagraphs" :key="pi">{{ p }}</p>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="reader-pagination">
+              <button class="reader-nav-btn" @click="prevPage" :disabled="scrollOffset === 0">
+                ← Prev
+              </button>
+              <span class="reader-page-count">{{ currentPage }} / {{ totalPages }}</span>
+              <button class="reader-nav-btn" @click="nextPage" :disabled="scrollOffset + PARAS_PER_PAGE >= bookParagraphs.length">
+                Next →
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: Live Timer Status -->
+          <div class="reader-timer-panel">
+            <div class="reading-emoji-pulse">📖</div>
+            <h3 style="margin: 0; font-size: 16px;">Reading Session</h3>
+            <p style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin: 4px 0 24px;">Focus Time</p>
+            
+            <div class="timer-display" style="font-size: 46px; font-weight: 800; margin-bottom: 12px; line-height: 1; letter-spacing: -0.02em;">
+              {{ formattedReadingTime }}
+            </div>
+
+            <div class="timer-controls" style="margin-bottom: 24px; display: flex; justify-content: center;">
+              <button class="btn-timer play" @click="toggleReadingPause" style="background: var(--accent-purple); color: var(--accent-purple-text); width: 56px; height: 56px; border-radius: 50%;">
+                <svg v-if="isReadingPaused" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <svg v-else viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              </button>
+            </div>
+
+            <button type="button" class="btn btn-outline" style="width: 100%; border-color: rgba(239,68,68,0.3); color: #ef4444; font-size: 13px;" @click="stopReadingSessionEarly">
+              Stop Session & Save
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -236,7 +231,32 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '../stores/appStore'
+import { LIBRARY_BOOKS, fetchBookText } from '../services/libraryBooks'
 
+// Live reader state
+const bookParagraphs = ref([])
+const bookLoadingError = ref(null)
+const isBookLoading = ref(false)
+const scrollOffset = ref(0)
+const PARAS_PER_PAGE = 18
+
+const currentPage = computed(() => Math.floor(scrollOffset.value / PARAS_PER_PAGE) + 1)
+const totalPages = computed(() => Math.ceil(bookParagraphs.value.length / PARAS_PER_PAGE))
+const visibleParagraphs = computed(() => {
+  const start = scrollOffset.value
+  return bookParagraphs.value.slice(start, start + PARAS_PER_PAGE)
+})
+
+function nextPage() {
+  if (scrollOffset.value + PARAS_PER_PAGE < bookParagraphs.value.length) {
+    scrollOffset.value += PARAS_PER_PAGE
+  }
+}
+function prevPage() {
+  if (scrollOffset.value > 0) {
+    scrollOffset.value = Math.max(0, scrollOffset.value - PARAS_PER_PAGE)
+  }
+}
 const store = useAppStore()
 
 // Timer States
@@ -415,8 +435,125 @@ function closeBookModal() {
   showBookModal.value = false
 }
 
+const showReadingModal = ref(false)
+const selectedLibBook = ref(null)
+const readingInputMins = ref(30)
+const readingInputHours = ref(0)
+const isReadingActive = ref(false)
+const isReadingPaused = ref(false)
+const readingTimeRemaining = ref(0)
+const totalReadingSessionSecs = ref(0)
+let readingTimerId = null
+
+const formattedReadingTime = computed(() => {
+  const h = Math.floor(readingTimeRemaining.value / 3600).toString().padStart(2, '0')
+  const m = Math.floor((readingTimeRemaining.value % 3600) / 60).toString().padStart(2, '0')
+  const s = (readingTimeRemaining.value % 60).toString().padStart(2, '0')
+  return h !== '00' ? `${h}:${m}:${s}` : `${m}:${s}`
+})
+
+async function openReadingSetup(book) {
+  selectedLibBook.value = book
+  readingInputMins.value = 30
+  readingInputHours.value = 0
+  showReadingModal.value = true
+  isReadingActive.value = false
+  isReadingPaused.value = false
+  bookParagraphs.value = []
+  bookLoadingError.value = null
+  scrollOffset.value = 0
+
+  // Fetch the full book text
+  isBookLoading.value = true
+  try {
+    const paragraphs = await fetchBookText(book.textUrl, book.id)
+    bookParagraphs.value = paragraphs
+  } catch (e) {
+    bookLoadingError.value = 'Could not load book. Check your internet connection and try again.'
+  } finally {
+    isBookLoading.value = false
+  }
+}
+
+function startReadingSession() {
+  const totalMins = (parseInt(readingInputHours.value) || 0) * 60 + (parseInt(readingInputMins.value) || 0)
+  if (totalMins <= 0) {
+    alert('Please enter a valid reading duration.')
+    return
+  }
+
+  totalReadingSessionSecs.value = totalMins * 60
+  readingTimeRemaining.value = totalMins * 60
+  isReadingActive.value = true
+  isReadingPaused.value = false
+
+  if (readingTimerId) clearInterval(readingTimerId)
+  readingTimerId = setInterval(() => {
+    if (!isReadingPaused.value) {
+      if (readingTimeRemaining.value > 0) {
+        readingTimeRemaining.value--
+      } else {
+        clearInterval(readingTimerId)
+        readingTimerId = null
+        isReadingActive.value = false
+        showReadingModal.value = false
+
+        // Add to global total study time
+        store.addStudyMinutes(totalMins)
+
+        // Record reading log
+        const logObj = {
+          bookId: selectedLibBook.value.id,
+          bookTitle: selectedLibBook.value.title,
+          minsRead: totalMins,
+          pageNumber: currentPage.value,
+          totalPages: totalPages.value,
+          date: new Date().toLocaleString()
+        }
+        store.addReadingLog(logObj)
+
+        alert(`🎉 Congratulations! You completed your reading session for "${selectedLibBook.value.title}" of ${totalMins} minutes! Stopped at page ${currentPage.value}.`)
+      }
+    }
+  }, 1000)
+}
+
+function toggleReadingPause() {
+  isReadingPaused.value = !isReadingPaused.value
+}
+
+function stopReadingSessionEarly() {
+  if (confirm('Do you want to end your reading session early? The minutes you read so far will still be saved.')) {
+    if (readingTimerId) clearInterval(readingTimerId)
+    readingTimerId = null
+    isReadingActive.value = false
+    showReadingModal.value = false
+
+    const secondsRead = totalReadingSessionSecs.value - readingTimeRemaining.value
+    const minsRead = Math.floor(secondsRead / 60)
+    
+    // Even if minsRead is 0, we still record the page where they stopped
+    const actualMinsToSave = Math.max(1, minsRead) 
+    
+    store.addStudyMinutes(actualMinsToSave)
+    
+    const logObj = {
+      bookId: selectedLibBook.value.id,
+      bookTitle: selectedLibBook.value.title,
+      minsRead: actualMinsToSave,
+      pageNumber: currentPage.value,
+      totalPages: totalPages.value,
+      date: new Date().toLocaleString()
+    }
+    store.addReadingLog(logObj)
+
+    alert(`Saved ${actualMinsToSave} minutes of reading for "${selectedLibBook.value.title}"! Stopped at page ${currentPage.value}.`)
+  }
+}
+
 onUnmounted(() => {
   if (timerId) clearInterval(timerId)
+  if (readingTimerId) clearInterval(readingTimerId)
 })
 </script>
 
@@ -947,5 +1084,236 @@ onUnmounted(() => {
   color: var(--text-heading);
   margin-top: 0;
   margin-bottom: 20px;
+}
+/* ── Library Bookshelf Styling ── */
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.library-card {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  position: relative;
+  text-align: left;
+}
+.library-card:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-purple);
+  background: var(--bg-card);
+}
+.library-card-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(var(--accent-purple-rgb, 139,92,246), 0.12);
+  color: var(--accent-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.library-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.library-book-title {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--text-primary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+.library-book-genre {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Reader Pagination */
+.reader-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--border-color);
+  margin-top: 12px;
+}
+.reader-nav-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s, border-color 0.15s;
+}
+.reader-nav-btn:hover:not(:disabled) {
+  background: var(--accent-purple);
+  color: var(--accent-purple-text);
+  border-color: var(--accent-purple);
+}
+.reader-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.reader-page-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Book loading spinner */
+.book-load-spinner {
+  width: 28px; height: 28px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent-purple);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+/* Reading Active Session in modal */
+.reading-emoji-pulse {
+  font-size: 48px;
+  animation: readingEmojiFloat 2s infinite ease-in-out;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+@keyframes readingEmojiFloat {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px) scale(1.05); }
+  100% { transform: translateY(0); }
+}
+.reading-author {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+/* ── Active Split Ebook Reader Layout ── */
+.reading-session-layout {
+  display: grid;
+  grid-template-columns: 2.2fr 0.8fr;
+  gap: 24px;
+  text-align: left;
+  min-height: 480px;
+}
+@media (max-width: 768px) {
+  .reading-session-layout {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+}
+.reader-content-panel {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color-strong);
+  padding-right: 24px;
+}
+@media (max-width: 768px) {
+  .reader-content-panel {
+    border-right: none;
+    padding-right: 0;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-color-strong);
+  }
+}
+.reader-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+.reader-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.reader-emoji {
+  font-size: 32px;
+}
+.reader-title {
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--text-primary);
+  margin: 0;
+}
+.reader-author {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.chapter-selector-wrap {
+  min-width: 200px;
+}
+.chapter-select {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color-strong);
+  background: var(--bg-input-inset);
+  color: var(--text-primary);
+  font-size: 13px;
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+.reader-body {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 420px;
+  padding-top: 16px;
+  padding-right: 8px;
+}
+.reader-chapter-title {
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--text-heading);
+  margin: 0 0 14px;
+}
+.reader-text-paragraph {
+  font-size: 14px;
+  color: var(--text-body);
+  line-height: 1.7;
+  margin-bottom: 16px;
+  text-align: justify;
+}
+
+/* Right Timer Side panel */
+.reader-timer-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-left: 8px;
 }
 </style>
