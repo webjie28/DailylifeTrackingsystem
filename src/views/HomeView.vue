@@ -915,7 +915,13 @@ function renderSavingsChart() {
   }
 
   const ctx = savingsChartCanvas.value.getContext('2d')
-  const labels = store.savingsGoals.map(g => g.name || 'Unnamed')
+  
+  // Truncate long labels so they stay clean on the left axis
+  const labels = store.savingsGoals.map(g => {
+    const name = g.name || 'Unnamed'
+    return name.length > 18 ? name.slice(0, 18) + '...' : name
+  })
+
   const currentValues = store.savingsGoals.map(g => {
     return store.savingsContributions
       .filter(c => c.goalId === g.id)
@@ -934,7 +940,7 @@ function renderSavingsChart() {
           backgroundColor: 'rgba(34, 197, 94, 0.85)',
           borderColor: '#22c55e',
           borderWidth: 1,
-          borderRadius: 6
+          borderRadius: 4
         },
         {
           label: 'Target Goal (₱)',
@@ -942,19 +948,20 @@ function renderSavingsChart() {
           backgroundColor: 'rgba(148, 163, 184, 0.15)',
           borderColor: '#cbd5e1',
           borderWidth: 1,
-          borderRadius: 6
+          borderRadius: 4
         }
       ]
     },
     options: {
+      indexAxis: 'y', // Makes the chart horizontal
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
       },
       scales: {
-        x: { grid: { display: false } },
-        y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.1)' } }
+        x: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.1)' } },
+        y: { grid: { display: false } }
       }
     }
   })
