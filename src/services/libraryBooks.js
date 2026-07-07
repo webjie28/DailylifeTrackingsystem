@@ -245,49 +245,55 @@ export const LIBRARY_BOOKS = [
 ];
 
 /**
- * Fetch and parse the raw full text of a book from Gutenberg.
- * Tries multiple CORS proxies in sequence until one works.
+ * Fetch and parse the raw full text of a book.
+ * Books are stored locally in /books/{id}.txt (no CORS, works offline).
+ * Falls back to external CORS proxies if the local file is missing.
  */
-export async function fetchBookText(textUrl) {
-  // List of CORS proxy wrappers to try in order
-  const proxyBuilders = [
-    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-    (url) => `https://thingproxy.freeboard.io/fetch/${url}`,
-    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  ]
-
+export async function fetchBookText(textUrl, bookId) {
   let raw = null
-  let lastError = null
 
-  for (const buildProxy of proxyBuilders) {
+  // 1. Try local bundled file first (fast, offline-capable, no CORS)
+  if (bookId) {
     try {
-      const proxyUrl = buildProxy(textUrl)
-      const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const text = await response.text()
-      // Sanity check: must look like a real book (has some Gutenberg marker or decent length)
-      if (text.length > 1000) {
-        raw = text
-        break
+      const localUrl = `/books/${bookId}.txt`
+      const res = await fetch(localUrl, { signal: AbortSignal.timeout(8000) })
+      if (res.ok) {
+        const text = await res.text()
+        if (text.length > 1000) raw = text
       }
-    } catch (e) {
-      lastError = e
-    }
+    } catch (_) { /* fall through */ }
   }
 
-  if (!raw) throw new Error(lastError?.message || 'All proxies failed.')
+  // 2. If local failed, try external CORS proxies
+  if (!raw) {
+    const proxyBuilders = [
+      (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+      (url) => `https://thingproxy.freeboard.io/fetch/${url}`,
+      (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    ]
+    let lastError = null
+    for (const buildProxy of proxyBuilders) {
+      try {
+        const res = await fetch(buildProxy(textUrl), { signal: AbortSignal.timeout(12000) })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const text = await res.text()
+        if (text.length > 1000) { raw = text; break }
+      } catch (e) { lastError = e }
+    }
+    if (!raw) throw new Error(lastError?.message || 'Could not load book.')
+  }
 
-  // Strip Gutenberg header (everything before *** START OF THE PROJECT GUTENBERG EBOOK ***)
+  // Strip Gutenberg header/footer
   const startMarker = raw.indexOf('*** START OF THE PROJECT GUTENBERG EBOOK')
-  const endMarker = raw.indexOf('*** END OF THE PROJECT GUTENBERG EBOOK')
+  const endMarker   = raw.indexOf('*** END OF THE PROJECT GUTENBERG EBOOK')
   let body = raw
   if (startMarker !== -1) {
     const startIdx = raw.indexOf('\n', startMarker) + 1
     body = endMarker !== -1 ? raw.slice(startIdx, endMarker) : raw.slice(startIdx)
   }
 
-  // Normalize line endings, split into paragraphs separated by blank lines
+  // Split into paragraphs
   body = body.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
   const paragraphs = body
     .split(/\n{2,}/)

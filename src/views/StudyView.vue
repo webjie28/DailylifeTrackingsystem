@@ -599,7 +599,7 @@ async function openReadingSetup(book) {
   // Fetch the full book text
   isBookLoading.value = true
   try {
-    const paragraphs = await fetchBookText(book.textUrl)
+    const paragraphs = await fetchBookText(book.textUrl, book.id)
     bookParagraphs.value = paragraphs
   } catch (e) {
     bookLoadingError.value = 'Could not load book. Check your internet connection and try again.'
