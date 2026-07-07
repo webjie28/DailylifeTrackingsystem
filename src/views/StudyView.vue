@@ -234,6 +234,7 @@
       <h3 style="margin-bottom: 18px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
         Library Bookshelf
+        <span style="font-size: 12px; font-weight: 400; color: var(--text-muted); margin-left: 8px;">({{ LIBRARY_BOOKS.length }} books)</span>
       </h3>
       <div class="library-grid">
         <div 
@@ -242,25 +243,42 @@
           class="library-card"
           @click="openReadingSetup(book)"
         >
-          <div class="library-card-emoji">{{ book.emoji }}</div>
+          <div class="library-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="22" height="22"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          </div>
           <div class="library-card-body">
             <h4 class="library-book-title">{{ book.title }}</h4>
-            <p class="library-book-author">by {{ book.author }}</p>
-            <p class="library-book-desc">{{ book.description }}</p>
+            <span class="library-book-genre">{{ book.genre }}</span>
           </div>
-          <button class="btn btn-primary btn-sm library-read-btn">
-            📖 Start Reading
-          </button>
         </div>
       </div>
     </div>
 
     <!-- Reading Timer Modal / Running Timer -->
     <div class="modal-overlay" v-if="showReadingModal" @click.self="!isReadingActive && (showReadingModal = false)">
-      <div class="modal-content" :style="{ 'max-width': isReadingActive ? '950px' : '400px', 'width': '95%', 'padding': '24px' }">
+      <div class="modal-content" :style="{ 'max-width': isReadingActive ? '1080px' : '440px', 'width': '96%', 'padding': '28px' }">
+
+        <!-- Setup Screen (before starting) -->
         <div v-if="!isReadingActive" style="text-align: center;">
-          <div style="font-size: 48px; margin-bottom: 8px;">{{ selectedLibBook?.emoji }}</div>
-          <h3>📖 Read "{{ selectedLibBook?.title }}"</h3>
+          <div style="font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary);">
+            📖 {{ selectedLibBook?.title }}
+          </div>
+          <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">
+            by {{ selectedLibBook?.author }}
+          </div>
+
+          <!-- Loading / error while fetching book -->
+          <div v-if="isBookLoading" style="padding: 28px 0; color: var(--text-muted); font-size: 14px;">
+            <div class="book-load-spinner"></div>
+            Loading full book text…
+          </div>
+          <div v-else-if="bookLoadingError" style="padding: 16px; color: #ef4444; font-size: 13px; background: rgba(239,68,68,0.08); border-radius: 8px; margin: 16px 0;">
+            ⚠ {{ bookLoadingError }}
+          </div>
+          <div v-else-if="bookParagraphs.length > 0" style="font-size: 12px; color: var(--text-muted); margin: 8px 0 20px; padding: 8px 12px; background: rgba(var(--accent-purple-rgb, 139,92,246), 0.08); border-radius: 8px;">
+            ✅ {{ bookParagraphs.length.toLocaleString() }} paragraphs loaded — full book ready!
+          </div>
+
           <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
             Set your target reading time for this session.
           </p>
@@ -275,39 +293,43 @@
             </div>
           </div>
           <div style="display: flex; gap: 10px;">
-            <button type="button" class="btn btn-primary" style="flex: 1;" @click="startReadingSession">
-              Start Reading
+            <button type="button" class="btn btn-primary" style="flex: 1;" @click="startReadingSession" :disabled="isBookLoading || bookParagraphs.length === 0">
+              {{ isBookLoading ? 'Loading…' : 'Start Reading' }}
             </button>
             <button type="button" class="btn btn-outline" @click="showReadingModal = false">Cancel</button>
           </div>
         </div>
 
+        <!-- Active Reading Session -->
         <div v-else class="reading-session-layout">
-          <!-- Left: Scrollable Ebook Reader -->
+          <!-- Left: Full-text reader -->
           <div class="reader-content-panel">
             <div class="reader-header">
               <div class="reader-meta">
-                <span class="reader-emoji">{{ selectedLibBook?.emoji }}</span>
                 <div>
                   <h4 class="reader-title">{{ selectedLibBook?.title }}</h4>
                   <p class="reader-author">by {{ selectedLibBook?.author }}</p>
                 </div>
               </div>
-              <div class="chapter-selector-wrap">
-                <select v-model="activeChapterIndex" class="chapter-select">
-                  <option v-for="(ch, idx) in selectedLibBook?.chapters" :key="idx" :value="idx">
-                    {{ ch.title }}
-                  </option>
-                </select>
+              <div style="font-size: 12px; color: var(--text-muted);">
+                Page {{ currentPage }} / {{ totalPages }}
               </div>
             </div>
 
             <!-- Reading Body Text -->
             <div class="reader-body">
-              <h3 class="reader-chapter-title">{{ selectedLibBook?.chapters[activeChapterIndex]?.title }}</h3>
-              <p class="reader-text-paragraph" v-for="(p, pi) in splitParagraphs(selectedLibBook?.chapters[activeChapterIndex]?.content)" :key="pi">
-                {{ p }}
-              </p>
+              <p class="reader-text-paragraph" v-for="(p, pi) in visibleParagraphs" :key="pi">{{ p }}</p>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div class="reader-pagination">
+              <button class="reader-nav-btn" @click="prevPage" :disabled="scrollOffset === 0">
+                ← Prev
+              </button>
+              <span class="reader-page-count">{{ currentPage }} / {{ totalPages }}</span>
+              <button class="reader-nav-btn" @click="nextPage" :disabled="scrollOffset + PARAS_PER_PAGE >= bookParagraphs.length">
+                Next →
+              </button>
             </div>
           </div>
 
@@ -342,13 +364,32 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '../stores/appStore'
-import { LIBRARY_BOOKS } from '../services/libraryBooks'
+import { LIBRARY_BOOKS, fetchBookText } from '../services/libraryBooks'
 
-const activeChapterIndex = ref(0)
-function splitParagraphs(text) {
-  return text ? text.split('\n\n') : []
+// Live reader state
+const bookParagraphs = ref([])
+const bookLoadingError = ref(null)
+const isBookLoading = ref(false)
+const scrollOffset = ref(0)
+const PARAS_PER_PAGE = 18
+
+const currentPage = computed(() => Math.floor(scrollOffset.value / PARAS_PER_PAGE) + 1)
+const totalPages = computed(() => Math.ceil(bookParagraphs.value.length / PARAS_PER_PAGE))
+const visibleParagraphs = computed(() => {
+  const start = scrollOffset.value
+  return bookParagraphs.value.slice(start, start + PARAS_PER_PAGE)
+})
+
+function nextPage() {
+  if (scrollOffset.value + PARAS_PER_PAGE < bookParagraphs.value.length) {
+    scrollOffset.value += PARAS_PER_PAGE
+  }
 }
-
+function prevPage() {
+  if (scrollOffset.value > 0) {
+    scrollOffset.value = Math.max(0, scrollOffset.value - PARAS_PER_PAGE)
+  }
+}
 const store = useAppStore()
 
 // Timer States
@@ -544,14 +585,27 @@ const formattedReadingTime = computed(() => {
   return h !== '00' ? `${h}:${m}:${s}` : `${m}:${s}`
 })
 
-function openReadingSetup(book) {
+async function openReadingSetup(book) {
   selectedLibBook.value = book
   readingInputMins.value = 30
   readingInputHours.value = 0
-  activeChapterIndex.value = 0
   showReadingModal.value = true
   isReadingActive.value = false
   isReadingPaused.value = false
+  bookParagraphs.value = []
+  bookLoadingError.value = null
+  scrollOffset.value = 0
+
+  // Fetch the full book text
+  isBookLoading.value = true
+  try {
+    const paragraphs = await fetchBookText(book.textUrl)
+    bookParagraphs.value = paragraphs
+  } catch (e) {
+    bookLoadingError.value = 'Could not load book. Check your internet connection and try again.'
+  } finally {
+    isBookLoading.value = false
+  }
 }
 
 function startReadingSession() {
@@ -1141,58 +1195,113 @@ onUnmounted(() => {
 /* ── Library Bookshelf Styling ── */
 .library-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
 }
 .library-card {
   background: var(--bg-subtle);
   border: 1px solid var(--border-color);
-  border-radius: 18px;
-  padding: 20px;
+  border-radius: 14px;
+  padding: 14px 16px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  text-align: center;
+  gap: 12px;
   cursor: pointer;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s, box-shadow 0.2s, background 0.2s;
   position: relative;
+  text-align: left;
 }
 .library-card:hover {
-  transform: translateY(-4px) scale(1.02);
+  transform: translateY(-2px) scale(1.01);
   box-shadow: var(--shadow-md);
   border-color: var(--accent-purple);
+  background: var(--bg-card);
 }
-.library-card-emoji {
-  font-size: 36px;
-  margin-bottom: 10px;
+.library-card-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(var(--accent-purple-rgb, 139,92,246), 0.12);
+  color: var(--accent-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .library-card-body {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 14px;
+  gap: 3px;
 }
 .library-book-title {
-  font-size: 14px;
-  font-weight: 750;
+  font-size: 13px;
+  font-weight: 650;
   color: var(--text-primary);
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
 }
-.library-book-author {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin: 0;
-}
-.library-book-desc {
-  font-size: 11px;
+.library-book-genre {
+  font-size: 10px;
   color: var(--text-muted);
-  line-height: 1.4;
-  margin: 6px 0 0;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.library-read-btn {
-  width: 100%;
+
+/* Reader Pagination */
+.reader-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--border-color);
+  margin-top: 12px;
 }
+.reader-nav-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s, border-color 0.15s;
+}
+.reader-nav-btn:hover:not(:disabled) {
+  background: var(--accent-purple);
+  color: var(--accent-purple-text);
+  border-color: var(--accent-purple);
+}
+.reader-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.reader-page-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* Book loading spinner */
+.book-load-spinner {
+  width: 28px; height: 28px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent-purple);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 
 /* Reading Active Session in modal */
 .reading-emoji-pulse {
