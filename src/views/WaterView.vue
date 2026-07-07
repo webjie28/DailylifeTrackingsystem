@@ -49,19 +49,19 @@
 
         <div class="quick-log-row">
           <div class="log-btn" @click="store.addWater(250)">
-            <span class="log-btn-label">+250 ml</span>
+            <span class="log-btn-label">250 ml</span>
           </div>
           <div class="log-btn" @click="store.addWater(500)">
-            <span class="log-btn-label">+500 ml</span>
+            <span class="log-btn-label">500 ml</span>
           </div>
           <div class="log-btn" @click="store.addWater(750)">
-            <span class="log-btn-label">+750 ml</span>
+            <span class="log-btn-label">750 ml</span>
           </div>
         </div>
 
         <div style="display: flex; gap: 12px; margin-top: 20px; width: 100%;">
           <button class="btn btn-outline" style="flex: 1;" @click="resetToday">Reset Today</button>
-          <button class="btn btn-primary" style="flex: 1;" @click="openCustomLog">+ Log Custom ml</button>
+          <button class="btn btn-primary" style="flex: 1;" @click="openCustomLog">Log Custom ml</button>
         </div>
       </div>
 

@@ -8,7 +8,7 @@
         </p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-primary" @click="showAddGoalModal = true">+ Create New Goal</button>
+        <button class="btn btn-primary" @click="showAddGoalModal = true">Create New Goal</button>
       </div>
     </div>
 
@@ -71,7 +71,7 @@
           </div>
 
           <button class="btn btn-primary btn-sm" @click="openAddContrib(goal.id, goal.name)" style="width: 100%;">
-            + Save
+            Save
           </button>
         </div>
       </div>

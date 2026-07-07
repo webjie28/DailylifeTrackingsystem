@@ -8,7 +8,7 @@
         </p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-primary" @click="showAddModal = true">+ Add Long-term Goal</button>
+        <button class="btn btn-primary" @click="showAddModal = true">Add Long-term Goal</button>
       </div>
     </div>
 
@@ -122,7 +122,7 @@
           </div>
           
           <button class="btn btn-outline" style="width: 100%; margin-top: auto;" @click="importProjectGoal(proj)">
-            + Add to Goals Board
+            Add to Goals Board
           </button>
         </div>
       </div>

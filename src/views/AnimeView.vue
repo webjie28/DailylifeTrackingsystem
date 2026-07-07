@@ -8,7 +8,7 @@
         </p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-primary" @click="openAddModal">+ Add Watch</button>
+        <button class="btn btn-primary" @click="openAddModal">Add to Watchlist</button>
       </div>
     </div>
 
