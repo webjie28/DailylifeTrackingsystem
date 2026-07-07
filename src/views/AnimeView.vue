@@ -8,14 +8,14 @@
         </p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-primary" @click="openAddModal">+ Add Anime</button>
+        <button class="btn btn-primary" @click="openAddModal">+ Add Entry</button>
       </div>
     </div>
 
     <!-- Summary Stats -->
     <div class="stats-row">
       <div class="stat-card">
-        <div class="stat-label">Total Anime</div>
+        <div class="stat-label">Total Shows</div>
         <div class="stat-value purple">{{ (store.animeWatchlist || []).length }}</div>
       </div>
       <div class="stat-card">
@@ -74,7 +74,7 @@
             </div>
           </div>
 
-          <div class="anime-progress-row">
+          <div class="anime-progress-row" v-if="anime.format !== 'Movie'">
             <span class="progress-lbl">Progress:</span>
             <div class="episode-controls">
               <button 
@@ -97,7 +97,7 @@
             </div>
           </div>
 
-          <div class="goal-bar-wrap" style="margin-top: 10px; margin-bottom: 10px;">
+          <div class="goal-bar-wrap" style="margin-top: 10px; margin-bottom: 10px;" v-if="anime.format !== 'Movie'">
             <div class="goal-bar-fill" :style="{ width: calculateProgressPercentage(anime) + '%' }"></div>
           </div>
 
@@ -118,13 +118,13 @@
       <div class="modal-card">
         <button class="modal-close" @click="closeModal">×</button>
         <div class="modal-header">
-          <h3>{{ editingId ? 'Edit Anime' : 'Add New Anime' }}</h3>
+          <h3>{{ editingId ? 'Edit Entry' : 'Add New Entry' }}</h3>
         </div>
         <div class="modal-body">
           <form @submit.prevent="saveAnime">
             <div class="form-group">
-              <label>Anime Title</label>
-              <input type="text" v-model="animeTitle" placeholder="e.g. Demon Slayer" required />
+              <label>Title</label>
+              <input type="text" v-model="animeTitle" placeholder="e.g. Moneyball, Breaking Bad" required />
             </div>
 
             <div class="two-input">
@@ -134,6 +134,7 @@
                   <option value="TV">TV Series</option>
                   <option value="Movie">Movie</option>
                   <option value="OVA">OVA / Special</option>
+                  <option value="KDrama">KDrama</option>
                 </select>
               </div>
               <div class="form-group">
@@ -147,7 +148,7 @@
               </div>
             </div>
 
-            <div class="two-input">
+            <div class="two-input" v-if="animeFormat !== 'Movie'">
               <div class="form-group">
                 <label>Current Episode</label>
                 <input type="number" v-model.number="animeCurrentEpisode" min="0" placeholder="0" />
@@ -168,7 +169,7 @@
 
             <div style="display: flex; gap: 10px; margin-top: 20px;">
               <button type="submit" class="btn btn-primary" style="width: 100%;">
-                {{ editingId ? 'Update Anime' : 'Save Anime' }}
+                {{ editingId ? 'Update Entry' : 'Save Entry' }}
               </button>
             </div>
           </form>
@@ -253,13 +254,19 @@ function formatStatusLabel(s) {
 // CRUD
 function saveAnime() {
   if (!animeTitle.value.trim()) {
-    alert('Please enter an anime title.')
+    alert('Please enter a title.')
     return
   }
 
-  const total = parseInt(animeTotalEpisodes.value) || 0
+  let total = parseInt(animeTotalEpisodes.value) || 0
   let current = parseInt(animeCurrentEpisode.value) || 0
-  if (total > 0 && current > total) current = total
+
+  if (animeFormat.value === 'Movie') {
+    total = 1
+    current = animeStatus.value === 'completed' ? 1 : 0
+  } else {
+    if (total > 0 && current > total) current = total
+  }
 
   // Auto set status to completed if episodes reach max
   let status = animeStatus.value
