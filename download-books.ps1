@@ -28,7 +28,14 @@ $books = @(
   @{ id="don-quixote";                 url="https://www.gutenberg.org/cache/epub/996/pg996.txt" },
   @{ id="anna-karenina";               url="https://www.gutenberg.org/cache/epub/1399/pg1399.txt" },
   @{ id="brothers-karamazov";          url="https://www.gutenberg.org/cache/epub/28054/pg28054.txt" },
-  @{ id="sense-and-sensibility";       url="https://www.gutenberg.org/cache/epub/161/pg161.txt" }
+  @{ id="sense-and-sensibility";       url="https://www.gutenberg.org/cache/epub/161/pg161.txt" },
+  @{ id="psychology-of-management";    url="https://www.gutenberg.org/cache/epub/16256/pg16256.txt" },
+  @{ id="think-and-grow-rich";         url="https://www.gutenberg.org/cache/epub/67138/pg67138.txt" },
+  @{ id="personal-efficiency";         url="https://www.gutenberg.org/cache/epub/36622/pg36622.txt" },
+  @{ id="dream-psychology";            url="https://www.gutenberg.org/cache/epub/15489/pg15489.txt" },
+  @{ id="art-of-money-getting";        url="https://www.gutenberg.org/cache/epub/8581/pg8581.txt" },
+  @{ id="live-on-24-hours-a-day";      url="https://www.gutenberg.org/cache/epub/2274/pg2274.txt" },
+  @{ id="self-development";            url="https://www.gutenberg.org/cache/epub/36940/pg36940.txt" }
 )
 
 $outDir = "public\books"

@@ -241,6 +241,62 @@ export const LIBRARY_BOOKS = [
     genre: 'Romance',
     gutenbergId: 161,
     textUrl: 'https://www.gutenberg.org/cache/epub/161/pg161.txt'
+  },
+  {
+    id: 'psychology-of-management',
+    title: 'The Psychology of Management',
+    author: 'L.M. Gilbreth',
+    genre: 'Business & Psychology',
+    gutenbergId: 16256,
+    textUrl: 'https://www.gutenberg.org/cache/epub/16256/pg16256.txt'
+  },
+  {
+    id: 'think-and-grow-rich',
+    title: 'Think and Grow Rich',
+    author: 'Napoleon Hill',
+    genre: 'Business & Self-Help',
+    gutenbergId: 67138,
+    textUrl: 'https://www.gutenberg.org/cache/epub/67138/pg67138.txt'
+  },
+  {
+    id: 'personal-efficiency',
+    title: 'Increasing Personal Efficiency',
+    author: 'Russell H. Conwell',
+    genre: 'Self-Help & Productivity',
+    gutenbergId: 36622,
+    textUrl: 'https://www.gutenberg.org/cache/epub/36622/pg36622.txt'
+  },
+  {
+    id: 'dream-psychology',
+    title: 'Dream Psychology: Psychoanalysis for Beginners',
+    author: 'Sigmund Freud',
+    genre: 'Psychology',
+    gutenbergId: 15489,
+    textUrl: 'https://www.gutenberg.org/cache/epub/15489/pg15489.txt'
+  },
+  {
+    id: 'art-of-money-getting',
+    title: 'The Art of Money Getting',
+    author: 'P.T. Barnum',
+    genre: 'Business & Finance',
+    gutenbergId: 8581,
+    textUrl: 'https://www.gutenberg.org/cache/epub/8581/pg8581.txt'
+  },
+  {
+    id: 'live-on-24-hours-a-day',
+    title: 'How to Live on 24 Hours a Day',
+    author: 'Arnold Bennett',
+    genre: 'Self-Help & Wellness',
+    gutenbergId: 2274,
+    textUrl: 'https://www.gutenberg.org/cache/epub/2274/pg2274.txt'
+  },
+  {
+    id: 'self-development',
+    title: 'Self-Development and the Way to Power',
+    author: 'L.W. Rogers',
+    genre: 'Self-Help & Motivation',
+    gutenbergId: 36940,
+    textUrl: 'https://www.gutenberg.org/cache/epub/36940/pg36940.txt'
   }
 ];
 
