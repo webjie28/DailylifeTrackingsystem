@@ -211,14 +211,16 @@
               <tr v-for="day in recentWorkoutDays" :key="day.date">
                 <td class="log-td-date" style="font-weight: 600;">{{ day.date }}</td>
                 <td>
-                  <div v-if="day.exercises.length === 0" style="color: var(--text-muted); font-style: italic; font-size: 11px;">No exercises added</div>
-                  <div v-else style="display: flex; flex-wrap: wrap; gap: 4px;">
+                  <div v-if="day.exercises.length === 0" style="color: var(--text-muted); font-style: italic; font-size: 11px;">No exercises done</div>
+                  <div v-else style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
                     <span
-                      v-for="(ex, i) in day.exercises.slice(0, 5)"
+                      v-for="(ex, i) in day.exercises.slice(0, 8)"
                       :key="i"
-                      style="display: inline-block; background: rgba(249,115,22,0.08); color: #f97316; border-radius: 6px; padding: 3px 9px; font-size: 11px; font-weight: 600;"
+                      :style="ex.isMain ? 'background: rgba(249,115,22,0.15); color: #ea580c; border: 1px solid rgba(249,115,22,0.25);' : 'background: rgba(249,115,22,0.06); color: #f97316;'"
+                      style="display: inline-block; border-radius: 6px; padding: 3px 9px; font-size: 11px; font-weight: 600;"
                     >{{ ex.text }}</span>
-                    <span v-if="day.exercises.length > 5" style="font-size: 11px; color: var(--text-muted); font-style: italic; align-self: center;">+{{ day.exercises.length - 5 }} more</span>
+                    <span v-if="day.exercises.length > 8" style="font-size: 11px; color: var(--text-muted); font-style: italic; align-self: center;">+{{ day.exercises.length - 8 }} more</span>
+                    <span v-if="day.note" style="font-size: 11.5px; color: var(--text-muted); font-style: italic; margin-left: 6px;">({{ day.note }})</span>
                   </div>
                 </td>
                 <td style="text-align: right;">
@@ -686,45 +688,62 @@ const timesheetRows = computed(() => {
   return rows
 })
 
-// Collect all workout entries from gymRoutines (each day key has an array of exercises)
-// and from gymTrackerData (date-keyed calorie records)
+// Process and filter workout logs to only display actual manual logs and checked routine exercises
 const recentWorkoutDays = computed(() => {
   const routines = store.gymRoutines || {}
   const trackerData = store.gymTrackerData || {}
+  const checkedItems = store.gymCheckedItems || {}
 
-  // Build a map: date-string (YYYY-MM-DD) → { date, exercises[], calories }
   const map = {}
 
-  // gymTrackerData is keyed by date string like "2026-07-08"
-  for (const [dateKey, rec] of Object.entries(trackerData)) {
-    if (!map[dateKey]) map[dateKey] = { date: dateKey, exercises: [], calories: 0 }
-    map[dateKey].calories = rec.calories || 0
-    if (rec.workout) {
-      // workout may be a string label like "Gym Session"
-      if (!map[dateKey].exercises.find(e => e.text === rec.workout)) {
-        map[dateKey].exercises.push({ text: rec.workout })
+  // 1. Process checked exercises from Weekly Routines
+  for (const [checkKey, checks] of Object.entries(checkedItems)) {
+    if (!checks) continue
+    const parts = checkKey.split('_')
+    if (parts.length < 2) continue
+    const dateKey = parts[0]
+    const dayName = parts[1].toUpperCase()
+
+    // Find exercise indices that were checked (true)
+    const checkedIndices = Object.entries(checks)
+      .filter(([_, checked]) => !!checked)
+      .map(([index]) => parseInt(index))
+
+    if (checkedIndices.length === 0) continue
+
+    const dayPlan = routines[dayName] || []
+    const checkedExercises = checkedIndices
+      .map(idx => dayPlan[idx])
+      .filter(Boolean)
+
+    if (checkedExercises.length === 0) continue
+
+    if (!map[dateKey]) {
+      map[dateKey] = { date: dateKey, exercises: [], calories: 0 }
+    }
+
+    for (const ex of checkedExercises) {
+      if (!map[dateKey].exercises.find(e => e.text === ex.text)) {
+        map[dateKey].exercises.push({ text: ex.text })
       }
     }
   }
 
-  // gymRoutines is keyed by day name (MONDAY, TUESDAY…) — show current week's planned workouts
-  // We'll mark them with today's week context if they have exercises
-  const dayNames = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
-  const today = new Date()
-  for (const [dayName, exercises] of Object.entries(routines)) {
-    if (!exercises || exercises.length === 0) continue
-    const dayIndex = dayNames.indexOf(dayName.toUpperCase())
-    if (dayIndex === -1) continue
-    // Compute the date of this weekday in the current week
-    const diff = dayIndex - today.getDay()
-    const d = new Date(today)
-    d.setDate(today.getDate() + diff)
-    const dateKey = d.toISOString().split('T')[0]
-    if (!map[dateKey]) map[dateKey] = { date: dateKey, exercises: [], calories: 0 }
-    for (const ex of exercises) {
-      if (!map[dateKey].exercises.find(e => e.text === ex.text)) {
-        map[dateKey].exercises.push(ex)
+  // 2. Process manual gym logs (Log Gym Session form)
+  for (const [dateKey, rec] of Object.entries(trackerData)) {
+    if (!rec) continue
+    if (!map[dateKey]) {
+      map[dateKey] = { date: dateKey, exercises: [], calories: 0 }
+    }
+    map[dateKey].calories = rec.calories || 0
+    if (rec.workout) {
+      // Add manual workout name at the beginning of the list
+      if (!map[dateKey].exercises.find(e => e.text === rec.workout)) {
+        map[dateKey].exercises.unshift({ text: rec.workout, isMain: true })
       }
+    }
+    if (rec.note) {
+      map[dateKey].note = rec.note
     }
   }
 
