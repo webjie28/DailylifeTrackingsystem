@@ -610,18 +610,16 @@ const tabs = [
   { key: 'steps', label: 'Steps Trend' },
   { key: 'calories', label: 'Calories' },
   { key: 'workload', label: 'Work Hours' },
-  { key: 'growth', label: 'Savings' },
-  { key: 'expenses', label: 'Expenses' },
-  { key: 'loans', label: 'Goals' }
+  { key: 'growth', label: 'Personal Saving' },
+  { key: 'expenses', label: 'Expenses' }
 ]
 
 const titles = {
   steps: 'Weekly Steps Trend (Last 7 Days)',
   calories: 'Calories Burned Trend (30 Days)',
   workload: 'Weekly Work Hours & Workload (Last 7 Days)',
-  growth: 'Savings Growth Over Time',
-  expenses: 'Expenses by Category',
-  loans: 'Savings Goals Progress'
+  growth: 'Personal Saving Growth Over Time',
+  expenses: 'Expenses by Category'
 }
 
 const activeChartTitle = computed(() => titles[activeChart.value])
@@ -638,9 +636,6 @@ const hasRealData = computed(() => {
   }
   if (activeChart.value === 'expenses') {
     return store.financeTransactions.some(t => t.type === 'expense')
-  }
-  if (activeChart.value === 'loans') {
-    return store.savingsGoals.length > 0
   }
   if (activeChart.value === 'calories') {
     const hasGym = Object.values(store.gymTrackerData).some(v => v && v.calories > 0)
@@ -854,48 +849,6 @@ function renderChart() {
           legend: {
             position: 'bottom',
             labels: { boxWidth: 12, padding: 16 }
-          }
-        }
-      }
-    })
-  } else if (activeChart.value === 'loans') {
-    // Actual Goals Progress Data
-    const data = store.savingsGoals.map(g => {
-      const contribs = store.savingsContributions.filter(c => c.goalId === g.id)
-      const totalSaved = contribs.reduce((sum, c) => {
-        if (c.type === 'deposit') return sum + (parseFloat(c.amount) || 0)
-        if (c.type === 'withdraw') return sum - (parseFloat(c.amount) || 0)
-        return sum
-      }, 0)
-      const progress = g.target > 0 ? Math.min(100, Math.round((totalSaved / g.target) * 100)) : 0
-      return { label: g.name, progress }
-    })
-    
-    const displayData = data
-    
-    chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: displayData.map(p => p.label),
-        datasets: [{
-          label: 'Progress (%)',
-          data: displayData.map(p => p.progress),
-          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-purple').trim() || '#334155',
-          borderRadius: 12,
-          maxBarThickness: 40
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { display: false } },
-          y: {
-            beginAtZero: true,
-            max: 100,
-            ticks: { callback: v => `${v}%` },
-            grid: { color: 'rgba(148, 163, 184, 0.15)' }
           }
         }
       }
