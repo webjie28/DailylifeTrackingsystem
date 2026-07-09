@@ -251,40 +251,70 @@
             </span>
           </div>
 
-          <div v-if="store.workTimeLogs.length === 0" class="empty-msg" style="text-align: center; padding: 32px 0; font-size: 13px;">
-            No work sessions yet. Use Clock In above to start a shift.
-          </div>
-          <div v-else class="logs-table-wrapper" style="max-height: 320px; overflow-y: auto;">
-            <table class="logs-history-table timesheet-table" style="font-size: 12.5px;">
+          <div class="logs-table-wrapper" style="max-height: 340px; overflow-y: auto;">
+            <table class="logs-history-table timesheet-table" style="font-size: 12px;">
               <thead>
                 <tr>
-                  <th>Shift Type</th>
-                  <th>Date</th>
-                  <th>Duration</th>
+                  <th style="min-width:70px;">Day</th>
+                  <th>Clock In</th>
+                  <th>Clock Out</th>
+                  <th style="min-width:60px;">Hours</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="log in [...store.workTimeLogs].reverse()" :key="log.id" :class="{ 'log-row-active': !log.clockOut }">
+                <tr
+                  v-for="row in timesheetRows"
+                  :key="row.key"
+                  :class="{
+                    'log-row-active': row.type === 'work' && !row.log.clockOut,
+                    'ts-rest-row': row.type === 'rest'
+                  }"
+                >
+                  <!-- Day cell -->
                   <td>
-                    <div style="font-weight: 700; font-size: 12.5px; color: var(--text-primary);">Night Shift</div>
-                    <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 1px;">
-                      {{ formatTime(log.clockIn) }} — {{ log.clockOut ? formatTime(log.clockOut) : 'Ongoing' }}
+                    <div style="font-weight: 700; font-size: 12.5px;" :style="row.type === 'rest' ? 'color: var(--text-muted)' : 'color: var(--text-primary)'">
+                      {{ row.dayLabel }}
                     </div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 1px;">{{ row.dateLabel }}</div>
                   </td>
-                  <td>
-                    <div style="font-size: 12px;">{{ formatLogDateRange(log) }}</div>
-                  </td>
-                  <td>
-                    <span v-if="log.duration !== null && log.duration !== undefined" style="font-weight: 600; color: var(--text-primary);">
-                      {{ formatDuration(log.duration) }}
+
+                  <!-- Clock In -->
+                  <td v-if="row.type === 'rest'" colspan="3" style="text-align: center;">
+                    <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(100,116,139,0.10); color: var(--text-muted); border-radius: 8px; padding: 3px 12px; font-size: 11px; font-weight: 600;">
+                      🌙 Rest Day
                     </span>
-                    <span v-else class="log-in-progress-badge">In Progress</span>
                   </td>
-                  <td>
-                    <span class="punctuality-badge" :class="getPunctualityStatus(log.clockIn).status">
-                      ● {{ getPunctualityStatus(log.clockIn).text }}
+                  <template v-else>
+                    <td>
+                      <div style="font-weight: 600; font-size: 12px; color: #22c55e;">{{ formatDateTime(row.log.clockIn) }}</div>
+                    </td>
+                    <td>
+                      <div v-if="row.log.clockOut" style="font-weight: 600; font-size: 12px; color: #f97316;">{{ formatDateTime(row.log.clockOut) }}</div>
+                      <span v-else class="log-in-progress-badge">● Ongoing</span>
+                    </td>
+                    <td>
+                      <span v-if="row.log.duration !== null && row.log.duration !== undefined" style="font-weight: 700; color: var(--text-primary);">
+                        {{ formatDuration(row.log.duration) }}
+                      </span>
+                      <span v-else style="color: var(--text-muted);">—</span>
+                    </td>
+                  </template>
+
+                  <!-- Status -->
+                  <td v-if="row.type === 'rest'">
+                    <span class="punctuality-badge" style="background: rgba(100,116,139,0.10); color: var(--text-muted); border-color: transparent;">Off</span>
+                  </td>
+                  <td v-else>
+                    <span class="punctuality-badge" :class="getPunctualityStatus(row.log.clockIn).status">
+                      ● {{ getPunctualityStatus(row.log.clockIn).text }}
                     </span>
+                  </td>
+                </tr>
+
+                <tr v-if="timesheetRows.length === 0">
+                  <td colspan="5" class="empty-msg" style="text-align: center; padding: 28px 0; font-size: 13px;">
+                    No work sessions yet. Use Clock In above to start a shift.
                   </td>
                 </tr>
               </tbody>
@@ -596,6 +626,65 @@ function formatLogDateRange(log) {
   const options = { month: 'short', day: 'numeric', weekday: 'short' }
   return d.toLocaleDateString(undefined, options)
 }
+
+// Format ISO datetime as "Jul 8 · 10:00 PM" 
+function formatDateTime(isoStr) {
+  if (!isoStr) return '—'
+  const d = new Date(isoStr)
+  const datePart = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  const timePart = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+  return `${datePart} · ${timePart}`
+}
+
+// Build timesheet rows: real work logs + Sat/Sun rest rows for last 4 weeks
+const timesheetRows = computed(() => {
+  const rows = []
+
+  // 1. Work log rows
+  for (const log of store.workTimeLogs) {
+    const d = new Date(log.clockIn)
+    const dateKey = d.toISOString().split('T')[0]
+    rows.push({
+      key: 'work-' + log.id,
+      type: 'work',
+      sortDate: dateKey,
+      dayLabel: d.toLocaleDateString(undefined, { weekday: 'short' }),
+      dateLabel: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
+      log
+    })
+  }
+
+  // 2. Saturday & Sunday rest rows — past 8 weeks
+  const today = new Date()
+  const existingWorkDates = new Set(store.workTimeLogs.map(l => new Date(l.clockIn).toISOString().split('T')[0]))
+  for (let week = 0; week < 8; week++) {
+    for (const dayOffset of [6, 0]) { // 6 = Saturday, 0 = Sunday
+      const d = new Date(today)
+      // Go back to this weekday
+      const diff = dayOffset - today.getDay() - week * 7
+      d.setDate(today.getDate() + diff)
+      const dateKey = d.toISOString().split('T')[0]
+      // Don't add rest row if they clocked in on that day
+      if (existingWorkDates.has(dateKey)) continue
+      // Only show past / current dates (not future beyond tomorrow)
+      const tomorrow = new Date(today)
+      tomorrow.setDate(today.getDate() + 1)
+      if (d > tomorrow) continue
+      rows.push({
+        key: 'rest-' + dateKey,
+        type: 'rest',
+        sortDate: dateKey,
+        dayLabel: d.toLocaleDateString(undefined, { weekday: 'short' }),
+        dateLabel: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
+        log: null
+      })
+    }
+  }
+
+  // Sort newest first
+  rows.sort((a, b) => b.sortDate.localeCompare(a.sortDate))
+  return rows
+})
 
 // Collect all workout entries from gymRoutines (each day key has an array of exercises)
 // and from gymTrackerData (date-keyed calorie records)
@@ -1478,7 +1567,14 @@ watch(
     font-weight: 700;
     font-size: 12.5px;
 }
-
+.ts-rest-row td {
+    background: rgba(100, 116, 139, 0.04);
+    opacity: 0.75;
+}
+.ts-rest-row:hover td {
+    background: rgba(100, 116, 139, 0.08);
+    opacity: 1;
+}
 
 .python-analytics-box {
     background: var(--bg-subtle, rgba(255,255,255,0.06));
