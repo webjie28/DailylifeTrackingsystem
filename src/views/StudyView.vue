@@ -71,14 +71,43 @@
 
     <!-- Library Bookshelf — top section -->
     <div class="panel bookshelf-panel animate-in delay-150" style="margin-bottom: 24px;">
-      <h3 style="margin-bottom: 18px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
-        Library Bookshelf
-        <span style="font-size: 12px; font-weight: 400; color: var(--text-muted); margin-left: 8px;">({{ LIBRARY_BOOKS.length }} books — click to read)</span>
-      </h3>
-      <div class="library-grid">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px;">
+        <h3 style="margin: 0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
+          Library Bookshelf
+          <span style="font-size: 12px; font-weight: 400; color: var(--text-muted); margin-left: 8px;">({{ filteredBooks.length }} of {{ LIBRARY_BOOKS.length }} books)</span>
+        </h3>
+        <!-- Search bar -->
+        <div style="position: relative; width: 100%; max-width: 320px;">
+          <input 
+            type="text" 
+            v-model="bookSearchQuery" 
+            placeholder="Search book title or author..." 
+            style="width: 100%; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-card-header); color: var(--text-primary); font-size: 13.5px;"
+          />
+        </div>
+      </div>
+
+      <!-- Genre Tabs -->
+      <div class="genre-filter-row" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; padding-bottom: 12px; border-bottom: 1px dashed var(--border-color);">
+        <button 
+          v-for="genre in genres" 
+          :key="genre" 
+          class="btn-genre-tab" 
+          :class="{ 'active': selectedGenre === genre }"
+          @click="selectedGenre = genre"
+        >
+          {{ genre }}
+        </button>
+      </div>
+
+      <div class="library-grid" style="max-height: 520px; overflow-y: auto; padding-right: 4px;">
+        <div v-if="filteredBooks.length === 0" class="empty-msg" style="grid-column: 1 / -1; padding: 40px; text-align: center; color: var(--text-muted);">
+          No books found matching the search or genre criteria.
+        </div>
         <div
-          v-for="book in LIBRARY_BOOKS"
+          v-else
+          v-for="book in filteredBooks"
           :key="book.id"
           class="library-card"
           @click="openReadingSetup(book)"
@@ -88,7 +117,8 @@
           </div>
           <div class="library-card-body">
             <h4 class="library-book-title">{{ book.title }}</h4>
-            <span class="library-book-genre">{{ book.genre }}</span>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">by {{ book.author }}</div>
+            <span class="library-book-genre" style="background: rgba(var(--accent-rgb, 249, 115, 22), 0.08); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; color: var(--accent-color);">{{ book.genre }}</span>
           </div>
         </div>
       </div>
@@ -232,6 +262,24 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '../stores/appStore'
 import { LIBRARY_BOOKS, fetchBookText } from '../services/libraryBooks'
+
+// Bookshelf filter states
+const selectedGenre = ref('All')
+const bookSearchQuery = ref('')
+
+const genres = computed(() => {
+  const all = LIBRARY_BOOKS.map(b => b.genre)
+  return ['All', ...Array.from(new Set(all))]
+})
+
+const filteredBooks = computed(() => {
+  return LIBRARY_BOOKS.filter(b => {
+    const matchesGenre = selectedGenre.value === 'All' || b.genre === selectedGenre.value
+    const matchesSearch = b.title.toLowerCase().includes(bookSearchQuery.value.toLowerCase()) ||
+                          b.author.toLowerCase().includes(bookSearchQuery.value.toLowerCase())
+    return matchesGenre && matchesSearch
+  })
+})
 
 // Live reader state
 const bookParagraphs = ref([])
@@ -1315,5 +1363,29 @@ onUnmounted(() => {
   justify-content: center;
   text-align: center;
   padding-left: 8px;
+}
+
+/* Genre filter buttons style */
+.btn-genre-tab {
+  padding: 6px 14px;
+  border-radius: 99px;
+  background: var(--bg-card-header);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+.btn-genre-tab:hover {
+  border-color: var(--accent-purple, var(--accent-color));
+  color: var(--text-primary);
+}
+.btn-genre-tab.active {
+  background: var(--accent-purple, var(--accent-color));
+  color: white;
+  border-color: var(--accent-purple, var(--accent-color));
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
 }
 </style>
