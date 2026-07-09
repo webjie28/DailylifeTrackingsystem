@@ -254,14 +254,14 @@
           </div>
 
           <div class="logs-table-wrapper" style="max-height: 380px; overflow-y: auto;">
-            <table class="logs-history-table timesheet-table" style="font-size: 13px; width: 100%;">
+            <table class="logs-history-table timesheet-table" style="font-size: 13px; width: auto; min-width: 500px;">
               <thead>
                 <tr>
-                  <th style="width: 110px;">Shift Type</th>
-                  <th>Date</th>
-                  <th style="width: 80px;">Time In</th>
-                  <th style="width: 80px;">Time Out</th>
-                  <th style="width: 140px;">Rest Day</th>
+                  <th style="width: 100px;">Shift Type</th>
+                  <th style="width: 110px;">Date</th>
+                  <th style="width: 70px;">Time In</th>
+                  <th style="width: 70px;">Time Out</th>
+                  <th style="width: 120px;">Rest Day</th>
                 </tr>
               </thead>
               <tbody>
@@ -1614,7 +1614,7 @@ watch(
 .timesheet-table th,
 .timesheet-table td {
     white-space: nowrap;
-    padding: 10px 14px;
+    padding: 8px 6px;
 }
 .timesheet-table td:first-child div:first-child {
     font-weight: 700;
