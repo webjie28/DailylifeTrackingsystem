@@ -279,8 +279,8 @@
                     </div>
                   </div>
                   <div v-else>
-                    <div style="font-weight: 700; font-size: 13.5px; color: var(--text-muted);">{{ row.dayLabel }}</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">{{ row.dateLabel }}</div>
+                    <div style="font-weight: 700; font-size: 13.5px; color: var(--text-muted);">🌙 Rest Day</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">No Shift</div>
                   </div>
                 </td>
 
@@ -289,15 +289,15 @@
                   <span v-if="row.type === 'work'" style="font-size: 13px; color: var(--text-primary);">
                     {{ formatFullDate(row.log.clockIn) }} — {{ row.log.clockOut ? formatFullDate(row.log.clockOut) : 'Present' }}
                   </span>
-                  <span v-else style="display: inline-flex; align-items: center; gap: 5px; color: var(--text-muted); font-size: 12px;">
-                    🌙 Rest Day
+                  <span v-else style="font-size: 13px; color: var(--text-muted);">
+                    {{ row.dateRangeLabel }}
                   </span>
                 </td>
 
                 <!-- Rest Day -->
                 <td>
                   <span v-if="row.type === 'work'" style="font-size: 13px; color: var(--text-secondary);">Saturday, Sunday</span>
-                  <span v-else style="font-size: 12px; color: var(--text-muted);">—</span>
+                  <span v-else style="font-size: 13px; color: var(--text-muted);">Saturday, Sunday</span>
                 </td>
               </tr>
 
@@ -672,12 +672,14 @@ const timesheetRows = computed(() => {
       const tomorrow = new Date(today)
       tomorrow.setDate(today.getDate() + 1)
       if (d > tomorrow) continue
+      const dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
       rows.push({
         key: 'rest-' + dateKey,
         type: 'rest',
         sortDate: dateKey,
         dayLabel: d.toLocaleDateString(undefined, { weekday: 'short' }),
-        dateLabel: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
+        dateLabel: dateStr,
+        dateRangeLabel: `${dateStr} — ${dateStr}`,
         log: null
       })
     }
