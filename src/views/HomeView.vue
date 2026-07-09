@@ -31,24 +31,57 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="log in [...store.workTimeLogs].reverse()" :key="log.id" :class="{ 'log-row-active': !log.clockOut }">
-                <td class="log-td-date">{{ log.date }}</td>
-                <td class="log-td-time">{{ formatTime(log.clockIn) }}</td>
+              <tr 
+                v-for="row in combinedWorkLogRows" 
+                :key="row.id" 
+                :class="{ 
+                  'log-row-active': row.type === 'work' && !row.clockOut,
+                  'ts-rest-row': row.type === 'rest'
+                }"
+              >
+                <!-- Date -->
+                <td class="log-td-date" :style="row.type === 'rest' ? 'color: var(--text-muted); font-weight: 500;' : ''">
+                  {{ row.date }}
+                </td>
+                
+                <!-- Clock In -->
                 <td class="log-td-time">
-                  <span v-if="log.clockOut">{{ formatTime(log.clockOut) }}</span>
-                  <span v-else class="log-in-progress-badge">● In Progress</span>
+                  <span v-if="row.type === 'work'">{{ formatTime(row.clockIn) }}</span>
+                  <span v-else style="color: var(--text-muted);">—</span>
                 </td>
+
+                <!-- Clock Out -->
+                <td class="log-td-time">
+                  <span v-if="row.type === 'work' && row.clockOut">{{ formatTime(row.clockOut) }}</span>
+                  <span v-else-if="row.type === 'work'" class="log-in-progress-badge">● In Progress</span>
+                  <span v-else style="color: var(--text-muted);">—</span>
+                </td>
+
+                <!-- Hours -->
                 <td class="log-td-hours">
-                  {{ log.duration !== null && log.duration !== undefined ? formatDuration(log.duration) : '—' }}
+                  <span v-if="row.type === 'work'">
+                    {{ row.duration !== null && row.duration !== undefined ? formatDuration(row.duration) : '—' }}
+                  </span>
+                  <span v-else style="color: var(--text-muted);">—</span>
                 </td>
+
+                <!-- Status -->
                 <td>
-                  <span class="punctuality-badge" :class="getPunctualityStatus(log.clockIn).status">
-                    ● {{ getPunctualityStatus(log.clockIn).text }}
+                  <span v-if="row.type === 'work'" class="punctuality-badge" :class="getPunctualityStatus(row.clockIn).status">
+                    ● {{ getPunctualityStatus(row.clockIn).text }}
+                  </span>
+                  <span v-else class="punctuality-badge" style="background: rgba(100,116,139,0.08); color: var(--text-muted); border-color: transparent;">
+                    Rest Day
                   </span>
                 </td>
-                <td class="log-note-td" :title="log.note">{{ log.note || '—' }}</td>
+
+                <!-- Note -->
+                <td class="log-note-td" :title="row.note">{{ row.note || '—' }}</td>
+
+                <!-- Actions -->
                 <td>
-                  <button class="btn-del-log" @click="confirmDeleteWorkLog(log)">✕</button>
+                  <button v-if="row.type === 'work'" class="btn-del-log" @click="confirmDeleteWorkLog(row.rawLog)">✕</button>
+                  <span v-else style="color: var(--text-muted);">—</span>
                 </td>
               </tr>
             </tbody>
@@ -179,157 +212,7 @@
       </div>
     </section>
 
-    <!-- Workout Log & Shift Schedule Side-by-Side Row -->
-    <section class="animate-in delay-200" style="margin-bottom: 24px;">
-      <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; width: 100%;">
-
-        <!-- Workout Log Table -->
-        <article class="focus-minimal-card" style="flex: 1; min-width: 380px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(249,115,22,0.25);">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" width="17" height="17" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-              </div>
-              <div>
-                <h3 style="margin: 0; font-size: 15px; font-weight: 700;">Workout Log</h3>
-                <span style="font-size: 11px; color: var(--text-muted);">Recent exercises per day</span>
-              </div>
-            </div>
-            <router-link to="/fitness" style="font-size: 12px; color: var(--accent-color); text-decoration: none; font-weight: 600; opacity: 0.8;">View all →</router-link>
-          </div>
-
-          <div v-if="recentWorkoutDays.length === 0" class="empty-msg" style="text-align: center; padding: 36px 0; font-size: 13px;">
-            No workouts logged yet. Head to Fitness to start tracking!
-          </div>
-          <div v-else class="logs-table-wrapper" style="max-height: 380px; overflow-y: auto;">
-            <table class="logs-history-table" style="font-size: 13px;">
-              <thead>
-                <tr>
-                  <th style="width: 110px;">Date</th>
-                  <th>Exercises Done</th>
-                  <th style="width: 80px; text-align: right;">Calories</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="day in recentWorkoutDays" :key="day.date">
-                  <td class="log-td-date" style="font-weight: 600;">{{ day.date }}</td>
-                  <td>
-                    <div v-if="day.exercises.length === 0" style="color: var(--text-muted); font-style: italic; font-size: 11px;">No exercises done</div>
-                    <div v-else style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
-                      <span
-                        v-for="(ex, i) in day.exercises.slice(0, 8)"
-                        :key="i"
-                        :style="ex.isMain ? 'background: rgba(249,115,22,0.15); color: #ea580c; border: 1px solid rgba(249,115,22,0.25);' : 'background: rgba(249,115,22,0.06); color: #f97316;'"
-                        style="display: inline-block; border-radius: 6px; padding: 3px 9px; font-size: 11px; font-weight: 600;"
-                      >{{ ex.text }}</span>
-                      <span v-if="day.exercises.length > 8" style="font-size: 11px; color: var(--text-muted); font-style: italic; align-self: center;">+{{ day.exercises.length - 8 }} more</span>
-                      <span v-if="day.note" style="font-size: 11.5px; color: var(--text-muted); font-style: italic; margin-left: 6px;">({{ day.note }})</span>
-                    </div>
-                  </td>
-                  <td style="text-align: right;">
-                    <span v-if="day.calories > 0" style="color: #f97316; font-weight: 700; font-size: 13px;">{{ day.calories }} kcal</span>
-                    <span v-else style="color: var(--text-muted);">—</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        <!-- Daily Timesheet (Shift Schedule) -->
-        <article class="focus-minimal-card" style="flex: 1.2; min-width: 480px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(99,102,241,0.25);">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" width="17" height="17" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </div>
-              <div>
-                <h3 style="margin: 0; font-size: 15px; font-weight: 700;">Shift Schedule</h3>
-                <span style="font-size: 11px; color: var(--text-muted);">Work log & rest days</span>
-              </div>
-            </div>
-            <span class="status-dot-badge" :class="{ active: store.isClockedIn }">
-              {{ store.isClockedIn ? '● On Shift' : store.workTimeLogs.length + ' sessions' }}
-            </span>
-          </div>
-
-          <div class="logs-table-wrapper" style="max-height: 380px; overflow-y: auto;">
-            <table class="logs-history-table timesheet-table" style="font-size: 13px; width: auto; min-width: 500px;">
-              <thead>
-                <tr>
-                  <th style="width: 100px;">Shift Type</th>
-                  <th style="width: 110px;">Date</th>
-                  <th style="width: 70px;">Time In</th>
-                  <th style="width: 70px;">Time Out</th>
-                  <th style="width: 120px;">Rest Day</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="row in timesheetRows"
-                  :key="row.key"
-                  :class="{
-                    'log-row-active': row.type === 'work' && !row.log.clockOut,
-                    'ts-rest-row': row.type === 'rest'
-                  }"
-                >
-                  <!-- Shift Type -->
-                  <td>
-                    <div v-if="row.type === 'work'" style="font-weight: 700; font-size: 13px; color: var(--text-primary);">
-                      Night Shift
-                    </div>
-                    <div v-else style="font-weight: 700; font-size: 13px; color: var(--text-muted);">
-                      Rest Day
-                    </div>
-                  </td>
-
-                  <!-- Date -->
-                  <td>
-                    <span v-if="row.type === 'work'" style="font-size: 13px; color: var(--text-primary);">
-                      {{ formatFullDate(row.log.clockIn) }}
-                    </span>
-                    <span v-else style="font-size: 13px; color: var(--text-muted);">
-                      {{ row.dateLabel }}
-                    </span>
-                  </td>
-
-                  <!-- Time In -->
-                  <td>
-                    <span v-if="row.type === 'work'" style="font-size: 13px; font-weight: 600; color: #22c55e;">
-                      {{ formatShiftTime(row.log.clockIn) }}
-                    </span>
-                    <span v-else style="font-size: 13px; color: var(--text-muted);">—</span>
-                  </td>
-
-                  <!-- Time Out -->
-                  <td>
-                    <span v-if="row.type === 'work' && row.log.clockOut" style="font-size: 13px; font-weight: 600; color: #f97316;">
-                      {{ formatShiftTime(row.log.clockOut) }}
-                    </span>
-                    <span v-else-if="row.type === 'work'" class="log-in-progress-badge">● Ongoing</span>
-                    <span v-else style="font-size: 13px; color: var(--text-muted);">—</span>
-                  </td>
-
-                  <!-- Rest Day -->
-                  <td>
-                    <span style="font-size: 13px; color: var(--text-secondary);">Saturday, Sunday</span>
-                  </td>
-                </tr>
-
-                <tr v-if="timesheetRows.length === 0">
-                  <td colspan="5" class="empty-msg" style="text-align: center; padding: 32px 0; font-size: 13px;">
-                    No work sessions yet. Use Clock In above to start tracking.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-      </div>
-    </section>
-
-    <!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
+<!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
     <section class="animate-in delay-250" style="margin-bottom: 36px;">
       <article class="chart-card-tabbed">
         <div class="chart-tab-header">
@@ -640,39 +523,28 @@ function formatDateTime(isoStr) {
   return `${datePart} · ${timePart}`
 }
 
-// Format time as HH:MM (24h) for the shift type row, e.g. "22:00"
-function formatShiftTime(isoStr) {
-  if (!isoStr) return '—'
-  const d = new Date(isoStr)
-  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
-}
-
-// Format full date e.g. "May 31, 2026"
-function formatFullDate(isoStr) {
-  if (!isoStr) return '—'
-  const d = new Date(isoStr)
-  return d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
-}
-
-// Build timesheet rows: real work logs + Sat/Sun rest rows scoped to active work history
-const timesheetRows = computed(() => {
+// Build consolidated work log list including actual work log records + Saturday/Sunday rest days
+const combinedWorkLogRows = computed(() => {
   const rows = []
 
-  // 1. Work log rows
+  // 1. Add real work logs
   for (const log of store.workTimeLogs) {
     const d = new Date(log.clockIn)
     const dateKey = d.toISOString().split('T')[0]
     rows.push({
-      key: 'work-' + log.id,
+      id: 'work-' + log.id,
       type: 'work',
       sortDate: dateKey,
-      dayLabel: d.toLocaleDateString(undefined, { weekday: 'short' }),
-      dateLabel: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
-      log
+      date: log.date,
+      clockIn: log.clockIn,
+      clockOut: log.clockOut,
+      duration: log.duration,
+      note: log.note,
+      rawLog: log
     })
   }
 
-  // 2. Saturday & Sunday rest rows — generated dynamically from oldest work log date to today
+  // 2. Add Saturday & Sunday rest rows dynamically based on work log history range
   const today = new Date()
   const existingWorkDates = new Set(store.workTimeLogs.map(l => new Date(l.clockIn).toISOString().split('T')[0]))
 
@@ -700,93 +572,23 @@ const timesheetRows = computed(() => {
     if ((dayOfWeek === 0 || dayOfWeek === 6) && !existingWorkDates.has(dateKey)) {
       const dateStr = checkDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
       rows.push({
-        key: 'rest-' + dateKey,
+        id: 'rest-' + dateKey,
         type: 'rest',
         sortDate: dateKey,
-        dayLabel: checkDate.toLocaleDateString(undefined, { weekday: 'short' }),
-        dateLabel: dateStr,
-        dateRangeLabel: dateStr,
-        log: null
+        date: dateStr,
+        clockIn: null,
+        clockOut: null,
+        duration: null,
+        note: '',
+        rawLog: null
       })
     }
     checkDate.setDate(checkDate.getDate() + 1)
   }
 
-  // Sort newest first
+  // Sort descending (newest first)
   rows.sort((a, b) => b.sortDate.localeCompare(a.sortDate))
   return rows
-})
-
-// Process and filter workout logs to only display actual manual logs and checked routine exercises
-const recentWorkoutDays = computed(() => {
-  const routines = store.gymRoutines || {}
-  const trackerData = store.gymTrackerData || {}
-  const checkedItems = store.gymCheckedItems || {}
-
-  const map = {}
-
-  // 1. Process checked exercises from Weekly Routines
-  for (const [checkKey, checks] of Object.entries(checkedItems)) {
-    if (!checks) continue
-    const parts = checkKey.split('_')
-    if (parts.length < 2) continue
-    const dateKey = parts[0]
-    const dayName = parts[1].toUpperCase()
-
-    // Find exercise indices that were checked (true)
-    const checkedIndices = Object.entries(checks)
-      .filter(([_, checked]) => !!checked)
-      .map(([index]) => parseInt(index))
-
-    if (checkedIndices.length === 0) continue
-
-    const dayPlan = routines[dayName] || []
-    const checkedExercises = checkedIndices
-      .map(idx => dayPlan[idx])
-      .filter(Boolean)
-
-    if (checkedExercises.length === 0) continue
-
-    if (!map[dateKey]) {
-      map[dateKey] = { date: dateKey, exercises: [], calories: 0 }
-    }
-
-    for (const ex of checkedExercises) {
-      if (!map[dateKey].exercises.find(e => e.text === ex.text)) {
-        map[dateKey].exercises.push({ text: ex.text })
-      }
-    }
-  }
-
-  // 2. Process manual gym logs (Log Gym Session form)
-  for (const [dateKey, rec] of Object.entries(trackerData)) {
-    if (!rec) continue
-    if (!map[dateKey]) {
-      map[dateKey] = { date: dateKey, exercises: [], calories: 0 }
-    }
-    map[dateKey].calories = rec.calories || 0
-    if (rec.workout) {
-      // Add manual workout name at the beginning of the list
-      if (!map[dateKey].exercises.find(e => e.text === rec.workout)) {
-        map[dateKey].exercises.unshift({ text: rec.workout, isMain: true })
-      }
-    }
-    if (rec.note) {
-      map[dateKey].note = rec.note
-    }
-  }
-
-  // Sort descending by date, take most recent 10
-  return Object.values(map)
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 10)
-    .map(row => ({
-      ...row,
-      date: (() => {
-        const d = new Date(row.date + 'T00:00:00')
-        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', weekday: 'short' })
-      })()
-    }))
 })
 
 onMounted(() => {
