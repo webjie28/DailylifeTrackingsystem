@@ -179,151 +179,137 @@
       </div>
     </section>
 
-    <!-- Workout Log + Daily Timesheet Row -->
-    <section class="animate-in delay-200" style="margin-bottom: 32px;">
-      <div class="dashboard-dual-row">
-
-        <!-- Workout Log Table -->
-        <article class="focus-minimal-card" style="flex: 1; min-width: 0;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(249,115,22,0.25);">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" width="16" height="16" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5m-2.5 0a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0"/><path d="M6.5 14.5m-2.5 0a2.5 2.5 0 1 0 5 0 2.5 2.5 0 1 0-5 0"/><path d="M6.5 9v3"/><path d="M14 12H9m5 0l-3-3m3 3-3 3"/></svg>
-              </div>
-              <div>
-                <h3 style="margin: 0; font-size: 15px; font-weight: 700;">Workout Log</h3>
-                <span style="font-size: 11px; color: var(--text-muted);">Recent exercises logged</span>
-              </div>
+    <!-- Workout Log Table (Full Width) -->
+    <section class="animate-in delay-200" style="margin-bottom: 28px;">
+      <article class="focus-minimal-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(249,115,22,0.25);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" width="17" height="17" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
             </div>
-            <router-link to="/fitness" style="font-size: 11px; color: var(--accent-color); text-decoration: none; font-weight: 600; opacity: 0.8;">View all →</router-link>
-          </div>
-
-          <div v-if="recentWorkoutDays.length === 0" class="empty-msg" style="text-align: center; padding: 32px 0; font-size: 13px;">
-            No workouts logged yet. Head to Fitness to start tracking!
-          </div>
-          <div v-else class="logs-table-wrapper" style="max-height: 320px; overflow-y: auto;">
-            <table class="logs-history-table" style="font-size: 12.5px;">
-              <thead>
-                <tr>
-                  <th style="width: 90px;">Date</th>
-                  <th>Exercises Done</th>
-                  <th style="width: 70px; text-align: right;">Calories</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="day in recentWorkoutDays" :key="day.date">
-                  <td class="log-td-date">{{ day.date }}</td>
-                  <td>
-                    <div v-if="day.exercises.length === 0" style="color: var(--text-muted); font-style: italic; font-size: 11px;">No exercises added</div>
-                    <div v-else>
-                      <span
-                        v-for="(ex, i) in day.exercises.slice(0, 4)"
-                        :key="i"
-                        style="display: inline-block; background: rgba(249,115,22,0.08); color: var(--accent-color); border-radius: 6px; padding: 2px 7px; font-size: 10.5px; font-weight: 600; margin: 2px 3px 2px 0;"
-                      >{{ ex.text }}</span>
-                      <span v-if="day.exercises.length > 4" style="font-size: 10px; color: var(--text-muted); font-style: italic;">+{{ day.exercises.length - 4 }} more</span>
-                    </div>
-                  </td>
-                  <td style="text-align: right;">
-                    <span v-if="day.calories > 0" style="color: #f97316; font-weight: 700;">{{ day.calories }} kcal</span>
-                    <span v-else style="color: var(--text-muted);">—</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        <!-- Daily Timesheet -->
-        <article class="focus-minimal-card" style="flex: 1; min-width: 0;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(99,102,241,0.25);">
-                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" width="16" height="16" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-              </div>
-              <div>
-                <h3 style="margin: 0; font-size: 15px; font-weight: 700;">Daily Timesheet</h3>
-                <span style="font-size: 11px; color: var(--text-muted);">Shift schedule & work hours</span>
-              </div>
+            <div>
+              <h3 style="margin: 0; font-size: 15px; font-weight: 700;">Workout Log</h3>
+              <span style="font-size: 11px; color: var(--text-muted);">Recent exercises per day</span>
             </div>
-            <span class="status-dot-badge" :class="{ active: store.isClockedIn }">
-              {{ store.isClockedIn ? '● On Shift' : store.workTimeLogs.length + ' logs' }}
-            </span>
           </div>
+          <router-link to="/fitness" style="font-size: 12px; color: var(--accent-color); text-decoration: none; font-weight: 600; opacity: 0.8;">View all →</router-link>
+        </div>
 
-          <div class="logs-table-wrapper" style="max-height: 340px; overflow-y: auto;">
-            <table class="logs-history-table timesheet-table" style="font-size: 12px;">
-              <thead>
-                <tr>
-                  <th style="min-width:70px;">Day</th>
-                  <th>Clock In</th>
-                  <th>Clock Out</th>
-                  <th style="min-width:60px;">Hours</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="row in timesheetRows"
-                  :key="row.key"
-                  :class="{
-                    'log-row-active': row.type === 'work' && !row.log.clockOut,
-                    'ts-rest-row': row.type === 'rest'
-                  }"
-                >
-                  <!-- Day cell -->
-                  <td>
-                    <div style="font-weight: 700; font-size: 12.5px;" :style="row.type === 'rest' ? 'color: var(--text-muted)' : 'color: var(--text-primary)'">
-                      {{ row.dayLabel }}
-                    </div>
-                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 1px;">{{ row.dateLabel }}</div>
-                  </td>
-
-                  <!-- Clock In -->
-                  <td v-if="row.type === 'rest'" colspan="3" style="text-align: center;">
-                    <span style="display: inline-flex; align-items: center; gap: 5px; background: rgba(100,116,139,0.10); color: var(--text-muted); border-radius: 8px; padding: 3px 12px; font-size: 11px; font-weight: 600;">
-                      🌙 Rest Day
-                    </span>
-                  </td>
-                  <template v-else>
-                    <td>
-                      <div style="font-weight: 600; font-size: 12px; color: #22c55e;">{{ formatDateTime(row.log.clockIn) }}</div>
-                    </td>
-                    <td>
-                      <div v-if="row.log.clockOut" style="font-weight: 600; font-size: 12px; color: #f97316;">{{ formatDateTime(row.log.clockOut) }}</div>
-                      <span v-else class="log-in-progress-badge">● Ongoing</span>
-                    </td>
-                    <td>
-                      <span v-if="row.log.duration !== null && row.log.duration !== undefined" style="font-weight: 700; color: var(--text-primary);">
-                        {{ formatDuration(row.log.duration) }}
-                      </span>
-                      <span v-else style="color: var(--text-muted);">—</span>
-                    </td>
-                  </template>
-
-                  <!-- Status -->
-                  <td v-if="row.type === 'rest'">
-                    <span class="punctuality-badge" style="background: rgba(100,116,139,0.10); color: var(--text-muted); border-color: transparent;">Off</span>
-                  </td>
-                  <td v-else>
-                    <span class="punctuality-badge" :class="getPunctualityStatus(row.log.clockIn).status">
-                      ● {{ getPunctualityStatus(row.log.clockIn).text }}
-                    </span>
-                  </td>
-                </tr>
-
-                <tr v-if="timesheetRows.length === 0">
-                  <td colspan="5" class="empty-msg" style="text-align: center; padding: 28px 0; font-size: 13px;">
-                    No work sessions yet. Use Clock In above to start a shift.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-      </div>
+        <div v-if="recentWorkoutDays.length === 0" class="empty-msg" style="text-align: center; padding: 36px 0; font-size: 13px;">
+          No workouts logged yet. Head to Fitness to start tracking!
+        </div>
+        <div v-else class="logs-table-wrapper" style="max-height: 320px; overflow-y: auto;">
+          <table class="logs-history-table" style="font-size: 13px;">
+            <thead>
+              <tr>
+                <th style="width: 120px;">Date</th>
+                <th>Exercises Done</th>
+                <th style="width: 90px; text-align: right;">Calories</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="day in recentWorkoutDays" :key="day.date">
+                <td class="log-td-date" style="font-weight: 600;">{{ day.date }}</td>
+                <td>
+                  <div v-if="day.exercises.length === 0" style="color: var(--text-muted); font-style: italic; font-size: 11px;">No exercises added</div>
+                  <div v-else style="display: flex; flex-wrap: wrap; gap: 4px;">
+                    <span
+                      v-for="(ex, i) in day.exercises.slice(0, 5)"
+                      :key="i"
+                      style="display: inline-block; background: rgba(249,115,22,0.08); color: #f97316; border-radius: 6px; padding: 3px 9px; font-size: 11px; font-weight: 600;"
+                    >{{ ex.text }}</span>
+                    <span v-if="day.exercises.length > 5" style="font-size: 11px; color: var(--text-muted); font-style: italic; align-self: center;">+{{ day.exercises.length - 5 }} more</span>
+                  </div>
+                </td>
+                <td style="text-align: right;">
+                  <span v-if="day.calories > 0" style="color: #f97316; font-weight: 700; font-size: 13px;">{{ day.calories }} kcal</span>
+                  <span v-else style="color: var(--text-muted);">—</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
     </section>
+
+    <!-- Daily Timesheet (Full Width) -->
+    <section class="animate-in delay-220" style="margin-bottom: 32px;">
+      <article class="focus-minimal-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(99,102,241,0.25);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" width="17" height="17" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 15px; font-weight: 700;">Shift Schedule</h3>
+              <span style="font-size: 11px; color: var(--text-muted);">Work log & rest days</span>
+            </div>
+          </div>
+          <span class="status-dot-badge" :class="{ active: store.isClockedIn }">
+            {{ store.isClockedIn ? '● On Shift' : store.workTimeLogs.length + ' sessions' }}
+          </span>
+        </div>
+
+        <div class="logs-table-wrapper" style="max-height: 380px; overflow-y: auto;">
+          <table class="logs-history-table timesheet-table" style="font-size: 13px;">
+            <thead>
+              <tr>
+                <th style="width: 180px;">Shift Type</th>
+                <th>Date</th>
+                <th style="width: 160px;">Rest Day</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="row in timesheetRows"
+                :key="row.key"
+                :class="{
+                  'log-row-active': row.type === 'work' && !row.log.clockOut,
+                  'ts-rest-row': row.type === 'rest'
+                }"
+              >
+                <!-- Shift Type -->
+                <td>
+                  <div v-if="row.type === 'work'">
+                    <div style="font-weight: 700; font-size: 13.5px; color: var(--text-primary);">Night Shift</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                      {{ formatShiftTime(row.log.clockIn) }} — {{ row.log.clockOut ? formatShiftTime(row.log.clockOut) : 'Ongoing' }}
+                    </div>
+                  </div>
+                  <div v-else>
+                    <div style="font-weight: 700; font-size: 13.5px; color: var(--text-muted);">{{ row.dayLabel }}</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">{{ row.dateLabel }}</div>
+                  </div>
+                </td>
+
+                <!-- Date range -->
+                <td>
+                  <span v-if="row.type === 'work'" style="font-size: 13px; color: var(--text-primary);">
+                    {{ formatFullDate(row.log.clockIn) }} — {{ row.log.clockOut ? formatFullDate(row.log.clockOut) : 'Present' }}
+                  </span>
+                  <span v-else style="display: inline-flex; align-items: center; gap: 5px; color: var(--text-muted); font-size: 12px;">
+                    🌙 Rest Day
+                  </span>
+                </td>
+
+                <!-- Rest Day -->
+                <td>
+                  <span v-if="row.type === 'work'" style="font-size: 13px; color: var(--text-secondary);">Saturday, Sunday</span>
+                  <span v-else style="font-size: 12px; color: var(--text-muted);">—</span>
+                </td>
+              </tr>
+
+              <tr v-if="timesheetRows.length === 0">
+                <td colspan="3" class="empty-msg" style="text-align: center; padding: 32px 0; font-size: 13px;">
+                  No work sessions yet. Use Clock In above to start tracking.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
 
     <!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
     <section class="animate-in delay-250" style="margin-bottom: 36px;">
@@ -634,6 +620,20 @@ function formatDateTime(isoStr) {
   const datePart = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
   const timePart = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
   return `${datePart} · ${timePart}`
+}
+
+// Format time as HH:MM (24h) for the shift type row, e.g. "22:00"
+function formatShiftTime(isoStr) {
+  if (!isoStr) return '—'
+  const d = new Date(isoStr)
+  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+// Format full date e.g. "May 31, 2026"
+function formatFullDate(isoStr) {
+  if (!isoStr) return '—'
+  const d = new Date(isoStr)
+  return d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
 // Build timesheet rows: real work logs + Sat/Sun rest rows for last 4 weeks
