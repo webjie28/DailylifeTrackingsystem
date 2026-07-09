@@ -180,7 +180,7 @@
     </section>
 
     <!-- Workout Log Table (Full Width) -->
-    <section class="animate-in delay-200" style="margin-bottom: 28px;">
+    <section class="animate-in delay-200" style="margin-bottom: 28px; max-width: 1000px;">
       <article class="focus-minimal-card">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
           <div style="display: flex; align-items: center; gap: 12px;">
@@ -235,7 +235,7 @@
     </section>
 
     <!-- Daily Timesheet (Full Width) -->
-    <section class="animate-in delay-220" style="margin-bottom: 32px;">
+    <section class="animate-in delay-220" style="margin-bottom: 32px; max-width: 1000px;">
       <article class="focus-minimal-card">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
           <div style="display: flex; align-items: center; gap: 12px;">
@@ -1608,6 +1608,11 @@ watch(
     .dashboard-dual-row {
         flex-direction: column;
     }
+}
+.timesheet-table th,
+.timesheet-table td {
+    white-space: nowrap;
+    padding: 10px 14px;
 }
 .timesheet-table td:first-child div:first-child {
     font-weight: 700;
