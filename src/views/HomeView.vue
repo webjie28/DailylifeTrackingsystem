@@ -26,62 +26,58 @@
                 <th>Clock Out</th>
                 <th>Hours</th>
                 <th>Status</th>
+                <th>Rest Day</th>
                 <th>Note</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               <tr 
-                v-for="row in combinedWorkLogRows" 
-                :key="row.id" 
+                v-for="log in [...store.workTimeLogs].reverse()" 
+                :key="log.id" 
                 :class="{ 
-                  'log-row-active': row.type === 'work' && !row.clockOut,
-                  'ts-rest-row': row.type === 'rest'
+                  'log-row-active': !log.clockOut 
                 }"
               >
                 <!-- Date -->
-                <td class="log-td-date" :style="row.type === 'rest' ? 'color: var(--text-muted); font-weight: 500;' : ''">
-                  {{ row.date }}
+                <td class="log-td-date">
+                  {{ log.date }}
                 </td>
                 
                 <!-- Clock In -->
                 <td class="log-td-time">
-                  <span v-if="row.type === 'work'">{{ formatTime(row.clockIn) }}</span>
-                  <span v-else style="color: var(--text-muted);">—</span>
+                  {{ formatTime(log.clockIn) }}
                 </td>
 
                 <!-- Clock Out -->
                 <td class="log-td-time">
-                  <span v-if="row.type === 'work' && row.clockOut">{{ formatTime(row.clockOut) }}</span>
-                  <span v-else-if="row.type === 'work'" class="log-in-progress-badge">● In Progress</span>
-                  <span v-else style="color: var(--text-muted);">—</span>
+                  <span v-if="log.clockOut">{{ formatTime(log.clockOut) }}</span>
+                  <span v-else class="log-in-progress-badge">● In Progress</span>
                 </td>
 
                 <!-- Hours -->
                 <td class="log-td-hours">
-                  <span v-if="row.type === 'work'">
-                    {{ row.duration !== null && row.duration !== undefined ? formatDuration(row.duration) : '—' }}
-                  </span>
-                  <span v-else style="color: var(--text-muted);">—</span>
+                  {{ log.duration !== null && log.duration !== undefined ? formatDuration(log.duration) : '—' }}
                 </td>
 
                 <!-- Status -->
                 <td>
-                  <span v-if="row.type === 'work'" class="punctuality-badge" :class="getPunctualityStatus(row.clockIn).status">
-                    ● {{ getPunctualityStatus(row.clockIn).text }}
-                  </span>
-                  <span v-else class="punctuality-badge" style="background: rgba(100,116,139,0.08); color: var(--text-muted); border-color: transparent;">
-                    Rest Day
+                  <span class="punctuality-badge" :class="getPunctualityStatus(log.clockIn).status">
+                    ● {{ getPunctualityStatus(log.clockIn).text }}
                   </span>
                 </td>
 
+                <!-- Rest Day -->
+                <td style="font-size: 13px; color: var(--text-secondary);">
+                  Saturday, Sunday
+                </td>
+
                 <!-- Note -->
-                <td class="log-note-td" :title="row.note">{{ row.note || '—' }}</td>
+                <td class="log-note-td" :title="log.note">{{ log.note || '—' }}</td>
 
                 <!-- Actions -->
                 <td>
-                  <button v-if="row.type === 'work'" class="btn-del-log" @click="confirmDeleteWorkLog(row.rawLog)">✕</button>
-                  <span v-else style="color: var(--text-muted);">—</span>
+                  <button class="btn-del-log" @click="confirmDeleteWorkLog(log)">✕</button>
                 </td>
               </tr>
             </tbody>
@@ -523,73 +519,7 @@ function formatDateTime(isoStr) {
   return `${datePart} · ${timePart}`
 }
 
-// Build consolidated work log list including actual work log records + Saturday/Sunday rest days
-const combinedWorkLogRows = computed(() => {
-  const rows = []
 
-  // 1. Add real work logs
-  for (const log of store.workTimeLogs) {
-    const d = new Date(log.clockIn)
-    const dateKey = d.toISOString().split('T')[0]
-    rows.push({
-      id: 'work-' + log.id,
-      type: 'work',
-      sortDate: dateKey,
-      date: log.date,
-      clockIn: log.clockIn,
-      clockOut: log.clockOut,
-      duration: log.duration,
-      note: log.note,
-      rawLog: log
-    })
-  }
-
-  // 2. Add Saturday & Sunday rest rows dynamically based on work log history range
-  const today = new Date()
-  const existingWorkDates = new Set(store.workTimeLogs.map(l => new Date(l.clockIn).toISOString().split('T')[0]))
-
-  let oldestDate = new Date()
-  if (store.workTimeLogs.length > 0) {
-    const dates = store.workTimeLogs.map(l => new Date(l.clockIn).getTime())
-    oldestDate = new Date(Math.min(...dates))
-  } else {
-    // If no work logs exist, default to past 7 days
-    oldestDate.setDate(today.getDate() - 7)
-  }
-
-  // Normalize checkDate to start of day
-  const checkDate = new Date(oldestDate)
-  checkDate.setHours(0, 0, 0, 0)
-  
-  // Go back to the Sunday of that week to cover weekend
-  const day = checkDate.getDay()
-  checkDate.setDate(checkDate.getDate() - day - 1)
-
-  while (checkDate <= today) {
-    const dateKey = checkDate.toISOString().split('T')[0]
-    const dayOfWeek = checkDate.getDay() // 0 = Sunday, 6 = Saturday
-
-    if ((dayOfWeek === 0 || dayOfWeek === 6) && !existingWorkDates.has(dateKey)) {
-      const dateStr = checkDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-      rows.push({
-        id: 'rest-' + dateKey,
-        type: 'rest',
-        sortDate: dateKey,
-        date: dateStr,
-        clockIn: null,
-        clockOut: null,
-        duration: null,
-        note: '',
-        rawLog: null
-      })
-    }
-    checkDate.setDate(checkDate.getDate() + 1)
-  }
-
-  // Sort descending (newest first)
-  rows.sort((a, b) => b.sortDate.localeCompare(a.sortDate))
-  return rows
-})
 
 onMounted(() => {
   renderChart()
