@@ -783,13 +783,15 @@ function renderChart() {
   } else if (activeChart.value === 'growth') {
     // Generate real cumulative savings data
     let currentTotal = 0
-    const contribs = [...store.savingsContributions].sort((a, b) => new Date(a.date) - new Date(b.date))
+    const contribs = [...store.savingsContributions].sort((a, b) => a.date.localeCompare(b.date))
     
     const rawData = contribs.map(c => {
       const amt = parseFloat(c.amount) || 0
-      if (c.type === 'deposit') currentTotal += amt
-      else if (c.type === 'withdraw') currentTotal -= amt
-      return { label: new Date(c.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), value: currentTotal }
+      currentTotal += amt
+      return { 
+        label: new Date(c.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), 
+        value: currentTotal 
+      }
     })
     
     const data = rawData
