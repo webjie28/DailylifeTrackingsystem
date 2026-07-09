@@ -256,8 +256,10 @@
           <table class="logs-history-table timesheet-table" style="font-size: 13px;">
             <thead>
               <tr>
-                <th style="width: 180px;">Shift Type</th>
+                <th style="width: 140px;">Shift Type</th>
                 <th>Date</th>
+                <th style="width: 100px;">Time In</th>
+                <th style="width: 100px;">Time Out</th>
                 <th style="width: 160px;">Rest Day</th>
               </tr>
             </thead>
@@ -272,37 +274,49 @@
               >
                 <!-- Shift Type -->
                 <td>
-                  <div v-if="row.type === 'work'">
-                    <div style="font-weight: 700; font-size: 13.5px; color: var(--text-primary);">Night Shift</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
-                      {{ formatShiftTime(row.log.clockIn) }} — {{ row.log.clockOut ? formatShiftTime(row.log.clockOut) : 'Ongoing' }}
-                    </div>
+                  <div v-if="row.type === 'work'" style="font-weight: 700; font-size: 13.5px; color: var(--text-primary);">
+                    Night Shift
                   </div>
-                  <div v-else>
-                    <div style="font-weight: 700; font-size: 13.5px; color: var(--text-muted);">🌙 Rest Day</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">No Shift</div>
+                  <div v-else style="font-weight: 700; font-size: 13.5px; color: var(--text-muted);">
+                    🌙 Rest Day
                   </div>
                 </td>
 
-                <!-- Date range -->
+                <!-- Date -->
                 <td>
                   <span v-if="row.type === 'work'" style="font-size: 13px; color: var(--text-primary);">
-                    {{ formatFullDate(row.log.clockIn) }} — {{ row.log.clockOut ? formatFullDate(row.log.clockOut) : 'Present' }}
+                    {{ formatFullDate(row.log.clockIn) }}
                   </span>
                   <span v-else style="font-size: 13px; color: var(--text-muted);">
-                    {{ row.dateRangeLabel }}
+                    {{ row.dateLabel }}
                   </span>
+                </td>
+
+                <!-- Time In -->
+                <td>
+                  <span v-if="row.type === 'work'" style="font-size: 13px; font-weight: 600; color: #22c55e;">
+                    {{ formatShiftTime(row.log.clockIn) }}
+                  </span>
+                  <span v-else style="font-size: 13px; color: var(--text-muted);">—</span>
+                </td>
+
+                <!-- Time Out -->
+                <td>
+                  <span v-if="row.type === 'work' && row.log.clockOut" style="font-size: 13px; font-weight: 600; color: #f97316;">
+                    {{ formatShiftTime(row.log.clockOut) }}
+                  </span>
+                  <span v-else-if="row.type === 'work'" class="log-in-progress-badge">● Ongoing</span>
+                  <span v-else style="font-size: 13px; color: var(--text-muted);">—</span>
                 </td>
 
                 <!-- Rest Day -->
                 <td>
-                  <span v-if="row.type === 'work'" style="font-size: 13px; color: var(--text-secondary);">Saturday, Sunday</span>
-                  <span v-else style="font-size: 13px; color: var(--text-muted);">Saturday, Sunday</span>
+                  <span style="font-size: 13.5px; color: var(--text-secondary);">Saturday, Sunday</span>
                 </td>
               </tr>
 
               <tr v-if="timesheetRows.length === 0">
-                <td colspan="3" class="empty-msg" style="text-align: center; padding: 32px 0; font-size: 13px;">
+                <td colspan="5" class="empty-msg" style="text-align: center; padding: 32px 0; font-size: 13px;">
                   No work sessions yet. Use Clock In above to start tracking.
                 </td>
               </tr>
@@ -638,7 +652,7 @@ function formatFullDate(isoStr) {
   return d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
-// Build timesheet rows: real work logs + Sat/Sun rest rows for last 4 weeks
+// Build timesheet rows: real work logs + Sat/Sun rest rows scoped to active work history
 const timesheetRows = computed(() => {
   const rows = []
 
@@ -656,33 +670,44 @@ const timesheetRows = computed(() => {
     })
   }
 
-  // 2. Saturday & Sunday rest rows — past 8 weeks
+  // 2. Saturday & Sunday rest rows — generated dynamically from oldest work log date to today
   const today = new Date()
   const existingWorkDates = new Set(store.workTimeLogs.map(l => new Date(l.clockIn).toISOString().split('T')[0]))
-  for (let week = 0; week < 8; week++) {
-    for (const dayOffset of [6, 0]) { // 6 = Saturday, 0 = Sunday
-      const d = new Date(today)
-      // Go back to this weekday
-      const diff = dayOffset - today.getDay() - week * 7
-      d.setDate(today.getDate() + diff)
-      const dateKey = d.toISOString().split('T')[0]
-      // Don't add rest row if they clocked in on that day
-      if (existingWorkDates.has(dateKey)) continue
-      // Only show past / current dates (not future beyond tomorrow)
-      const tomorrow = new Date(today)
-      tomorrow.setDate(today.getDate() + 1)
-      if (d > tomorrow) continue
-      const dateStr = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+
+  let oldestDate = new Date()
+  if (store.workTimeLogs.length > 0) {
+    const dates = store.workTimeLogs.map(l => new Date(l.clockIn).getTime())
+    oldestDate = new Date(Math.min(...dates))
+  } else {
+    // If no work logs exist, default to past 7 days
+    oldestDate.setDate(today.getDate() - 7)
+  }
+
+  // Normalize checkDate to start of day
+  const checkDate = new Date(oldestDate)
+  checkDate.setHours(0, 0, 0, 0)
+  
+  // Go back to the Sunday of that week to cover weekend
+  const day = checkDate.getDay()
+  checkDate.setDate(checkDate.getDate() - day - 1)
+
+  while (checkDate <= today) {
+    const dateKey = checkDate.toISOString().split('T')[0]
+    const dayOfWeek = checkDate.getDay() // 0 = Sunday, 6 = Saturday
+
+    if ((dayOfWeek === 0 || dayOfWeek === 6) && !existingWorkDates.has(dateKey)) {
+      const dateStr = checkDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
       rows.push({
         key: 'rest-' + dateKey,
         type: 'rest',
         sortDate: dateKey,
-        dayLabel: d.toLocaleDateString(undefined, { weekday: 'short' }),
+        dayLabel: checkDate.toLocaleDateString(undefined, { weekday: 'short' }),
         dateLabel: dateStr,
-        dateRangeLabel: `${dateStr} — ${dateStr}`,
+        dateRangeLabel: dateStr,
         log: null
       })
     }
+    checkDate.setDate(checkDate.getDate() + 1)
   }
 
   // Sort newest first
