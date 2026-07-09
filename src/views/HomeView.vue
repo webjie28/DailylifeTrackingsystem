@@ -540,7 +540,7 @@ const tabs = [
   { key: 'steps', label: 'Steps Trend' },
   { key: 'calories', label: 'Calories' },
   { key: 'workload', label: 'Work Hours' },
-  { key: 'growth', label: 'Personal Saving' },
+  { key: 'water', label: 'Water Intake' },
   { key: 'expenses', label: 'Expenses' }
 ]
 
@@ -548,7 +548,7 @@ const titles = {
   steps: 'Weekly Steps Trend (Last 7 Days)',
   calories: 'Calories Burned Trend (30 Days)',
   workload: 'Weekly Work Hours & Workload (Last 7 Days)',
-  growth: 'Personal Saving Growth Over Time',
+  water: 'Daily Water Intake (Last 7 Days vs 3L Goal)',
   expenses: 'Expenses by Category'
 }
 
@@ -561,8 +561,8 @@ const hasRealData = computed(() => {
   if (activeChart.value === 'workload') {
     return store.workTimeLogs.some(l => l.duration > 0)
   }
-  if (activeChart.value === 'growth') {
-    return store.savingsContributions.length > 0
+  if (activeChart.value === 'water') {
+    return Object.values(store.waterIntakeLog).some(v => v && v > 0)
   }
   if (activeChart.value === 'expenses') {
     return store.financeTransactions.some(t => t.type === 'expense')
@@ -710,45 +710,70 @@ function renderChart() {
         }
       }
     })
-  } else if (activeChart.value === 'growth') {
-    // Generate real cumulative savings data
-    let currentTotal = 0
-    const contribs = [...store.savingsContributions].sort((a, b) => a.date.localeCompare(b.date))
+  } else if (activeChart.value === 'water') {
+    // Generate 7-day cumulative water intake data vs goal line
+    const labels = []
+    const waterValues = []
+    const goalLineData = []
     
-    const rawData = contribs.map(c => {
-      const amt = parseFloat(c.amount) || 0
-      currentTotal += amt
-      return { 
-        label: new Date(c.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), 
-        value: currentTotal 
-      }
-    })
-    
-    const data = rawData
+    // Last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+      
+      labels.push(d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }))
+      
+      const intakeMl = store.waterIntakeLog[key] || 0
+      const intakeLiters = parseFloat((intakeMl / 1000).toFixed(2))
+      waterValues.push(intakeLiters)
+      
+      // Goal is 3L or user defined target
+      const targetLiters = (store.waterDailyTarget || 3000) / 1000
+      goalLineData.push(targetLiters)
+    }
     
     chartInstance = new Chart(ctx, {
-      type: 'line',
+      type: 'bar',
       data: {
-        labels: data.map(p => p.label),
-        datasets: [{
-          label: 'Savings Progress',
-          data: data.map(p => p.value),
-          borderColor: 'rgba(99, 102, 241, 0.85)',
-          backgroundColor: 'rgba(99, 102, 241, 0.15)',
-          fill: true,
-          tension: 0.35,
-          pointRadius: 4,
-          pointBackgroundColor: 'rgba(99, 102, 241, 1)',
-          pointBorderColor: '#ffffff'
-        }]
+        labels: labels,
+        datasets: [
+          {
+            label: 'Water Intake',
+            data: waterValues,
+            backgroundColor: 'rgba(14, 165, 233, 0.75)',
+            borderColor: '#0ea5e9',
+            borderWidth: 1,
+            borderRadius: 6,
+            maxBarThickness: 35
+          },
+          {
+            label: 'Daily Target Line',
+            data: goalLineData,
+            type: 'line',
+            borderColor: 'rgba(239, 68, 68, 0.85)',
+            borderWidth: 2,
+            borderDash: [6, 6],
+            fill: false,
+            pointRadius: 0
+          }
+        ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: true, position: 'top', labels: { boxWidth: 12, padding: 8 } }
+        },
         scales: {
           x: { grid: { display: false } },
-          y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.15)' } }
+          y: { 
+            beginAtZero: true, 
+            grid: { color: 'rgba(148, 163, 184, 0.15)' },
+            ticks: {
+              callback: v => `${v}L`
+            }
+          }
         }
       }
     })
@@ -995,7 +1020,7 @@ watch(
   [
     () => store.financeTransactions,
     () => store.savingsGoals,
-    () => store.savingsContributions,
+    () => store.waterIntakeLog,
     () => store.walkTrackerData,
     () => store.gymTrackerData,
     () => store.workTimeLogs
