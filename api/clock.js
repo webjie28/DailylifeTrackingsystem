@@ -2,15 +2,14 @@
 // Node.js serverless handler for Vercel
 
 const FIREBASE_PROJECT_ID = "dailylifetrackingsystem";
-const SECRET_CRON_KEY = "super_secure_cron_secret_123_abc"; // Palitan mo ito ng sarili mong key/password
+const FIREBASE_API_KEY = "AIzaSyClUlfeU8qovcZKqg_gwkV1IFOoBQJFsOE"; // Web API Key for direct Firebase authentication
+const SECRET_CRON_KEY = "super_secure_cron_secret_123_abc";
 
 export default async function handler(req, res) {
-  // Allow only POST or GET requests
   if (req.method !== 'POST' && req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // Get parameters from request query or body
   const { auth, action, uid, note } = { ...req.query, ...req.body };
 
   // 1. Simple Security Authentication
@@ -18,7 +17,6 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized: Invalid secret key' });
   }
 
-  // 2. Validate essential parameters
   if (!uid) {
     return res.status(400).json({ error: 'Missing parameter: uid' });
   }
@@ -28,23 +26,23 @@ export default async function handler(req, res) {
   }
 
   try {
-    const docUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${uid}`;
+    // To bypass read rules publicly, we can append the Web API key or use Firebase Auth credentials.
+    // In Firebase REST API, we can fetch documents by appending the key parameter to the query URL.
+    const docUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${uid}?key=${FIREBASE_API_KEY}`;
 
     // A. Fetch current user document
     const getRes = await fetch(docUrl);
     if (!getRes.ok) {
       const getErr = await getRes.json();
-      return res.status(getRes.status).json({ error: 'Failed to fetch user data', details: getErr });
+      return res.status(getRes.status).json({ error: 'Failed to fetch user data from Firestore', details: getErr });
     }
 
     const userData = await getRes.json();
     const currentFields = userData.fields || {};
 
-    // Helper functions to parse values from Firestore API format
     const getBoolean = (field) => field && field.booleanValue ? true : false;
     const getString = (field) => field && field.stringValue ? field.stringValue : null;
     
-    // Parse current workTimeLogs array
     let logs = [];
     if (currentFields.workTimeLogs && currentFields.workTimeLogs.arrayValue && currentFields.workTimeLogs.arrayValue.values) {
       logs = currentFields.workTimeLogs.arrayValue.values;
@@ -54,7 +52,6 @@ export default async function handler(req, res) {
     const activeClockInLogId = getString(currentFields.activeClockInLogId);
 
     const now = new Date();
-    // Helper to get Today Key (YYYY-MM-DD)
     const today = now.toLocaleDateString('en-CA'); // YYYY-MM-DD format in local timezone
 
     let responseMessage = "";
@@ -81,7 +78,6 @@ export default async function handler(req, res) {
 
       logs.push(newLogVal);
 
-      // Save updated fields back to Firestore
       const patchPayload = {
         fields: {
           isClockedIn: { booleanValue: true },
@@ -90,7 +86,7 @@ export default async function handler(req, res) {
         }
       };
 
-      const patchUrl = `${docUrl}?updateMask.fieldPaths=isClockedIn&updateMask.fieldPaths=activeClockInLogId&updateMask.fieldPaths=workTimeLogs`;
+      const patchUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${uid}?updateMask.fieldPaths=isClockedIn&updateMask.fieldPaths=activeClockInLogId&updateMask.fieldPaths=workTimeLogs&key=${FIREBASE_API_KEY}`;
       const patchRes = await fetch(patchUrl, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -111,7 +107,6 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true, message: 'Not currently clocked in', status: 'NO_ACTION' });
       }
 
-      // Find the index of the active log
       let activeIndex = -1;
       for (let i = 0; i < logs.length; i++) {
         const logItem = logs[i].mapValue?.fields;
@@ -132,7 +127,6 @@ export default async function handler(req, res) {
           durationMins = Math.max(0, Math.round(diffMs / 60000));
         }
 
-        // Update the fields inside the map
         activeFields.clockOut = { stringValue: now.toISOString() };
         activeFields.duration = { integerValue: durationMins.toString() };
         if (note) {
@@ -140,7 +134,6 @@ export default async function handler(req, res) {
         }
       }
 
-      // Save updated fields back to Firestore
       const patchPayload = {
         fields: {
           isClockedIn: { booleanValue: false },
@@ -149,7 +142,7 @@ export default async function handler(req, res) {
         }
       };
 
-      const patchUrl = `${docUrl}?updateMask.fieldPaths=isClockedIn&updateMask.fieldPaths=activeClockInLogId&updateMask.fieldPaths=workTimeLogs`;
+      const patchUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${uid}?updateMask.fieldPaths=isClockedIn&updateMask.fieldPaths=activeClockInLogId&updateMask.fieldPaths=workTimeLogs&key=${FIREBASE_API_KEY}`;
       const patchRes = await fetch(patchUrl, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
