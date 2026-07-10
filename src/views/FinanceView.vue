@@ -184,8 +184,12 @@
               {{ tx.type === 'income' ? '+' : '-' }}₱{{ tx.amount.toLocaleString() }}
             </div>
             <div class="tx-actions" style="margin-left: 12px;">
-              <button class="btn-del" @click="editTransaction(tx.id)" title="Edit">Edit</button>
-              <button class="btn-del" @click="deleteTransaction(tx.id)" title="Delete">✕</button>
+              <button class="btn-del" @click="editTransaction(tx.id)" title="Edit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="btn-del" @click="deleteTransaction(tx.id)" title="Delete">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
           </div>
         </div>
@@ -1131,12 +1135,17 @@ function saveScannedTransaction() {
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 4px;
-  font-size: 14px;
-  transition: color 0.2s;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  line-height: 1;
 }
 .btn-del:hover {
   color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .btn {

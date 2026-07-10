@@ -243,8 +243,16 @@ function saveGoal() {
 }
 
 function deleteGoal(id) {
-  if (!confirm('Delete this long-term goal?')) return
-  store.deleteLongtermGoal(id)
+  const goal = store.longtermGoals.find(g => g.id === id)
+  const title = goal ? goal.title : 'this goal'
+  store.showConfirm({
+    title: 'Delete Goal?',
+    message: `Are you sure you want to delete "${title}"? This cannot be undone.`,
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteLongtermGoal(id)
+    }
+  })
 }
 
 
@@ -532,7 +540,6 @@ function deleteGoal(id) {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
   align-items: center;

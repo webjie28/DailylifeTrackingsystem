@@ -87,7 +87,9 @@
             <span class="water-history-date">{{ log.date }}</span>
             <div style="display: flex; align-items: center; gap: 10px;">
               <span class="water-history-amount">{{ log.amount }} ml</span>
-              <button class="btn-del" @click="deleteLog(log.date)" title="Delete Log" style="background: transparent; border: none; cursor: pointer; color: var(--text-muted); font-size: 14px; padding: 4px; display: flex; align-items: center; justify-content: center; line-height: 1;">✕</button>
+              <button class="btn-del" @click="deleteLog(log.date)" title="Delete Log">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
           </div>
         </div>
@@ -127,8 +129,14 @@ const sortedHistory = computed(() => {
 })
 
 function resetToday() {
-  if (!confirm("Reset today's water intake to 0 ml?")) return
-  store.resetWaterToday()
+  store.showConfirm({
+    title: 'Reset Today\'s Water?',
+    message: 'This will reset today\'s water intake to 0 ml. Continue?',
+    confirmText: 'Reset',
+    onConfirm: () => {
+      store.resetWaterToday()
+    }
+  })
 }
 
 function openCustomLog() {
@@ -152,8 +160,14 @@ function updateTarget(e) {
 }
 
 function deleteLog(date) {
-  if (!confirm(`Are you sure you want to delete the log for ${date}?`)) return
-  store.deleteWaterLog(date)
+  store.showConfirm({
+    title: 'Delete Water Log?',
+    message: `Are you sure you want to delete the water log for ${date}?`,
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteWaterLog(date)
+    }
+  })
 }
 </script>
 
@@ -171,6 +185,23 @@ function deleteLog(date) {
   font-weight: 800;
   color: var(--text-primary);
   margin: 0;
+}
+.btn-del {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  line-height: 1;
+}
+.btn-del:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
 }
 .btn {
   padding: 10px 18px;

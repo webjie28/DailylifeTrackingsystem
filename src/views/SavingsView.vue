@@ -50,7 +50,9 @@
               <span class="goal-name">{{ goal.name }}</span>
               <span v-if="goal.isCompleted" class="complete-badge" style="margin-left: 6px;">✓ COMPLETE</span>
             </div>
-            <button class="btn-danger-sm" @click="deleteGoal(goal.id)" style="margin-top: 2px;">✕</button>
+            <button class="btn-danger-sm" @click="deleteGoal(goal.id)" style="margin-top: 2px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
 
           <div class="goal-amounts">
@@ -139,7 +141,9 @@
             </div>
             <div class="contrib-right">
               <span class="contrib-amount">+₱{{ c.amount.toLocaleString() }}</span>
-              <button class="btn-del" @click="deleteContribution(c.id)" title="Delete contribution">✕</button>
+              <button class="btn-del" @click="deleteContribution(c.id)" title="Delete contribution">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
           </div>
         </div>
@@ -306,8 +310,16 @@ function createGoal() {
 }
 
 function deleteGoal(id) {
-  if (!confirm('Delete this goal and all its logged savings contributions?')) return
-  store.deleteSavingsGoal(id)
+  const goal = store.savingsGoals.find(g => g.id === id)
+  const name = goal ? goal.name : 'this goal'
+  store.showConfirm({
+    title: 'Delete Savings Goal?',
+    message: `Are you sure you want to delete "${name}" and all its contribution logs?`,
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteSavingsGoal(id)
+    }
+  })
 }
 
 // Modal Contrib
@@ -367,8 +379,14 @@ function saveDirectContrib() {
 }
 
 function deleteContribution(id) {
-  if (!confirm('Delete this contribution log?')) return
-  store.deleteSavingsContribution(id)
+  store.showConfirm({
+    title: 'Delete Contribution?',
+    message: 'Are you sure you want to delete this contribution log?',
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteSavingsContribution(id)
+    }
+  })
 }
 </script>
 
@@ -628,12 +646,17 @@ function deleteContribution(id) {
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 4px;
-  font-size: 14px;
-  transition: color 0.2s;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  line-height: 1;
 }
 .btn-del:hover {
   color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .btn-danger-sm {
@@ -641,13 +664,17 @@ function deleteContribution(id) {
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 12px;
-  padding: 4px;
-  font-weight: 700;
-  transition: color 0.2s;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  line-height: 1;
 }
 .btn-danger-sm:hover {
   color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .btn {
@@ -703,7 +730,6 @@ function deleteContribution(id) {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
   align-items: center;

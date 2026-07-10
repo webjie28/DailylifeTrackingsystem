@@ -386,9 +386,14 @@ function addCustomExercise() {
 }
 
 function deleteCustomExercise(index) {
-  if (confirm('Are you sure you want to remove this exercise?')) {
-    store.deleteGymExercise(activeDay.value, index)
-  }
+  store.showConfirm({
+    title: 'Remove Exercise?',
+    message: 'Are you sure you want to remove this exercise from the routine?',
+    confirmText: 'Remove',
+    onConfirm: () => {
+      store.deleteGymExercise(activeDay.value, index)
+    }
+  })
 }
 
 // Walk computed Ring offset
@@ -503,12 +508,17 @@ function editStepsLog(log) {
 }
 
 function deleteStepsLog(date) {
-  if (confirm(`Are you sure you want to delete the steps log for ${date}?`)) {
-    store.deleteSteps(date)
-    if (backtrackDate.value === date) {
-      stepsInput.value = 0
+  store.showConfirm({
+    title: 'Delete Steps Log?',
+    message: `Are you sure you want to delete the steps log for ${date}?`,
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteSteps(date)
+      if (backtrackDate.value === date) {
+        stepsInput.value = 0
+      }
     }
-  }
+  })
 }
 
 const PREDEFINED_WORKOUTS = [
@@ -676,14 +686,19 @@ function editGymLog(log) {
 }
 
 function deleteGymLog(date) {
-  if (confirm(`Are you sure you want to delete the workout log for ${date}?`)) {
-    store.deleteGymWorkout(date)
-    if (manualDate.value === date) {
-      manualCals.value = ''
-      manualWorkout.value = ''
-      manualNote.value = ''
+  store.showConfirm({
+    title: 'Delete Workout Log?',
+    message: `Are you sure you want to delete the workout log for ${date}?`,
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteGymWorkout(date)
+      if (manualDate.value === date) {
+        manualCals.value = ''
+        manualWorkout.value = ''
+        manualNote.value = ''
+      }
     }
-  }
+  })
 }
 
 const sortedStepsHistory = computed(() => {

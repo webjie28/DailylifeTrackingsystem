@@ -39,32 +39,51 @@
     </div>
 
     <!-- Global Confirmation Modal Dialog -->
-    <div class="modal-overlay" v-if="store.confirmDialog.show" @click.self="store.confirmDialog.onCancel" style="z-index: 9999; backdrop-filter: blur(8px); background: rgba(0, 0, 0, 0.4);">
-      <div class="modal-content" style="max-width: 400px; width: 90%; padding: 32px 28px; text-align: center; border-radius: 24px; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.25); animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
-        <!-- Premium Warning Icon -->
-        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.03) 100%); color: #ef4444; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 1px solid rgba(239, 68, 68, 0.25); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.15);">
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-        </div>
-        <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 18px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em;">
-          {{ store.confirmDialog.title }}
-        </h3>
-        <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 26px; line-height: 1.55;">
-          {{ store.confirmDialog.message }}
-        </p>
-        <div style="display: flex; gap: 12px; width: 100%;">
-          <button class="btn btn-outline" style="flex: 1; height: 42px; border-radius: 12px; font-size: 13.5px; font-weight: 500; transition: all 0.2s;" @click="store.confirmDialog.onCancel">
-            {{ store.confirmDialog.cancelText }}
-          </button>
-          <button class="btn" style="flex: 1; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; font-size: 13.5px; font-weight: 600; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25); transition: all 0.2s;" @click="store.confirmDialog.onConfirm">
-            {{ store.confirmDialog.confirmText }}
-          </button>
+    <Teleport to="body">
+      <div
+        v-if="store.confirmDialog.show"
+        @click.self="store.confirmDialog.onCancel"
+        style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(0, 0, 0, 0.35);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 99999;
+          padding: 24px;
+          box-sizing: border-box;
+        "
+      >
+        <div style="max-width: 400px; width: 90%; padding: 32px 28px; text-align: center; border-radius: 24px; background: var(--bg-card); border: 1px solid var(--border-color); box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.35); animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+          <!-- Warning Icon -->
+          <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.03) 100%); color: #ef4444; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; border: 1px solid rgba(239, 68, 68, 0.25); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.15);">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
+          </div>
+          <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 18px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em;">
+            {{ store.confirmDialog.title }}
+          </h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0 0 26px; line-height: 1.55;">
+            {{ store.confirmDialog.message }}
+          </p>
+          <div style="display: flex; gap: 12px; width: 100%;">
+            <button class="btn btn-outline" style="flex: 1; height: 42px; border-radius: 12px; font-size: 13.5px; font-weight: 500; transition: all 0.2s;" @click="store.confirmDialog.onCancel">
+              {{ store.confirmDialog.cancelText }}
+            </button>
+            <button class="btn" style="flex: 1; height: 42px; border-radius: 12px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; font-size: 13.5px; font-weight: 600; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25); transition: all 0.2s;" @click="store.confirmDialog.onConfirm">
+              {{ store.confirmDialog.confirmText }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 

@@ -77,7 +77,9 @@
 
                 <!-- Actions -->
                 <td>
-                  <button class="btn-del-log" @click="confirmDeleteWorkLog(log)">✕</button>
+                  <button class="btn-del-log" @click="confirmDeleteWorkLog(log)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -1301,11 +1303,17 @@ watch(
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 13px;
-    transition: color 0.2s;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    line-height: 1;
 }
 .btn-del-log:hover {
     color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
 }
 
 /* ── Dashboard Dual Row ──────────────────────────────────── */

@@ -469,8 +469,16 @@ function openEditBook(book) {
 }
 
 function deleteBook(id) {
-  if (!confirm('Are you sure you want to remove this book?')) return
-  store.deleteBook(id)
+  const book = store.books ? store.books.find(b => b.id === id) : null
+  const title = book ? book.title : 'this book'
+  store.showConfirm({
+    title: 'Remove Book?',
+    message: `Are you sure you want to remove "${title}" from your library?`,
+    confirmText: 'Remove',
+    onConfirm: () => {
+      store.deleteBook(id)
+    }
+  })
 }
 
 function closeBookModal() {
@@ -1108,7 +1116,6 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
   align-items: center;
