@@ -2,8 +2,12 @@
 // Node.js serverless handler for Vercel
 
 const FIREBASE_PROJECT_ID = "dailylifetrackingsystem";
-const FIREBASE_API_KEY = "AIzaSyClUlfeU8qovcZKqg_gwkV1IFOoBQJFsOE"; // Web API Key for direct Firebase authentication
+const FIREBASE_API_KEY = "AIzaSyClUlfeU8qovcZKqg_gwkV1IFOoBQJFsOE";
 const SECRET_CRON_KEY = "super_secure_cron_secret_123_abc";
+
+// Secure login credentials inside the serverless container
+const USER_EMAIL = "lipalambenjie@gmail.com";
+const USER_PASSWORD = "Judith082818#";
 
 export default async function handler(req, res) {
   if (req.method !== 'POST' && req.method !== 'GET') {
@@ -26,12 +30,36 @@ export default async function handler(req, res) {
   }
 
   try {
-    // To bypass read rules publicly, we can append the Web API key or use Firebase Auth credentials.
-    // In Firebase REST API, we can fetch documents by appending the key parameter to the query URL.
-    const docUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${uid}?key=${FIREBASE_API_KEY}`;
+    // 2. Perform Firebase Auth Login to get a valid ID Token
+    const authUrl = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FIREBASE_API_KEY}`;
+    const authRes = await fetch(authUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: USER_EMAIL,
+        password: USER_PASSWORD,
+        returnSecureToken: true
+      })
+    });
 
-    // A. Fetch current user document
-    const getRes = await fetch(docUrl);
+    if (!authRes.ok) {
+      const authErr = await authRes.json();
+      return res.status(401).json({ error: 'Auth Login failed internally', details: authErr });
+    }
+
+    const authData = await authRes.json();
+    const idToken = authData.idToken; // JWT Token to authorize Firestore requests
+
+    // 3. Authorized Firestore Document URL
+    const docUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${uid}`;
+
+    // A. Fetch current user document with Authorization header
+    const getRes = await fetch(docUrl, {
+      headers: {
+        'Authorization': `Bearer ${idToken}`
+      }
+    });
+
     if (!getRes.ok) {
       const getErr = await getRes.json();
       return res.status(getRes.status).json({ error: 'Failed to fetch user data from Firestore', details: getErr });
@@ -86,10 +114,13 @@ export default async function handler(req, res) {
         }
       };
 
-      const patchUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${uid}?updateMask.fieldPaths=isClockedIn&updateMask.fieldPaths=activeClockInLogId&updateMask.fieldPaths=workTimeLogs&key=${FIREBASE_API_KEY}`;
+      const patchUrl = `${docUrl}?updateMask.fieldPaths=isClockedIn&updateMask.fieldPaths=activeClockInLogId&updateMask.fieldPaths=workTimeLogs`;
       const patchRes = await fetch(patchUrl, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
         body: JSON.stringify(patchPayload)
       });
 
@@ -142,10 +173,13 @@ export default async function handler(req, res) {
         }
       };
 
-      const patchUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${uid}?updateMask.fieldPaths=isClockedIn&updateMask.fieldPaths=activeClockInLogId&updateMask.fieldPaths=workTimeLogs&key=${FIREBASE_API_KEY}`;
+      const patchUrl = `${docUrl}?updateMask.fieldPaths=isClockedIn&updateMask.fieldPaths=activeClockInLogId&updateMask.fieldPaths=workTimeLogs`;
       const patchRes = await fetch(patchUrl, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
         body: JSON.stringify(patchPayload)
       });
 
