@@ -26,29 +26,60 @@
                 <th>Clock Out</th>
                 <th>Hours</th>
                 <th>Status</th>
+                <th>Rest Day</th>
                 <th>Note</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="log in [...store.workTimeLogs].reverse()" :key="log.id" :class="{ 'log-row-active': !log.clockOut }">
-                <td class="log-td-date">{{ log.date }}</td>
-                <td class="log-td-time">{{ formatTime(log.clockIn) }}</td>
+              <tr 
+                v-for="log in [...store.workTimeLogs].reverse()" 
+                :key="log.id" 
+                :class="{ 
+                  'log-row-active': !log.clockOut 
+                }"
+              >
+                <!-- Date -->
+                <td class="log-td-date">
+                  {{ log.date }}
+                </td>
+                
+                <!-- Clock In -->
+                <td class="log-td-time">
+                  {{ formatTime(log.clockIn) }}
+                </td>
+
+                <!-- Clock Out -->
                 <td class="log-td-time">
                   <span v-if="log.clockOut">{{ formatTime(log.clockOut) }}</span>
                   <span v-else class="log-in-progress-badge">● In Progress</span>
                 </td>
+
+                <!-- Hours -->
                 <td class="log-td-hours">
                   {{ log.duration !== null && log.duration !== undefined ? formatDuration(log.duration) : '—' }}
                 </td>
+
+                <!-- Status -->
                 <td>
                   <span class="punctuality-badge" :class="getPunctualityStatus(log.clockIn).status">
                     ● {{ getPunctualityStatus(log.clockIn).text }}
                   </span>
                 </td>
+
+                <!-- Rest Day -->
+                <td style="font-size: 13px; color: var(--text-secondary);">
+                  Saturday, Sunday
+                </td>
+
+                <!-- Note -->
                 <td class="log-note-td" :title="log.note">{{ log.note || '—' }}</td>
+
+                <!-- Actions -->
                 <td>
-                  <button class="btn-del-log" @click="store.deleteWorkLog(log.id)">✕</button>
+                  <button class="btn-del-log" @click="confirmDeleteWorkLog(log)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -179,7 +210,7 @@
       </div>
     </section>
 
-    <!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
+<!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
     <section class="animate-in delay-250" style="margin-bottom: 36px;">
       <article class="chart-card-tabbed">
         <div class="chart-tab-header">
@@ -420,6 +451,18 @@ function shuffleRecommend() {
   localStorage.setItem('dailyShowRecommendId', nextShow.id)
 }
 
+function confirmDeleteWorkLog(log) {
+  const logLabel = log.date || 'this work session'
+  store.showConfirm({
+    title: 'Delete Work Log?',
+    message: `Are you sure you want to delete the work log for "${logLabel}"?`,
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteWorkLog(log.id)
+    }
+  })
+}
+
 function getPunctualityStatus(clockInIso) {
   if (!clockInIso) return { status: 'ontime', text: 'On Time' }
   const clockIn = new Date(clockInIso)
@@ -461,6 +504,25 @@ function formatDuration(mins) {
   return `${h}h ${m}m`
 }
 
+// Format date range for timesheet: e.g. "Jul 8 (Tue)"
+function formatLogDateRange(log) {
+  if (!log.clockIn) return log.date || '—'
+  const d = new Date(log.clockIn)
+  const options = { month: 'short', day: 'numeric', weekday: 'short' }
+  return d.toLocaleDateString(undefined, options)
+}
+
+// Format ISO datetime as "Jul 8 · 10:00 PM" 
+function formatDateTime(isoStr) {
+  if (!isoStr) return '—'
+  const d = new Date(isoStr)
+  const datePart = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  const timePart = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })
+  return `${datePart} · ${timePart}`
+}
+
+
+
 onMounted(() => {
   renderChart()
   runPythonAnalytics()
@@ -480,18 +542,16 @@ const tabs = [
   { key: 'steps', label: 'Steps Trend' },
   { key: 'calories', label: 'Calories' },
   { key: 'workload', label: 'Work Hours' },
-  { key: 'growth', label: 'Savings' },
-  { key: 'expenses', label: 'Expenses' },
-  { key: 'loans', label: 'Goals' }
+  { key: 'water', label: 'Water Intake' },
+  { key: 'expenses', label: 'Expenses' }
 ]
 
 const titles = {
   steps: 'Weekly Steps Trend (Last 7 Days)',
   calories: 'Calories Burned Trend (30 Days)',
   workload: 'Weekly Work Hours & Workload (Last 7 Days)',
-  growth: 'Savings Growth Over Time',
-  expenses: 'Expenses by Category',
-  loans: 'Savings Goals Progress'
+  water: 'Daily Water Intake (Last 7 Days vs 3L Goal)',
+  expenses: 'Expenses by Category'
 }
 
 const activeChartTitle = computed(() => titles[activeChart.value])
@@ -503,14 +563,11 @@ const hasRealData = computed(() => {
   if (activeChart.value === 'workload') {
     return store.workTimeLogs.some(l => l.duration > 0)
   }
-  if (activeChart.value === 'growth') {
-    return store.savingsContributions.length > 0
+  if (activeChart.value === 'water') {
+    return Object.values(store.waterIntakeLog).some(v => v && v > 0)
   }
   if (activeChart.value === 'expenses') {
     return store.financeTransactions.some(t => t.type === 'expense')
-  }
-  if (activeChart.value === 'loans') {
-    return store.savingsGoals.length > 0
   }
   if (activeChart.value === 'calories') {
     const hasGym = Object.values(store.gymTrackerData).some(v => v && v.calories > 0)
@@ -655,43 +712,70 @@ function renderChart() {
         }
       }
     })
-  } else if (activeChart.value === 'growth') {
-    // Generate real cumulative savings data
-    let currentTotal = 0
-    const contribs = [...store.savingsContributions].sort((a, b) => new Date(a.date) - new Date(b.date))
+  } else if (activeChart.value === 'water') {
+    // Generate 7-day cumulative water intake data vs goal line
+    const labels = []
+    const waterValues = []
+    const goalLineData = []
     
-    const rawData = contribs.map(c => {
-      const amt = parseFloat(c.amount) || 0
-      if (c.type === 'deposit') currentTotal += amt
-      else if (c.type === 'withdraw') currentTotal -= amt
-      return { label: new Date(c.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), value: currentTotal }
-    })
-    
-    const data = rawData
+    // Last 7 days
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date()
+      d.setDate(d.getDate() - i)
+      const key = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+      
+      labels.push(d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' }))
+      
+      const intakeMl = store.waterIntakeLog[key] || 0
+      const intakeLiters = parseFloat((intakeMl / 1000).toFixed(2))
+      waterValues.push(intakeLiters)
+      
+      // Goal is 3L or user defined target
+      const targetLiters = (store.waterDailyTarget || 3000) / 1000
+      goalLineData.push(targetLiters)
+    }
     
     chartInstance = new Chart(ctx, {
-      type: 'line',
+      type: 'bar',
       data: {
-        labels: data.map(p => p.label),
-        datasets: [{
-          label: 'Savings Progress',
-          data: data.map(p => p.value),
-          borderColor: 'rgba(99, 102, 241, 0.85)',
-          backgroundColor: 'rgba(99, 102, 241, 0.15)',
-          fill: true,
-          tension: 0.35,
-          pointRadius: 4,
-          pointBackgroundColor: 'rgba(99, 102, 241, 1)',
-          pointBorderColor: '#ffffff'
-        }]
+        labels: labels,
+        datasets: [
+          {
+            label: 'Water Intake',
+            data: waterValues,
+            backgroundColor: 'rgba(14, 165, 233, 0.75)',
+            borderColor: '#0ea5e9',
+            borderWidth: 1,
+            borderRadius: 6,
+            maxBarThickness: 35
+          },
+          {
+            label: 'Daily Target Line',
+            data: goalLineData,
+            type: 'line',
+            borderColor: 'rgba(239, 68, 68, 0.85)',
+            borderWidth: 2,
+            borderDash: [6, 6],
+            fill: false,
+            pointRadius: 0
+          }
+        ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: true, position: 'top', labels: { boxWidth: 12, padding: 8 } }
+        },
         scales: {
           x: { grid: { display: false } },
-          y: { beginAtZero: true, grid: { color: 'rgba(148, 163, 184, 0.15)' } }
+          y: { 
+            beginAtZero: true, 
+            grid: { color: 'rgba(148, 163, 184, 0.15)' },
+            ticks: {
+              callback: v => `${v}L`
+            }
+          }
         }
       }
     })
@@ -724,48 +808,6 @@ function renderChart() {
           legend: {
             position: 'bottom',
             labels: { boxWidth: 12, padding: 16 }
-          }
-        }
-      }
-    })
-  } else if (activeChart.value === 'loans') {
-    // Actual Goals Progress Data
-    const data = store.savingsGoals.map(g => {
-      const contribs = store.savingsContributions.filter(c => c.goalId === g.id)
-      const totalSaved = contribs.reduce((sum, c) => {
-        if (c.type === 'deposit') return sum + (parseFloat(c.amount) || 0)
-        if (c.type === 'withdraw') return sum - (parseFloat(c.amount) || 0)
-        return sum
-      }, 0)
-      const progress = g.target > 0 ? Math.min(100, Math.round((totalSaved / g.target) * 100)) : 0
-      return { label: g.name, progress }
-    })
-    
-    const displayData = data
-    
-    chartInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: displayData.map(p => p.label),
-        datasets: [{
-          label: 'Progress (%)',
-          data: displayData.map(p => p.progress),
-          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-purple').trim() || '#334155',
-          borderRadius: 12,
-          maxBarThickness: 40
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { display: false } },
-          y: {
-            beginAtZero: true,
-            max: 100,
-            ticks: { callback: v => `${v}%` },
-            grid: { color: 'rgba(148, 163, 184, 0.15)' }
           }
         }
       }
@@ -980,7 +1022,7 @@ watch(
   [
     () => store.financeTransactions,
     () => store.savingsGoals,
-    () => store.savingsContributions,
+    () => store.waterIntakeLog,
     () => store.walkTrackerData,
     () => store.gymTrackerData,
     () => store.workTimeLogs
@@ -1261,14 +1303,52 @@ watch(
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 13px;
-    transition: color 0.2s;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+    line-height: 1;
 }
 .btn-del-log:hover {
     color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
 }
 
-/* ── Python Analytics Dashboard Styles ─────────────────── */
+/* ── Dashboard Dual Row ──────────────────────────────────── */
+.dashboard-dual-row {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+.dashboard-dual-row > article {
+    flex: 1;
+    min-width: 0;
+}
+@media (max-width: 768px) {
+    .dashboard-dual-row {
+        flex-direction: column;
+    }
+}
+.timesheet-table th,
+.timesheet-table td {
+    white-space: nowrap;
+    padding: 8px 6px;
+}
+.timesheet-table td:first-child div:first-child {
+    font-weight: 700;
+    font-size: 12.5px;
+}
+.ts-rest-row td {
+    background: rgba(100, 116, 139, 0.04);
+    opacity: 0.75;
+}
+.ts-rest-row:hover td {
+    background: rgba(100, 116, 139, 0.08);
+    opacity: 1;
+}
+
 .python-analytics-box {
     background: var(--bg-subtle, rgba(255,255,255,0.06));
     border: 1px solid var(--glass-border, rgba(255,255,255,0.12));

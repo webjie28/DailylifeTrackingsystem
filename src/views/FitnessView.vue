@@ -351,7 +351,15 @@ let fitnessChartInstance = null
 
 // Custom exercise CRUD
 function addCustomExercise() {
-  if (!newExText.value.trim()) return
+  const trimmedEx = newExText.value.trim()
+  if (!trimmedEx) return
+  
+  // Save to history suggestions
+  if (!customExerciseHistory.value.some(item => item.toLowerCase() === trimmedEx.toLowerCase())) {
+    customExerciseHistory.value.push(trimmedEx)
+    localStorage.setItem('customExerciseHistory', JSON.stringify(customExerciseHistory.value))
+  }
+
   const sets = parseInt(newExSets.value) || 0
   const reps = parseInt(newExReps.value) || 0
   const mins = parseInt(newExMins.value) || 0
@@ -365,7 +373,7 @@ function addCustomExercise() {
   }
   
   const suffix = details.length > 0 ? ` – ${details.join(' & ')}` : ''
-  const fullText = `${newExText.value.trim()}${suffix}`
+  const fullText = `${trimmedEx}${suffix}`
   
   store.addGymExercise(activeDay.value, {
     text: fullText,
@@ -378,9 +386,14 @@ function addCustomExercise() {
 }
 
 function deleteCustomExercise(index) {
-  if (confirm('Are you sure you want to remove this exercise?')) {
-    store.deleteGymExercise(activeDay.value, index)
-  }
+  store.showConfirm({
+    title: 'Remove Exercise?',
+    message: 'Are you sure you want to remove this exercise from the routine?',
+    confirmText: 'Remove',
+    onConfirm: () => {
+      store.deleteGymExercise(activeDay.value, index)
+    }
+  })
 }
 
 // Walk computed Ring offset
@@ -495,12 +508,17 @@ function editStepsLog(log) {
 }
 
 function deleteStepsLog(date) {
-  if (confirm(`Are you sure you want to delete the steps log for ${date}?`)) {
-    store.deleteSteps(date)
-    if (backtrackDate.value === date) {
-      stepsInput.value = 0
+  store.showConfirm({
+    title: 'Delete Steps Log?',
+    message: `Are you sure you want to delete the steps log for ${date}?`,
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteSteps(date)
+      if (backtrackDate.value === date) {
+        stepsInput.value = 0
+      }
     }
-  }
+  })
 }
 
 const PREDEFINED_WORKOUTS = [
@@ -590,25 +608,30 @@ const PREDEFINED_WORKOUTS = [
   'HIIT Workout'
 ]
 
+const customExerciseHistory = ref(JSON.parse(localStorage.getItem('customExerciseHistory') || '[]'))
 const showSuggestions = ref(false)
 
 const filteredSuggestions = computed(() => {
   const query = newExText.value ? newExText.value.trim().toLowerCase() : ''
   
-  // Unique workouts from history
+  // Unique workouts from logged gym history
   const historyWorkouts = Object.values(store.gymTrackerData)
     .map(log => log.workout)
     .filter(Boolean)
   
-  const allSuggestions = Array.from(new Set([...PREDEFINED_WORKOUTS, ...historyWorkouts]))
+  const allSuggestions = Array.from(new Set([
+    ...PREDEFINED_WORKOUTS,
+    ...customExerciseHistory.value,
+    ...historyWorkouts
+  ]))
 
   if (!query) {
-    return allSuggestions.slice(0, 6)
+    return allSuggestions.slice(0, 8)
   }
   
   return allSuggestions
     .filter(item => item.toLowerCase().includes(query))
-    .slice(0, 6)
+    .slice(0, 8)
 })
 
 function selectSuggestion(suggestion) {
@@ -663,14 +686,19 @@ function editGymLog(log) {
 }
 
 function deleteGymLog(date) {
-  if (confirm(`Are you sure you want to delete the workout log for ${date}?`)) {
-    store.deleteGymWorkout(date)
-    if (manualDate.value === date) {
-      manualCals.value = ''
-      manualWorkout.value = ''
-      manualNote.value = ''
+  store.showConfirm({
+    title: 'Delete Workout Log?',
+    message: `Are you sure you want to delete the workout log for ${date}?`,
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteGymWorkout(date)
+      if (manualDate.value === date) {
+        manualCals.value = ''
+        manualWorkout.value = ''
+        manualNote.value = ''
+      }
     }
-  }
+  })
 }
 
 const sortedStepsHistory = computed(() => {

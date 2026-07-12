@@ -80,7 +80,10 @@
         <form @submit.prevent="saveTransaction">
           <div class="form-group">
             <label>Description</label>
-            <input type="text" v-model="txDesc" placeholder="e.g. Starbucks, Salary" required />
+            <input type="text" v-model="txDesc" list="txDescList" placeholder="e.g. Starbucks, Salary" required />
+            <datalist id="txDescList">
+              <option v-for="d in uniqueDescriptions" :key="d" :value="d"></option>
+            </datalist>
           </div>
 
           <div class="two-input">
@@ -105,7 +108,10 @@
 
           <div class="form-group">
             <label>Note (Optional)</label>
-            <input type="text" v-model="txNote" placeholder="e.g. Lunch with friends" />
+            <input type="text" v-model="txNote" list="txNoteList" placeholder="e.g. Lunch with friends" />
+            <datalist id="txNoteList">
+              <option v-for="n in uniqueNotes" :key="n" :value="n"></option>
+            </datalist>
           </div>
 
           <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -178,8 +184,12 @@
               {{ tx.type === 'income' ? '+' : '-' }}₱{{ tx.amount.toLocaleString() }}
             </div>
             <div class="tx-actions" style="margin-left: 12px;">
-              <button class="btn-del" @click="editTransaction(tx.id)" title="Edit">Edit</button>
-              <button class="btn-del" @click="deleteTransaction(tx.id)" title="Delete">✕</button>
+              <button class="btn-del" @click="editTransaction(tx.id)" title="Edit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+              <button class="btn-del" @click="deleteTransaction(tx.id)" title="Delete">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
           </div>
         </div>
@@ -354,6 +364,16 @@ watch(txType, (newType) => {
   txCategory.value = newType === 'income' ? 'Salary' : 'Food'
 })
 
+const uniqueDescriptions = computed(() => {
+  const list = store.financeTransactions || []
+  return Array.from(new Set(list.map(t => t.description?.trim()).filter(Boolean)))
+})
+
+const uniqueNotes = computed(() => {
+  const list = store.financeTransactions || []
+  return Array.from(new Set(list.map(t => t.note?.trim()).filter(Boolean)))
+})
+
 // Financial metrics
 const totalIncome = computed(() => {
   return store.financeTransactions
@@ -445,9 +465,18 @@ function editTransaction(id) {
 }
 
 function deleteTransaction(id) {
-  if (!confirm('Delete this transaction?')) return
-  store.deleteTransaction(id)
-  if (editingId.value === id) cancelEdit()
+  const tx = store.financeTransactions.find(t => t.id === id)
+  const desc = tx ? tx.description : 'this transaction'
+  
+  store.showConfirm({
+    title: 'Delete Transaction?',
+    message: `Are you sure you want to delete "${desc}"?`,
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteTransaction(id)
+      if (editingId.value === id) cancelEdit()
+    }
+  })
 }
 
 function cancelEdit() {
@@ -463,9 +492,15 @@ function resetForm() {
 }
 
 function clearAll() {
-  if (!confirm('Clear ALL transactions? This cannot be undone.')) return
-  store.financeTransactions = []
-  localStorage.setItem('financeTransactions', '[]')
+  store.showConfirm({
+    title: 'Clear All History?',
+    message: 'Are you sure you want to clear ALL transactions? This cannot be undone.',
+    confirmText: 'Clear All',
+    onConfirm: () => {
+      store.financeTransactions = []
+      localStorage.setItem('financeTransactions', '[]')
+    }
+  })
   cancelEdit()
 }
 
@@ -1100,12 +1135,17 @@ function saveScannedTransaction() {
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 4px;
-  font-size: 14px;
-  transition: color 0.2s;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  line-height: 1;
 }
 .btn-del:hover {
   color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
 }
 
 .btn {

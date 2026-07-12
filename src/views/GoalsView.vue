@@ -101,32 +101,7 @@
       </div>
     </div>
 
-    <!-- Recommended SDLC Projects Shelf -->
-    <section class="animate-in" style="margin-top: 48px; margin-bottom: 32px;">
-      <h3 style="font-size: 20px; font-weight: 800; color: var(--text-heading); margin-bottom: 16px;">
-        Recommended Future Projects (SDLC Structured)
-      </h3>
-      <div class="recommendations-grid">
-        <div v-for="proj in recommendedProjects" :key="proj.id" class="recommend-card">
-          <div class="recommend-header">
-            <h4>{{ proj.title }}</h4>
-            <span class="recommend-cat">{{ proj.category }}</span>
-          </div>
-          <p class="recommend-desc">{{ proj.description }}</p>
-          
-          <div class="recommend-milestones">
-            <div v-for="(m, i) in proj.milestones" :key="i" class="recommend-milestone-item">
-              <span class="m-bullet">▪</span>
-              <span>{{ m.text }}</span>
-            </div>
-          </div>
-          
-          <button class="btn btn-outline" style="width: 100%; margin-top: auto;" @click="importProjectGoal(proj)">
-            Add to Goals Board
-          </button>
-        </div>
-      </div>
-    </section>
+
 
     <!-- Add Goal Modal Overlay -->
     <div class="modal-overlay" v-if="showAddModal" @click.self="showAddModal = false">
@@ -268,72 +243,19 @@ function saveGoal() {
 }
 
 function deleteGoal(id) {
-  if (!confirm('Delete this long-term goal?')) return
-  store.deleteLongtermGoal(id)
+  const goal = store.longtermGoals.find(g => g.id === id)
+  const title = goal ? goal.title : 'this goal'
+  store.showConfirm({
+    title: 'Delete Goal?',
+    message: `Are you sure you want to delete "${title}"? This cannot be undone.`,
+    confirmText: 'Delete',
+    onConfirm: () => {
+      store.deleteLongtermGoal(id)
+    }
+  })
 }
 
-// Recommended SDLC Projects template data
-const recommendedProjects = [
-  {
-    id: 'blog_cms',
-    title: 'Developer Blog & CMS',
-    category: 'Study',
-    description: 'A personal technical blog with markdown rendering, SEO meta fields, tag filters, and local headless CMS database integration.',
-    milestones: [
-      { text: 'Phase 1 (Planning): Select headless CMS & define posts schema' },
-      { text: 'Phase 2 (Design): Sketch responsive blog card layouts & dark theme overrides' },
-      { text: 'Phase 3 (Dev): Code article page renderer & GraphQL query services' },
-      { text: 'Phase 4 (Testing): Audit site with Google Lighthouse and verify forms' },
-      { text: 'Phase 5 (Deploy): Set up continuous deployment to Vercel/Netlify' }
-    ]
-  },
-  {
-    id: 'kanban_board',
-    title: 'Kanban Collaboration Board',
-    category: 'Productivity',
-    description: 'A board displaying project tasks in columns (Todo, In Progress, Review, Done) with smooth drag-and-drop, card categories, and search.',
-    milestones: [
-      { text: 'Phase 1 (Planning): Draft state flow diagram & task schema specifications' },
-      { text: 'Phase 2 (Design): Wireframe column groups and task card layouts' },
-      { text: 'Phase 3 (Dev): Implement HTML5 Drag & Drop operations and card filters' },
-      { text: 'Phase 4 (Testing): Verify task sorting, card movements, and state persistence' },
-      { text: 'Phase 5 (Deploy): Deploy fully functional prototype to GitHub pages' }
-    ]
-  },
-  {
-    id: 'crypto_analytics',
-    title: 'Crypto Analytics Dashboard',
-    category: 'Finance',
-    description: 'A financial dashboard fetching live crypto token prices, plotting interactive price charts, tracking portfolio values, and firing indicators.',
-    milestones: [
-      { text: 'Phase 1 (Planning): Register CoinGecko API keys & define target assets' },
-      { text: 'Phase 2 (Design): Grid mockup for candlestick chart & price alert modal' },
-      { text: 'Phase 3 (Dev): Code Chart.js candlestick data queries & portfolio calculator' },
-      { text: 'Phase 4 (Testing): Validate rendering speeds & test asset price alarms' },
-      { text: 'Phase 5 (Deploy): Compile desktop application wrapper using Electron' }
-    ]
-  }
-]
 
-function importProjectGoal(proj) {
-  if (!confirm(`Add "${proj.title}" as a new Goal with SDLC milestones to your board?`)) return
-  
-  const deadlineDate = new Date()
-  deadlineDate.setDate(deadlineDate.getDate() + 30)
-  const deadlineStr = deadlineDate.toISOString().split('T')[0]
-  
-  const newGoal = {
-    id: Date.now() + '_' + Math.random().toString(36).slice(2),
-    title: proj.title,
-    category: proj.category.toLowerCase(),
-    deadline: deadlineStr,
-    emoji: '🎯',
-    milestones: proj.milestones.map(m => ({ text: m.text, done: false }))
-  }
-  
-  store.addLongtermGoal(newGoal)
-  alert(`"${proj.title}" successfully added to your Goals Board!`)
-}
 </script>
 
 <style scoped>
@@ -618,7 +540,6 @@ function importProjectGoal(proj) {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
   align-items: center;
