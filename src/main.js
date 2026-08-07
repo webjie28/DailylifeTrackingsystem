@@ -14,6 +14,59 @@ app.use(router)
 // Initialize global store watch for cloud sync with a debounce
 const store = useAppStore()
 let syncTimeout = null
+const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000
+let inactivityTimer = null
+let inactivityListenersAttached = false
+
+function clearInactivityTimer() {
+  if (inactivityTimer) {
+    clearTimeout(inactivityTimer)
+    inactivityTimer = null
+  }
+}
+
+function resetInactivityTimer() {
+  if (!store.isAuthenticated || !store.user) return
+
+  clearInactivityTimer()
+  inactivityTimer = setTimeout(async () => {
+    clearInactivityTimer()
+    await store.logoutUser()
+
+    if (router.currentRoute.value.path !== '/login') {
+      await router.push('/login')
+    }
+  }, INACTIVITY_TIMEOUT_MS)
+}
+
+function attachInactivityListeners() {
+  if (inactivityListenersAttached) return
+
+  const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click']
+  activityEvents.forEach((eventName) => {
+    window.addEventListener(eventName, resetInactivityTimer, { passive: true })
+  })
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      resetInactivityTimer()
+    }
+  })
+
+  inactivityListenersAttached = true
+}
+
+function detachInactivityListeners() {
+  if (!inactivityListenersAttached) return
+
+  const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click']
+  activityEvents.forEach((eventName) => {
+    window.removeEventListener(eventName, resetInactivityTimer)
+  })
+
+  document.removeEventListener('visibilitychange', resetInactivityTimer)
+  inactivityListenersAttached = false
+}
 
 watch(
   () => [
@@ -49,6 +102,20 @@ watch(
     }
   },
   { deep: true }
+)
+
+watch(
+  () => store.isAuthenticated,
+  (isAuthenticated) => {
+    if (isAuthenticated) {
+      attachInactivityListeners()
+      resetInactivityTimer()
+    } else {
+      clearInactivityTimer()
+      detachInactivityListeners()
+    }
+  },
+  { immediate: true }
 )
 
 app.mount('#app')
