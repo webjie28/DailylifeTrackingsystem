@@ -1,6 +1,8 @@
 <template>
-  <div class="auth-view animate-in"><WelcomeStory />
-    <div class="auth-glass-container">
+  <div ref="loginLayout" class="auth-view login-layout animate-in" :class="{ 'login-focused': loginFocused }" :style="{ '--login-shift': loginShift + 'px' }" @keydown.esc="leaveFocus">
+    <WelcomeStory :inert="loginFocused" :aria-hidden="loginFocused || undefined" />
+    <div ref="loginCard" class="auth-glass-container" @focusin="enterFocus">
+      <button v-if="loginFocused" type="button" class="login-back" @click="leaveFocus">← Back to welcome</button>
       <div class="auth-header">
         <h1 class="auth-logo">DLT</h1>
         <p class="auth-subtitle">Daily Life Tracker</p>
@@ -87,12 +89,39 @@
 
 <script setup>
 import WelcomeStory from '../components/WelcomeStory.vue'
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 
 const store = useAppStore()
 const router = useRouter()
+const loginLayout = ref(null)
+const loginCard = ref(null)
+const loginFocused = ref(false)
+const loginShift = ref(0)
+let layoutObserver
+
+function measureLogin() {
+  if (!loginLayout.value || !loginCard.value) return
+  loginShift.value = loginLayout.value.clientWidth / 2 - loginCard.value.offsetLeft - loginCard.value.offsetWidth / 2
+  if (window.innerWidth <= 760) loginFocused.value = false
+}
+function enterFocus(event) {
+  if (event.target.tagName !== 'INPUT' || window.innerWidth <= 760) return
+  measureLogin()
+  loginFocused.value = true
+}
+function leaveFocus() {
+  loginFocused.value = false
+  loginLayout.value?.focus({ preventScroll: true })
+}
+onMounted(() => {
+  loginLayout.value.tabIndex = -1
+  layoutObserver = new ResizeObserver(measureLogin)
+  layoutObserver.observe(loginLayout.value)
+  layoutObserver.observe(loginCard.value)
+})
+onUnmounted(() => layoutObserver?.disconnect())
 
 const email = ref('')
 const password = ref('')

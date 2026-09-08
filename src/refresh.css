@@ -75,6 +75,13 @@ button:active:not(:disabled), .btn:active { transform: scale(.97); }
 .life-link { font-size: 13px !important; }.life-links h2 { font-size: 10px !important; }.life-profile-copy strong { font-size: 13px !important; }
 
 /* Auth layout: balanced desktop composition and a true single-column phone flow. */
+.login-layout { position:relative; }
+.login-layout .welcome-story { transition:opacity .4s ease, transform .55s cubic-bezier(.22,1,.36,1), visibility .4s; }
+.login-layout .auth-glass-container { position:relative; transition:transform .65s cubic-bezier(.22,1,.36,1), box-shadow .4s; }
+.login-layout.login-focused .welcome-story { opacity:0; visibility:hidden; transform:translateX(-30px) scale(.97); pointer-events:none; }
+.login-layout.login-focused .auth-glass-container { transform:translateX(var(--login-shift)); box-shadow:0 24px 80px #10241a24; }
+.login-back { position:absolute; top:16px; left:24px; border:0; background:transparent; color:var(--text-secondary); cursor:pointer; padding:6px; }
+@media(prefers-reduced-motion:reduce) { .login-layout .welcome-story,.login-layout .auth-glass-container { transition:none; } }
 .no-sidebar .main-content { display:grid; place-items:center; padding:24px !important; }
 .no-sidebar .main-content > .container { width:100%; max-width:none; padding:0 !important; }
 .auth-view.auth-view { display:grid !important; width:min(1680px,calc(100vw - 64px)); max-width:none !important; grid-template-columns:minmax(0,1.15fr) minmax(410px,.85fr) !important; align-items:stretch !important; justify-content:stretch !important; gap:28px !important; min-height:calc(100svh - 48px) !important; }
