@@ -3,6 +3,7 @@ import { auth, db } from '../services/firebase'
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged 
 } from 'firebase/auth'
@@ -676,11 +677,12 @@ export const useAppStore = defineStore('app', {
       }
     },
     // ── Authentication Actions ─────────────────────────────
-    async registerUser(email, password, username) {
+    async registerUser(email, password) {
+      const normalizedEmail = email.trim().toLowerCase()
       // Step 1: Create Firebase Auth account — this MUST succeed
       let userCredential
       try {
-        userCredential = await createUserWithEmailAndPassword(auth, email, password)
+        userCredential = await createUserWithEmailAndPassword(auth, normalizedEmail, password)
       } catch (authErr) {
         // Auth errors (wrong email format, weak password, etc.) — rethrow
         throw authErr
@@ -688,15 +690,12 @@ export const useAppStore = defineStore('app', {
 
       this.user = userCredential.user
       this.isAuthenticated = true
-      this.username = username
+      this.username = normalizedEmail.split('@')[0]
 
       // Step 2: Write profile data to Firestore — do NOT block registration if this fails
       try {
-        const usernameRef = doc(db, 'usernames', username.toLowerCase())
-        await setDoc(usernameRef, { email: email.toLowerCase(), uid: this.user.uid })
-
         const userRef = doc(db, 'users', this.user.uid)
-        await setDoc(userRef, { username: username, email: email }, { merge: true })
+        await setDoc(userRef, { email: normalizedEmail, profileName: this.username }, { merge: true })
 
         await this.syncAllDataToCloud()
       } catch (firestoreErr) {
@@ -707,7 +706,7 @@ export const useAppStore = defineStore('app', {
     },
     async loginUser(email, password) {
       try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password)
+        const userCredential = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password)
         this.user = userCredential.user
         this.isAuthenticated = true
         await this.fetchUserData()
@@ -715,11 +714,15 @@ export const useAppStore = defineStore('app', {
         throw err
       }
     },
+    async sendPasswordReset(email) {
+      await sendPasswordResetEmail(auth, email.trim().toLowerCase())
+    },
     async logoutUser() {
       try {
         await signOut(auth)
         this.user = null
         this.isAuthenticated = false
+        this.username = ''
         this.resetStoreData()
       } catch (err) {
         console.error('Logout error:', err)
@@ -727,6 +730,7 @@ export const useAppStore = defineStore('app', {
     },
     async fetchUserData() {
       if (!this.user) return
+      this.username = this.user.email?.split('@')[0] || ''
       try {
         const docRef = doc(db, 'users', this.user.uid)
         const docSnap = await getDoc(docRef)
@@ -759,7 +763,7 @@ export const useAppStore = defineStore('app', {
           this.activeClockInLogId = data.activeClockInLogId !== undefined ? data.activeClockInLogId : null
           this.dailyStreak = data.dailyStreak !== undefined ? data.dailyStreak : 0
           this.lastStreakDate = data.lastStreakDate !== undefined ? data.lastStreakDate : ''
-          this.username = data.username || ''
+          this.username = data.profileName || data.username || this.user?.email?.split('@')[0] || ''
 
           this.saveAllDataToLocalStorage()
         } else {

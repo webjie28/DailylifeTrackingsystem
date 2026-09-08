@@ -13,21 +13,28 @@
         <span class="alert-icon">⚠️</span>
         <span class="alert-text">{{ errorMessage }}</span>
       </div>
+      <div v-if="statusMessage" class="auth-alert success" role="status">
+        <span class="alert-icon">✓</span>
+        <span class="alert-text">{{ statusMessage }}</span>
+      </div>
 
       <form @submit.prevent="handleLogin" class="auth-form">
         <div class="auth-input-group">
           <input 
-            type="text" 
-            id="username-input"
-            v-model="username" 
+            type="email"
+            id="email-input"
+            v-model="email"
             placeholder=" " 
             required 
             :disabled="isLoading"
+            autocomplete="email"
+            inputmode="email"
+            autocapitalize="none"
           />
-          <label for="username-input">Username</label>
+          <label for="email-input">Email Address</label>
           <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
           </svg>
         </div>
 
@@ -39,6 +46,7 @@
             placeholder=" " 
             required 
             :disabled="isLoading"
+            autocomplete="current-password"
           />
           <label for="password-input">Password</label>
           <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -62,6 +70,8 @@
           </button>
         </div>
 
+        <button type="button" class="forgot-password" :disabled="isLoading" @click="handlePasswordReset">Forgot password?</button>
+
         <button type="submit" class="btn-auth-submit" :disabled="isLoading">
           <span v-if="isLoading" class="auth-spinner"></span>
           <span v-else>Sign In</span>
@@ -80,48 +90,61 @@ import WelcomeStory from '../components/WelcomeStory.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../services/firebase'
 
 const store = useAppStore()
 const router = useRouter()
 
-const username = ref('')
+const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
+const statusMessage = ref('')
 const isLoading = ref(false)
 const showPassword = ref(false)
 
 async function handleLogin() {
-  if (!username.value || !password.value) return
+  if (!email.value.trim() || !password.value) return
   
   isLoading.value = true
   errorMessage.value = ''
+  statusMessage.value = ''
   
   try {
-    // 1. Look up email using username
-    const usernameClean = username.value.trim().toLowerCase()
-    const usernameDocRef = doc(db, 'usernames', usernameClean)
-    const usernameDocSnap = await getDoc(usernameDocRef)
-    
-    if (!usernameDocSnap.exists()) {
-      errorMessage.value = 'Username does not exist.'
-      isLoading.value = false
-      return
-    }
-    
-    const email = usernameDocSnap.data().email
-    
-    // 2. Authenticate using email and password
-    await store.loginUser(email, password.value)
+    await store.loginUser(email.value.trim().toLowerCase(), password.value)
     router.push('/')
   } catch (err) {
     console.error('Login error:', err)
     if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-      errorMessage.value = 'Invalid password.'
+      errorMessage.value = 'Incorrect email or password.'
+    } else if (err.code === 'auth/invalid-email') {
+      errorMessage.value = 'Please enter a valid email address.'
+    } else if (err.code === 'auth/too-many-requests') {
+      errorMessage.value = 'Too many attempts. Please wait a moment and try again.'
+    } else if (err.code === 'auth/network-request-failed') {
+      errorMessage.value = 'Unable to connect. Check your internet connection and try again.'
     } else {
       errorMessage.value = 'Failed to sign in. Please try again.'
     }
+  } finally {
+    isLoading.value = false
+  }
+}
+
+async function handlePasswordReset() {
+  errorMessage.value = ''
+  statusMessage.value = ''
+  const normalizedEmail = email.value.trim().toLowerCase()
+  if (!normalizedEmail) {
+    errorMessage.value = 'Enter your email address first, then select Forgot password.'
+    return
+  }
+  isLoading.value = true
+  try {
+    await store.sendPasswordReset(normalizedEmail)
+    statusMessage.value = 'Password reset email sent. Check your inbox and spam folder.'
+  } catch (err) {
+    if (err.code === 'auth/invalid-email') errorMessage.value = 'Please enter a valid email address.'
+    else if (err.code === 'auth/too-many-requests') errorMessage.value = 'Too many requests. Please wait before trying again.'
+    else errorMessage.value = 'Could not send the reset email. Please try again.'
   } finally {
     isLoading.value = false
   }
@@ -200,6 +223,9 @@ async function handleLogin() {
   border: 1px solid var(--accent-red-border);
   color: var(--accent-red-text);
 }
+.auth-alert.success { background:#e9f5ec; border:1px solid #bcdcc5; color:#2f6840; }
+.forgot-password { align-self:flex-end; margin-top:-10px; padding:2px 0; border:0; background:transparent; color:var(--accent-purple); font-size:12px; font-weight:650; cursor:pointer; }
+.forgot-password:hover { text-decoration:underline; }
 
 .auth-form {
   display: flex;

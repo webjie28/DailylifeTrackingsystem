@@ -17,28 +17,15 @@
       <form @submit.prevent="handleRegister" class="auth-form">
         <div class="auth-input-group">
           <input 
-            type="text" 
-            id="username-input"
-            v-model="username" 
-            placeholder=" " 
-            required 
-            :disabled="isLoading"
-          />
-          <label for="username-input">Username</label>
-          <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-        </div>
-
-        <div class="auth-input-group">
-          <input 
             type="email" 
             id="email-input"
             v-model="email" 
             placeholder=" " 
             required 
             :disabled="isLoading"
+            autocomplete="email"
+            inputmode="email"
+            autocapitalize="none"
           />
           <label for="email-input">Email Address</label>
           <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -57,6 +44,7 @@
             :disabled="isLoading"
             @focus="showPasswordRequirements = true"
             @input="checkPasswordRequirements"
+            autocomplete="new-password"
           />
           <label for="password-input">Password</label>
           <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -104,6 +92,7 @@
             placeholder=" " 
             required 
             :disabled="isLoading"
+            autocomplete="new-password"
           />
           <label for="confirm-password-input">Confirm Password</label>
           <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -145,13 +134,10 @@ import WelcomeStory from '../components/WelcomeStory.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
-import { doc, getDoc } from 'firebase/firestore'
-import { db } from '../services/firebase'
 
 const store = useAppStore()
 const router = useRouter()
 
-const username = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
@@ -175,15 +161,7 @@ function checkPasswordRequirements() {
 }
 
 async function handleRegister() {
-  if (!username.value || !email.value || !password.value || !confirmPassword.value) return
-  
-  const usernameClean = username.value.trim().toLowerCase()
-  // Validate username format (no spaces, only letters, numbers, and underscores, between 3 and 15 chars)
-  const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/
-  if (!usernameRegex.test(usernameClean)) {
-    errorMessage.value = 'Username must be 3-15 characters and contain only letters, numbers, or underscores.'
-    return
-  }
+  if (!email.value.trim() || !password.value || !confirmPassword.value) return
 
   // Enforce password strength requirements
   checkPasswordRequirements()
@@ -201,23 +179,7 @@ async function handleRegister() {
   errorMessage.value = ''
   
   try {
-    // 1. Check if username is already taken (may fail if Firestore rules require auth — that's okay)
-    try {
-      const usernameDocRef = doc(db, 'usernames', usernameClean)
-      const usernameDocSnap = await getDoc(usernameDocRef)
-      if (usernameDocSnap.exists()) {
-        errorMessage.value = 'Username is already taken.'
-        isLoading.value = false
-        return
-      }
-    } catch (checkErr) {
-      // If Firestore rules block this read (user not logged in yet), skip the check
-      // Username uniqueness will still be enforced when writing to Firestore after auth
-      console.warn('Username check skipped (Firestore rules may require auth):', checkErr.message)
-    }
-
-    // 2. Proceed with registration
-    await store.registerUser(email.value.trim(), password.value, username.value.trim())
+    await store.registerUser(email.value.trim().toLowerCase(), password.value)
     router.push('/')
   } catch (err) {
     console.error('Registration error:', err)
@@ -227,6 +189,8 @@ async function handleRegister() {
       errorMessage.value = 'Please enter a valid email address.'
     } else if (err.code === 'auth/weak-password') {
       errorMessage.value = 'Password is too weak.'
+    } else if (err.code === 'auth/network-request-failed') {
+      errorMessage.value = 'Unable to connect. Check your internet connection and try again.'
     } else {
       errorMessage.value = 'Failed to create account: ' + (err.message || err.code || err)
     }
