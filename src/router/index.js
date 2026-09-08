@@ -77,10 +77,10 @@ const router = createRouter({
     },
     { path: '/reports', name: 'reports', component: LifeHubView },
     { path: '/activity', name: 'activity', component: LifeHubView },
-    { path: '/search', name: 'search', component: LifeHubView },
+    { path: '/search', redirect: '/' },
     { path: '/notifications', name: 'notifications', component: LifeHubView },
     { path: '/achievements', name: 'achievements', component: LifeHubView },
-    { path: '/ai-insights', redirect: '/search' },
+    { path: '/ai-insights', redirect: '/' },
     { path: '/settings', name: 'settings', component: LifeHubView }
   ]
 })
