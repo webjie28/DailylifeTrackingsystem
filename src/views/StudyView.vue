@@ -148,7 +148,10 @@
 
     <!-- Reading Timer Modal / Running Timer -->
     <div class="modal-overlay" v-if="showReadingModal" @click.self="!isReadingActive && closeReadingModal()">
-      <div class="modal-content" :style="{ 'max-width': isReadingActive ? '1080px' : '440px', 'width': '96%', 'padding': '28px' }">
+      <div class="modal-content reading-modal-content" :style="{ 'max-width': isReadingActive ? '1080px' : '440px', 'width': '96%', 'padding': '28px' }">
+        <button type="button" class="reader-close-btn" @click="isReadingActive ? stopReadingSessionEarly() : closeReadingModal()" aria-label="Close book reader">
+          <span aria-hidden="true">×</span><span>Close reader</span>
+        </button>
 
         <!-- Setup Screen (before starting) -->
         <div v-if="!isReadingActive" style="text-align: center;">
@@ -1203,6 +1206,33 @@ onUnmounted(() => {
   box-shadow: var(--shadow-lg);
   animation: fadeInUp 0.3s ease;
 }
+.reading-modal-content {
+  position: relative;
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.reader-close-btn {
+  position: sticky;
+  z-index: 8;
+  top: 0;
+  margin: 0 0 16px auto;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border: 1px solid var(--border-color-strong);
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.reader-close-btn span:first-child { font-size: 22px; line-height: 1; }
 .modal-content h3 {
   font-family: 'Inter', sans-serif;
   font-size: 18px;
@@ -1350,6 +1380,18 @@ onUnmounted(() => {
   min-height: 480px;
 }
 @media (max-width: 768px) {
+  .modal-overlay { align-items: stretch; padding: 0; }
+  .reading-modal-content {
+    width: 100% !important;
+    max-width: none !important;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    padding: max(14px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom)) !important;
+    border-radius: 0;
+    border: 0;
+  }
+  .reader-close-btn { top: max(2px, env(safe-area-inset-top)); }
   .reading-session-layout {
     grid-template-columns: 1fr;
     min-height: auto;
@@ -1368,6 +1410,9 @@ onUnmounted(() => {
     padding-bottom: 24px;
     border-bottom: 1px solid var(--border-color-strong);
   }
+  .reader-body { max-height: none; overflow: visible; }
+  .reader-text-paragraph { font-size: 16px; line-height: 1.78; text-align: left; }
+  .reader-nav-btn { min-height: 44px; padding: 10px 16px; }
 }
 .reader-header {
   display: flex;
