@@ -76,8 +76,13 @@ button:active:not(:disabled), .btn:active { transform: scale(.97); }
 
 /* Auth layout: balanced desktop composition and a true single-column phone flow. */
 .no-sidebar .main-content { display:grid; place-items:center; padding:24px !important; }
-.auth-view.auth-view { width:min(1180px,100%); grid-template-columns:minmax(0,1.12fr) minmax(390px,.88fr) !important; gap:34px !important; min-height:calc(100svh - 48px) !important; }
-.auth-view .auth-glass-container { width:100% !important; max-width:440px !important; }
+.no-sidebar .main-content > .container { width:100%; max-width:none; padding:0 !important; }
+.auth-view.auth-view { display:grid !important; width:min(1680px,calc(100vw - 64px)); max-width:none !important; grid-template-columns:minmax(0,1.15fr) minmax(410px,.85fr) !important; align-items:stretch !important; justify-content:stretch !important; gap:28px !important; min-height:calc(100svh - 48px) !important; }
+.auth-view .auth-glass-container { align-self:center; justify-self:center; width:100% !important; max-width:620px !important; padding:50px 44px !important; }
+.auth-view .welcome-story { padding:46px 56px 32px; }
+.auth-view .story-copy { max-width:680px; }
+.auth-view .story-copy h2 { font-size:clamp(48px,4.2vw,76px); }
+.auth-view .story-art { width:min(520px,100%); align-self:center; }
 .auth-view .auth-input-group input,.auth-view .btn-auth-submit { font-size:14px !important; }
 .auth-view .auth-footer,.auth-view .auth-footer a { font-size:13px !important; }
 .welcome-story .story-tags,.welcome-story .story-footnote { font-size:12px; }
@@ -95,4 +100,10 @@ button:active:not(:disabled), .btn:active { transform: scale(.97); }
   .auth-view .auth-title { font-size:26px !important; }
   .auth-input-group input { min-height:50px; font-size:16px !important; }
   .auth-input-group label,.btn-auth-submit { font-size:15px !important; }
+}
+@media (min-width:761px) and (max-width:1050px) {
+  .auth-view.auth-view { width:calc(100vw - 40px); grid-template-columns:minmax(0,1fr) minmax(390px,.9fr) !important; gap:20px !important; }
+  .auth-view .welcome-story { padding:34px 32px 26px; }
+  .auth-view .story-copy h2 { font-size:clamp(40px,5vw,58px); }
+  .auth-view .auth-glass-container { padding:40px 30px !important; }
 }
