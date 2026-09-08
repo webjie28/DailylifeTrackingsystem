@@ -12,7 +12,11 @@ app.use(pinia)
 app.use(router)
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js?v=2', { updateViaCache: 'none' })
+      .then(registration => registration.update())
+      .catch(() => {})
+  })
 }
 
 // Initialize global store watch for cloud sync with a debounce
