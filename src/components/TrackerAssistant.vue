@@ -38,7 +38,10 @@ watch(()=>store.user?.uid,()=>{request?.abort();messages.value=[];question.value
 onUnmounted(()=>request?.abort())
 </script>
 <template>
-  <button ref="trigger" class="assistant-launch" @click="panel.showModal()" aria-haspopup="dialog">✦ Ask DLT</button>
+  <button ref="trigger" class="assistant-launch" @click="panel.showModal()" aria-haspopup="dialog" aria-label="Open DLT assistant" data-label="Ask DLT">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 15a4 4 0 0 1-4 4H8l-4 3v-3a4 4 0 0 1-2-3.46V8a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"/><path d="M7 9h10M7 13h7"/></svg>
+    <span class="assistant-pulse"></span>
+  </button>
   <Teleport to="body">
     <dialog ref="panel" class="assistant-panel" aria-labelledby="assistant-title" @cancel.prevent="close" @click="e=>{if(e.target===panel)close()}">
       <header><div><h2 id="assistant-title">Your DLT assistant</h2><p>Understand your day, one check-in at a time.</p></div><button @click="close" aria-label="Close assistant">×</button></header>
@@ -55,7 +58,10 @@ onUnmounted(()=>request?.abort())
   </Teleport>
 </template>
 <style scoped>
-.assistant-launch{position:fixed;right:24px;bottom:24px;z-index:900;border:1px solid #719b82;border-radius:30px;padding:14px 21px;background:#315f47;color:white;box-shadow:0 8px 24px #12291c33;cursor:pointer;font-size:15px}
+.assistant-launch{position:fixed;right:24px;bottom:24px;z-index:900;width:58px;height:58px;border:1px solid #f29a55;border-radius:50%;display:grid;place-items:center;background:#ef6c1b;color:white;box-shadow:0 12px 28px #8d3c1538;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
+.assistant-launch:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 16px 34px #8d3c154d}.assistant-launch:focus-visible{outline:3px solid #ef6c1b55;outline-offset:4px}.assistant-launch svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.assistant-launch::before{content:attr(data-label);position:absolute;right:68px;padding:8px 11px;border-radius:9px;background:var(--text-primary);color:var(--bg-card);font-size:13px;white-space:nowrap;opacity:0;transform:translateX(6px);pointer-events:none;transition:.2s ease}.assistant-launch:hover::before,.assistant-launch:focus-visible::before{opacity:1;transform:translateX(0)}.assistant-pulse{position:absolute;right:2px;top:2px;width:11px;height:11px;border:2px solid var(--bg-primary);border-radius:50%;background:#8fb46d}.assistant-pulse::after{content:'';position:absolute;inset:-4px;border:1px solid #8fb46d;border-radius:50%;animation:assistant-ping 2s ease-out infinite}@keyframes assistant-ping{0%{transform:scale(.7);opacity:.8}70%,100%{transform:scale(1.8);opacity:0}}
 .assistant-panel{margin:auto;width:min(560px,calc(100vw - 28px));max-height:calc(100dvh - 28px);overflow:auto;padding:24px;border:1px solid var(--border-color);border-radius:22px;background:var(--bg-card);color:var(--text-primary)}
 .assistant-panel::backdrop{background:#08170f88;backdrop-filter:blur(5px)}header{display:flex;justify-content:space-between;align-items:start;text-align:left;margin:0}h2{font-size:23px;margin:0}header p{font-size:14px;color:var(--text-muted)}header button{background:none;border:0;color:inherit;font-size:27px;cursor:pointer}.assistant-disclosure{font-size:12px;color:var(--text-muted);line-height:1.6;padding:12px;background:var(--bg-subtle);border-radius:10px}.assistant-thread{max-height:38dvh;overflow:auto;font-size:15px;line-height:1.7}.assistant-question{background:var(--bg-subtle);padding:12px;border-radius:12px}.assistant-reply{white-space:pre-wrap;overflow-wrap:anywhere}.assistant-suggestions{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0}.assistant-suggestions button{background:var(--bg-subtle);color:var(--text-primary);border:1px solid var(--border-color);padding:8px 10px;border-radius:15px;font-size:12px;cursor:pointer}form label{font-size:13px;display:block;margin:12px 0 8px}form>div{display:flex;gap:8px}input{min-width:0;flex:1;padding:12px;border:1px solid var(--border-color);border-radius:10px;background:var(--bg-primary);color:var(--text-primary);font-size:16px}form button{border:0;background:#315f47;color:white;padding:12px;border-radius:10px;cursor:pointer}button:disabled{opacity:.6;cursor:wait}.assistant-error{color:var(--text-primary);border-left:3px solid #c68766;padding:10px;font-size:13px}
+@media (max-width:700px){.assistant-launch{right:16px;bottom:16px;width:54px;height:54px}.assistant-launch::before{display:none}.assistant-panel{padding:18px;border-radius:18px}}
+@media (prefers-reduced-motion:reduce){.assistant-launch,.assistant-launch::before{transition:none}.assistant-pulse::after{animation:none}}
 </style>
