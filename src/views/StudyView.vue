@@ -700,7 +700,7 @@ onUnmounted(() => {
   margin: 0;
 }
 .library-bookmark { display:block; width:max-content; max-width:100%; margin-top:7px; padding:4px 7px; border-radius:99px; background:#edf2e9; color:#4f765c; font-size:10px; font-weight:600; }
-:global([data-theme="dark"]) .library-bookmark,:global([data-theme="navy"]) .library-bookmark { background:var(--bg-secondary); color:var(--accent-green); }
+[data-theme="dark"] .library-bookmark,[data-theme="navy"] .library-bookmark { background:var(--bg-secondary); color:var(--accent-green); }
 .study-subtitle {
   font-family: 'Inter', sans-serif;
   color: var(--text-muted);
