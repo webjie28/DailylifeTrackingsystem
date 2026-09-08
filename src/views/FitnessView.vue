@@ -1,19 +1,28 @@
 <template>
-  <div class="fitness-view">
+  <div class="fitness-view wellness-page movement-page">
+    <div class="wellness-crumb">Everyday <span>/</span> Movement</div>
     <!-- Header -->
-    <div class="fit-header">
+    <div class="fit-header wellness-header">
       <div>
-        <h1>Fitness Center</h1>
-        <p class="fit-subtitle">Track your daily walking steps, custom gym routines, and active calorie burn goals</p>
+        <small>MOVE IN A WAY THAT FEELS GOOD</small>
+        <h1>Every step is progress.</h1>
+        <p class="fit-subtitle">Keep an eye on your movement, build routines, and celebrate showing up.</p>
       </div>
+      <div class="movement-streak"><span>✦</span><div><strong>{{ store.fitnessStreak }} day streak</strong><small>Consistency grows quietly.</small></div></div>
     </div>
+
+    <section class="movement-hero">
+      <div class="movement-ring" :style="{ '--progress': stepGoalPercentage * 3.6 + 'deg' }"><div><strong>{{ activeDaySteps.toLocaleString() }}</strong><span>steps</span></div></div>
+      <div class="movement-hero-copy"><small>TODAY'S MOVEMENT</small><h2>{{ stepGoalPercentage >= 100 ? 'You reached your goal.' : stepGoalPercentage >= 50 ? 'You’re finding your rhythm.' : 'A little movement goes a long way.' }}</h2><p>{{ stepGoalPercentage }}% of your {{ store.fitnessStepGoal.toLocaleString() }}-step goal</p><div class="movement-track"><span :style="{ width: stepGoalPercentage + '%' }"></span></div></div>
+      <div class="movement-mini"><span>Burned today</span><strong>{{ store.todayTotalCaloriesBurned }} <small>kcal</small></strong><p>{{ store.todayWorkoutCalories }} workout · {{ store.todayWalkCalories }} walking</p></div>
+    </section>
 
     <!-- Metric Cards with Circular Progress Rings -->
     <div class="metrics-grid animate-in delay-100">
       <!-- Total Burned -->
       <div class="metric-card">
         <div class="metric-left">
-          <div class="metric-label">Total Burned</div>
+          <div class="metric-label">Energy used</div>
           <div class="metric-value">{{ store.todayTotalCaloriesBurned }}</div>
           <div class="metric-unit">kcal today</div>
         </div>
@@ -33,7 +42,7 @@
       <!-- Gym Workout -->
       <div class="metric-card">
         <div class="metric-left">
-          <div class="metric-label">Gym Workout</div>
+          <div class="metric-label">Workout energy</div>
           <div class="metric-value">{{ store.todayWorkoutCalories }}</div>
           <div class="metric-unit">kcal burned</div>
         </div>
@@ -53,7 +62,7 @@
       <!-- Active Walk -->
       <div class="metric-card">
         <div class="metric-left">
-          <div class="metric-label">Active Walk</div>
+          <div class="metric-label">Walking energy</div>
           <div class="metric-value">{{ store.todayWalkCalories }}</div>
           <div class="metric-unit">kcal walking</div>
         </div>
@@ -73,7 +82,7 @@
       <!-- Steps Walked -->
       <div class="metric-card">
         <div class="metric-left">
-          <div class="metric-label">Steps Walked</div>
+          <div class="metric-label">Daily steps</div>
           <div class="metric-value">{{ store.todaySteps.toLocaleString() }}</div>
           <div class="metric-unit">today</div>
         </div>
@@ -97,7 +106,7 @@
       <div class="panel">
         <h3>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Log Daily Activity
+          Log your steps
         </h3>
         <div class="step-ring-mini-wrap">
           <svg width="100" height="100" viewBox="0 0 100 100">
@@ -132,7 +141,7 @@
       <div class="panel">
         <h3>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Weekly Routines
+          Your weekly routine
         </h3>
         <!-- Day Selector tabs -->
         <div class="day-tabs">
@@ -171,7 +180,7 @@
       <div class="panel">
         <h3>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Quick Log Workout
+          Build &amp; log a workout
         </h3>
         <!-- Exercise Add Form -->
         <div class="form-group" style="position: relative;">
@@ -234,7 +243,7 @@
       <div class="panel">
         <h3>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Recent Step Logs
+          Recent movement
         </h3>
         <div class="log-list">
           <div v-if="sortedStepsHistory.length === 0" class="empty-msg-sm">No steps logged yet.</div>
@@ -257,7 +266,7 @@
       <div class="panel">
         <h3>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-          Gym Summary
+          Your movement summary
         </h3>
         <div class="summary-stats-mini">
           <div class="summary-stat">

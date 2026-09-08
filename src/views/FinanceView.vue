@@ -1,18 +1,34 @@
 <template>
-  <div class="finance-view">
+  <div class="finance-view money-page finance-page" id="main-content">
+    <div class="money-crumb">Your money <span>/</span> Expenses</div>
     <div class="finance-header">
       <div>
-        <h1>Finance</h1>
+        <small class="money-eyebrow">A CLEARER VIEW OF YOUR CASH FLOW</small>
+        <h1>Know where your money goes.</h1>
         <p style="color: var(--text-muted); margin-top: 4px; font-size: 14px;">
-          Track your income, budget limits, and monthly expenses
+          Log daily spending, understand your patterns, and protect what remains.
         </p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-primary" @click="openScanModal">📄 Scan Receipt Image</button>
-        <button class="btn btn-outline" @click="exportCSV">Export CSV</button>
-        <button class="btn btn-outline" @click="clearAll">Clear All</button>
+        <button class="btn btn-primary" @click="openScanModal">▤ Scan receipt</button>
+        <button class="btn btn-outline" @click="exportCSV">Export</button>
+        <button class="btn btn-outline" @click="clearAll">Clear</button>
       </div>
     </div>
+
+    <section class="finance-hero">
+      <div class="balance-block">
+        <small>AVAILABLE BALANCE</small>
+        <h2 :class="{ negative: netBalance < 0 }">₱{{ netBalance.toLocaleString() }}</h2>
+        <p>{{ netBalance >= 0 ? 'Your recorded income is ahead of spending.' : 'Expenses are currently above recorded income.' }}</p>
+      </div>
+      <div class="cashflow-block">
+        <div><span>Money in</span><strong>₱{{ totalIncome.toLocaleString() }}</strong></div>
+        <div><span>Money out</span><strong>₱{{ totalExpenses.toLocaleString() }}</strong></div>
+        <div class="cashflow-track"><span :style="{ width: expenseRatio + '%' }"></span></div>
+        <small>{{ expenseRatio }}% of recorded income spent</small>
+      </div>
+    </section>
 
     <!-- Summary Stats -->
     <div class="stats-row">
@@ -391,6 +407,8 @@ const netBalance = computed(() => {
   return totalIncome.value - totalExpenses.value
 })
 
+const expenseRatio = computed(() => totalIncome.value > 0 ? Math.min(100, Math.round((totalExpenses.value / totalIncome.value) * 100)) : (totalExpenses.value > 0 ? 100 : 0))
+
 // Categories populated in filters
 const allUniqueCategories = computed(() => {
   const cats = new Set(store.financeTransactions.map(t => t.category))
@@ -557,7 +575,7 @@ function renderCharts() {
         labels: labels,
         datasets: [{
           data: values,
-          backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--accent-purple').trim() || '#334155', '#22c55e', '#f97316', '#3b82f6', '#ec4899', '#14b8a6', '#eab308'],
+          backgroundColor: labels[0] === 'No Expenses' ? ['#dfe7df'] : ['#4f7d60', '#7fa187', '#9eb59f', '#617d74', '#a48a78', '#c0b7a1', '#718d68'],
           borderWidth: 0
         }]
       },
@@ -602,13 +620,13 @@ function renderCharts() {
           {
             label: 'Income',
             data: months.map(m => monthlyData[m.key].income),
-            backgroundColor: '#22c55e',
+            backgroundColor: '#6f9677',
             borderRadius: 6
           },
           {
             label: 'Expenses',
             data: months.map(m => monthlyData[m.key].expense),
-            backgroundColor: '#ef4444',
+            backgroundColor: '#a47b6c',
             borderRadius: 6
           }
         ]

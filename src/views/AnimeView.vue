@@ -1,16 +1,43 @@
 <template>
-  <div class="anime-view">
+  <div class="anime-view watch-page" id="main-content">
+    <div class="watch-crumb">Everyday <span>/</span> Watchlist</div>
     <div class="finance-header">
       <div>
-        <h1>Watchlist</h1>
+        <small class="watch-eyebrow">YOUR PERSONAL SCREENING ROOM</small>
+        <h1>Stories worth coming back to.</h1>
         <p style="color: var(--text-muted); margin-top: 4px; font-size: 14px;">
-          Keep tabs on your favorite series and movies, log episodes, and rate completed shows
+          Keep your shows and films organized, then pick up exactly where you left off.
         </p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-primary" @click="openAddModal">Add to Watchlist</button>
+        <button class="btn btn-primary" @click="openAddModal">＋ Add a title</button>
       </div>
     </div>
+
+    <section class="watch-hero">
+      <div class="watch-hero-copy">
+        <small>UP NEXT</small>
+        <template v-if="nextUp">
+          <span class="hero-format">{{ nextUp.format }}</span>
+          <h2>{{ nextUp.title }}</h2>
+          <p v-if="nextUp.format !== 'Movie'">Episode {{ nextUp.currentEpisode || 0 }} of {{ nextUp.totalEpisodes || '?' }} complete</p>
+          <p v-else>{{ nextUp.status === 'completed' ? 'Finished and rated' : 'Ready when you are' }}</p>
+          <div v-if="nextUp.format !== 'Movie'" class="hero-progress"><span :style="{ width: calculateProgressPercentage(nextUp) + '%' }"></span></div>
+          <button v-if="nextUp.format !== 'Movie'" class="hero-action" @click="incrementEpisode(nextUp)">Mark next episode watched <span>↗</span></button>
+          <button v-else class="hero-action" @click="editAnime(nextUp.id)">Open details <span>↗</span></button>
+        </template>
+        <template v-else>
+          <span class="hero-format">FRESH START</span>
+          <h2>Your next favorite could start here.</h2>
+          <p>Add a film or series you want to remember.</p>
+          <button class="hero-action" @click="openAddModal">Build your watchlist <span>↗</span></button>
+        </template>
+      </div>
+      <div class="watch-reel" aria-hidden="true">
+        <div class="reel-disc"><span>▶</span></div>
+        <small>{{ watchingCount ? `${watchingCount} in progress` : 'Ready to play' }}</small>
+      </div>
+    </section>
 
     <!-- Summary Stats -->
     <div class="stats-row">
@@ -26,11 +53,20 @@
         <div class="stat-label">Completed Shows</div>
         <div class="stat-value green">{{ completedCount }}</div>
       </div>
+      <div class="stat-card">
+        <div class="stat-label">Average Rating</div>
+        <div class="stat-value">{{ averageRating || '—' }}</div>
+        <small>{{ averageRating ? 'out of 10' : 'Nothing rated yet' }}</small>
+      </div>
     </div>
 
     <!-- Watchlist Panel -->
-    <div class="panel">
-      <div class="controls-row" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+    <div class="panel watch-library">
+      <div class="library-heading">
+        <div><small>YOUR COLLECTION</small><h2>Watchlist library</h2></div>
+        <span>{{ filteredAnime.length }} {{ filteredAnime.length === 1 ? 'title' : 'titles' }}</span>
+      </div>
+      <div class="controls-row">
         <div class="filter-tabs" style="display: flex; gap: 4px;">
           <button 
             v-for="f in ['all', 'watching', 'completed', 'planning', 'dropped']" 
@@ -46,14 +82,16 @@
           type="text" 
           v-model="searchQuery" 
           class="search-input" 
-          placeholder=" Search watchlist..." 
-          style="padding: 8px 14px; border-radius: 12px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); outline: none; font-size: 13px; width: min(280px, 100%);"
+          placeholder="Search your library"
         />
       </div>
 
       <div class="anime-list-grid">
         <div v-if="filteredAnime.length === 0" class="empty-msg">
-          No shows match the selected filter.
+          <span>▷</span>
+          <h3>{{ searchQuery ? 'No matching titles found.' : 'Your shelf is ready for a story.' }}</h3>
+          <p>{{ searchQuery ? 'Try a different title or filter.' : 'Add a series or film and track it at your own pace.' }}</p>
+          <button v-if="!searchQuery" class="btn btn-primary" @click="openAddModal">Add your first title</button>
         </div>
 
         <div 
@@ -210,6 +248,17 @@ const watchingCount = computed(() => {
 
 const completedCount = computed(() => {
   return (store.animeWatchlist || []).filter(a => a && a.status === 'completed').length
+})
+
+const nextUp = computed(() => {
+  const list = (store.animeWatchlist || []).filter(Boolean)
+  return list.find(a => a.status === 'watching') || list.find(a => a.status === 'planning') || null
+})
+
+const averageRating = computed(() => {
+  const rated = (store.animeWatchlist || []).filter(a => a && Number(a.rating) > 0)
+  if (!rated.length) return 0
+  return (rated.reduce((sum, a) => sum + Number(a.rating), 0) / rated.length).toFixed(1)
 })
 
 const filteredAnime = computed(() => {

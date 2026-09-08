@@ -87,6 +87,7 @@ watch(
     store.studyTotalTime,
     store.waterIntakeLog,
     store.waterDailyTarget,
+    store.dailyCheckins,
     store.workTimeLogs,
     store.isClockedIn,
     store.activeClockInLogId,
@@ -120,3 +121,10 @@ watch(
 
 app.mount('#app')
 
+
+import './refresh.css'
+import './dashboard.css'
+import './learning.css'
+import './wellness.css'
+import './watchlist.css'
+import './money.css'

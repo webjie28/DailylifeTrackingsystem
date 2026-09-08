@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-view animate-in">
+  <div class="auth-view animate-in"><WelcomeStory />
     <div class="auth-glass-container">
       <div class="auth-header">
         <h1 class="auth-logo">DLT</h1>
@@ -49,7 +49,7 @@
             type="button" 
             class="password-toggle-btn" 
             @click="showPassword = !showPassword"
-            tabindex="-1"
+            :aria-label="showPassword ? 'Hide password' : 'Show password'"
           >
             <svg v-if="showPassword" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -76,6 +76,7 @@
 </template>
 
 <script setup>
+import WelcomeStory from '../components/WelcomeStory.vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'

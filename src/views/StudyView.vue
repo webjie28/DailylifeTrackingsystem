@@ -1,24 +1,16 @@
 <template>
   <div class="study-view">
-    <div class="study-header">
-      <div>
-        <h1>Study Hub</h1>
-        <p class="study-subtitle">
-          Focus sessions, study logs, and reading progress — all in one place.
-        </p>
-      </div>
-    </div>
-
-    <!-- Summary Stats with Mini Rings -->
+    <div class="learning-crumb">Everyday <span>/</span> Study space</div><header class="learning-header"><small>STAY CURIOUS. KEEP GROWING.</small><h1>A little learning, every day.</h1><p>Find something worth reading, settle into a session, and make it part of your routine.</p></header><LearningResources />    <!-- Summary Stats with Mini Rings -->
     <div class="stats-row animate-in delay-100">
-      <!-- Total Study Time -->
+      <!-- Weekly focus time -->
       <div class="stat-card-glass">
         <div class="stat-glass-left">
-          <div class="stat-glass-label">Total Study Time</div>
-          <div class="stat-glass-value">{{ store.studyTotalTime }} <span class="stat-unit">mins</span></div>
+          <div class="stat-glass-label">Focus This Week</div>
+          <div class="stat-glass-value">{{ weeklyStudyTime }} <span class="stat-unit">mins</span></div>
+          <div class="stat-glass-note">{{ store.studyTotalTime }} mins all time · {{ weeklyStudyTime >= 120 ? 'Weekly goal reached' : `${Math.max(0, 120 - weeklyStudyTime)} mins to goal` }}</div>
         </div>
         <div class="stat-glass-right">
-          <div class="mini-ring-wrap" style="--ring-color: #f97316;">
+          <div class="mini-ring-wrap">
             <svg viewBox="0 0 36 36" class="mini-ring-svg">
               <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
               <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, studyTimePercent)" stroke-width="3"></circle>
@@ -34,10 +26,11 @@
       <div class="stat-card-glass">
         <div class="stat-glass-left">
           <div class="stat-glass-label">Books Completed</div>
-          <div class="stat-glass-value" style="color: #22c55e;">{{ completedBooksCount }}</div>
+          <div class="stat-glass-value">{{ completedBooksCount }}</div>
+          <div class="stat-glass-note">Finished from your shelf</div>
         </div>
         <div class="stat-glass-right">
-          <div class="mini-ring-wrap" style="--ring-color: #22c55e;">
+          <div class="mini-ring-wrap">
             <svg viewBox="0 0 36 36" class="mini-ring-svg">
               <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
               <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, completionPercent)" stroke-width="3"></circle>
@@ -53,10 +46,11 @@
       <div class="stat-card-glass">
         <div class="stat-glass-left">
           <div class="stat-glass-label">Currently Reading</div>
-          <div class="stat-glass-value" style="color: #f97316;">{{ readingBooksCount }}</div>
+          <div class="stat-glass-value">{{ readingBooksCount }}</div>
+          <div class="stat-glass-note">Open right now</div>
         </div>
         <div class="stat-glass-right">
-          <div class="mini-ring-wrap" style="--ring-color: #3b82f6;">
+          <div class="mini-ring-wrap">
             <svg viewBox="0 0 36 36" class="mini-ring-svg">
               <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
               <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, readingPercent)" stroke-width="3"></circle>
@@ -74,15 +68,15 @@
       <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px;">
         <h3 style="margin: 0;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" style="vertical-align: -3px; margin-right: 8px; opacity: 0.6;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
-          Library Bookshelf
-          <span style="font-size: 12px; font-weight: 400; color: var(--text-muted); margin-left: 8px;">({{ filteredBooks.length }} of {{ LIBRARY_BOOKS.length }} books)</span>
+          Curated Bookshelf
+          <span class="bookshelf-count">{{ filteredBooks.length }} shown · {{ LIBRARY_BOOKS.length }} titles</span>
         </h3>
         <!-- Search bar -->
         <div style="position: relative; width: 100%; max-width: 320px;">
           <input 
             type="text" 
             v-model="bookSearchQuery" 
-            placeholder="Search book title or author..." 
+            placeholder="Search title or author"
             style="width: 100%; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-card-header); color: var(--text-primary); font-size: 13.5px;"
           />
         </div>
@@ -103,13 +97,13 @@
 
       <div class="library-grid" style="max-height: 520px; overflow-y: auto; padding-right: 4px;">
         <div v-if="filteredBooks.length === 0" class="empty-msg" style="grid-column: 1 / -1; padding: 40px; text-align: center; color: var(--text-muted);">
-          No books found matching the search or genre criteria.
+          No books match this search yet. Try another title, author, or genre.
         </div>
         <div
           v-else
           v-for="book in filteredBooks"
           :key="book.id"
-          class="library-card"
+          class="library-card" role="button" tabindex="0" @keydown.enter="openReadingSetup(book)" @keydown.space.prevent="openReadingSetup(book)"
           @click="openReadingSetup(book)"
         >
           <div class="library-card-icon">
@@ -118,7 +112,7 @@
           <div class="library-card-body">
             <h4 class="library-book-title">{{ book.title }}</h4>
             <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">by {{ book.author }}</div>
-            <span class="library-book-genre" style="background: rgba(var(--accent-rgb, 249, 115, 22), 0.08); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; color: var(--accent-color);">{{ book.genre }}</span>
+            <span class="library-book-genre">{{ book.genre }}</span>
           </div>
         </div>
       </div>
@@ -259,6 +253,7 @@
 </template>
 
 <script setup>
+import LearningResources from '../components/LearningResources.vue'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '../stores/appStore'
 import { LIBRARY_BOOKS, fetchBookText } from '../services/libraryBooks'
@@ -353,10 +348,20 @@ const readingBooksCount = computed(() => {
   return store.studyBooksList.filter(b => b.status === 'reading').length
 })
 
+const weeklyStudyTime = computed(() => {
+  const weekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000)
+  return (store.readingLogs || []).reduce((total, log) => {
+    const loggedAt = new Date(log.date).getTime()
+    return Number.isFinite(loggedAt) && loggedAt >= weekAgo
+      ? total + (Number(log.minsRead) || 0)
+      : total
+  }, 0)
+})
+
 // Ring progress percentages for stat cards
 const studyTimePercent = computed(() => {
   // Target: 120 mins per day as a goal reference
-  return Math.min(100, Math.round((store.studyTotalTime / 120) * 100))
+  return Math.min(100, Math.round((weeklyStudyTime.value / 120) * 100))
 })
 
 const completionPercent = computed(() => {

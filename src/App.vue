@@ -1,5 +1,8 @@
 <template>
   <div :class="pageThemeClass">
+    <a href="#main-content" class="skip-link" @click.prevent="focusMain">Skip to content</a>
+    <button v-if="store.isAuthenticated && !route.meta.isGuest" class="mobile-menu" @click="store.toggleSidebar()" :aria-expanded="!store.isSidebarCollapsed" aria-controls="sidebar">☰ <span>Menu</span></button>
+    <button v-if="store.isAuthenticated && !route.meta.isGuest && !store.isSidebarCollapsed" class="mobile-backdrop" @click="store.toggleSidebar()" aria-label="Close navigation"></button>
     <!-- Smooth Animated Fixed Background Glowing Spheres -->
     <div class="bg-glow bg-glow-1"></div>
     <div class="bg-glow bg-glow-2"></div>
@@ -27,7 +30,7 @@
       </div>
 
       <!-- Main content container -->
-      <main class="main-content">
+      <main id="main-content" class="main-content" tabindex="-1">
         <div class="container" style="padding-top: 0;">
           <router-view v-slot="{ Component }">
             <transition name="fade-slide" mode="out-in">
@@ -97,6 +100,10 @@ const store = useAppStore()
 const route = useRoute()
 const showSplash = ref(true)
 const isSplashFading = ref(false)
+const focusMain = () => document.getElementById('main-content')?.focus()
+watch(() => route.path, () => {
+  if (window.matchMedia('(max-width: 768px)').matches) store.isSidebarCollapsed = true
+})
 
 const pageThemeClass = computed(() => {
   if (!route.path) return 'page-dashboard'
@@ -111,6 +118,7 @@ watch(() => store.theme, (newTheme) => {
 }, { immediate: true })
 
 onMounted(() => {
+  if (window.matchMedia('(max-width: 768px)').matches) store.isSidebarCollapsed = true
   // Apply persisted theme and accent options to DOM root
   document.documentElement.setAttribute('data-theme', store.theme || 'light')
   document.documentElement.setAttribute('data-accent', store.colorAccent || 'orange')

@@ -1,22 +1,45 @@
 <template>
-  <div class="savings-view">
+  <div class="savings-view money-page savings-page" id="main-content">
+    <div class="money-crumb">Your money <span>/</span> Savings</div>
     <div class="finance-header">
       <div>
-        <h1>Savings Tracking</h1>
+        <small class="money-eyebrow">BUILD SOMETHING FOR YOUR FUTURE</small>
+        <h1>Small deposits. Meaningful progress.</h1>
         <p style="color: var(--text-muted); margin-top: 4px; font-size: 14px;">
-          Define your financial targets, track milestones, and log saving increments
+          Give every peso a purpose and watch your goals move closer.
         </p>
       </div>
       <div class="header-actions">
-        <button class="btn btn-primary" @click="showAddGoalModal = true">Create New Goal</button>
+        <button class="btn btn-primary" @click="showAddGoalModal = true">＋ Create a goal</button>
       </div>
     </div>
+
+    <section class="savings-hero">
+      <div class="savings-hero-main">
+        <small>TOTAL SET ASIDE</small>
+        <h2>₱{{ store.totalSavings.toLocaleString() }}</h2>
+        <p v-if="totalTarget">of ₱{{ totalTarget.toLocaleString() }} across all goals</p>
+        <p v-else>Your first goal can begin with any amount.</p>
+        <div class="money-track"><span :style="{ width: overallSavingsPercent + '%' }"></span></div>
+        <div class="hero-progress-label"><span>{{ overallSavingsPercent }}% funded</span><span>{{ totalTarget ? `₱${totalRemaining.toLocaleString()} to go` : 'Ready when you are' }}</span></div>
+      </div>
+      <div class="savings-next">
+        <small>NEXT MILESTONE</small>
+        <template v-if="nextSavingsGoal">
+          <h3>{{ nextSavingsGoal.name }}</h3>
+          <strong>₱{{ nextSavingsGoal.remaining.toLocaleString() }}</strong>
+          <p>remaining · {{ nextSavingsGoal.percentage }}% complete</p>
+          <button @click="openAddContrib(nextSavingsGoal.id, nextSavingsGoal.name)">Add contribution <span>↗</span></button>
+        </template>
+        <template v-else><h3>Create your first savings goal.</h3><p>A clear target makes each deposit feel intentional.</p><button @click="showAddGoalModal = true">Start a goal <span>↗</span></button></template>
+      </div>
+    </section>
 
     <!-- Summary Stats -->
     <div class="stats-row">
       <div class="stat-card">
-        <div class="stat-label">Total Savings</div>
-        <div class="stat-value income">₱{{ store.totalSavings.toLocaleString() }}</div>
+        <div class="stat-label">Remaining to Fund</div>
+        <div class="stat-value income">₱{{ totalRemaining.toLocaleString() }}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Active Goals</div>
@@ -30,7 +53,7 @@
 
     <!-- Goals Grid -->
     <div class="goals-section" style="margin-bottom: 32px;">
-      <h3>My Savings Goals</h3>
+      <div class="money-section-title"><div><small>YOUR PRIORITIES</small><h3>Savings goals</h3></div><span>{{ activeGoalsCount }} active</span></div>
       <div v-if="store.savingsGoals.length === 0" class="empty-msg-panel">
         <p>No goals defined yet. Create your first goal to start saving!</p>
         <button class="btn btn-primary" style="margin-top: 10px;" @click="showAddGoalModal = true">
@@ -274,6 +297,11 @@ const activeGoalsCount = computed(() => {
 const completedGoalsCount = computed(() => {
   return goalsWithSavedAmount.value.filter(g => g.isCompleted).length
 })
+
+const totalTarget = computed(() => goalsWithSavedAmount.value.reduce((sum, goal) => sum + (Number(goal.target) || 0), 0))
+const totalRemaining = computed(() => Math.max(0, totalTarget.value - store.totalSavings))
+const overallSavingsPercent = computed(() => totalTarget.value ? Math.min(100, Math.round((store.totalSavings / totalTarget.value) * 100)) : 0)
+const nextSavingsGoal = computed(() => [...goalsWithSavedAmount.value].filter(goal => !goal.isCompleted).sort((a, b) => b.percentage - a.percentage)[0] || null)
 
 const sortedContributions = computed(() => {
   return [...store.savingsContributions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 20)

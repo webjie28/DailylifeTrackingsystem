@@ -1,20 +1,22 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import FitnessView from '../views/FitnessView.vue'
-import FinanceView from '../views/FinanceView.vue'
-import SavingsView from '../views/SavingsView.vue'
-import StudyView from '../views/StudyView.vue'
-import AnimeView from '../views/AnimeView.vue'
-import EventsView from '../views/EventsView.vue'
-import GoalsView from '../views/GoalsView.vue'
-import WaterView from '../views/WaterView.vue'
-import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
+const HomeView = () => import('../views/HomeView.vue')
+const FitnessView = () => import('../views/FitnessView.vue')
+const FinanceView = () => import('../views/FinanceView.vue')
+const SavingsView = () => import('../views/SavingsView.vue')
+const StudyView = () => import('../views/StudyView.vue')
+const AnimeView = () => import('../views/AnimeView.vue')
+const EventsView = () => import('../views/EventsView.vue')
+const GoalsView = () => import('../views/GoalsView.vue')
+const WaterView = () => import('../views/WaterView.vue')
+const LoginView = () => import('../views/LoginView.vue')
+const RegisterView = () => import('../views/RegisterView.vue')
 import { useAppStore } from '../stores/appStore'
 
 const router = createRouter({
   history: createWebHashHistory(), // Hash history works flawlessly in local Electron bundle (file:///)
   routes: [
+    { path: '/habits', name: 'habits', component: () => import('../views/HabitsView.vue') },
+    { path: '/check-in', name: 'check-in', component: () => import('../views/CheckInView.vue') },
     {
       path: '/login',
       name: 'login',
@@ -100,5 +102,3 @@ router.beforeEach(async (to, from, next) => {
 })
 
 export default router
-
-

@@ -1,147 +1,39 @@
 <template>
-  <div class="events-view">
-    <div class="finance-header">
-      <div>
-        <h1>Events Scheduler</h1>
-        <p style="color: var(--text-muted); margin-top: 4px; font-size: 14px;">
-          Plan your activities, schedule goals deadlines, and keep track of upcoming events
-        </p>
-      </div>
-      <div class="header-actions">
-        <!-- Optional header buttons -->
-      </div>
-    </div>
-
-    <!-- Summary Stats -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-label">Total Events</div>
-        <div class="stat-value purple">{{ store.eventsList.length }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Upcoming Events</div>
-        <div class="stat-value green">{{ upcomingEventsCount }}</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Passed Events</div>
-        <div class="stat-value" style="color: var(--text-muted);">{{ passedEventsCount }}</div>
-      </div>
-    </div>
-
-    <!-- Layout Columns -->
-    <div class="content-grid-split">
-      <!-- Left Column: Add/Edit Event Form -->
-      <div class="panel">
-        <h3>{{ editingEventId ? 'Edit Scheduled Event' : 'Schedule New Event' }}</h3>
-        <form @submit.prevent="saveEvent">
-          <div class="form-group">
-            <label>Event Title</label>
-            <input type="text" v-model="eventTitle" list="eventTitleList" placeholder="e.g. Gym Assessment, Coding Exam" required />
-            <datalist id="eventTitleList">
-              <option v-for="t in uniqueEventTitles" :key="t" :value="t"></option>
-            </datalist>
-          </div>
-
-          <div class="two-input">
-            <div class="form-group">
-              <label>Date</label>
-              <input type="date" v-model="eventDate" required />
-            </div>
-            <div class="form-group">
-              <label>Time</label>
-              <input type="time" v-model="eventTime" required />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Category</label>
-            <select v-model="eventCategory">
-              <option value="Personal">Personal</option>
-              <option value="Study">Study / Work</option>
-              <option value="Fitness">Fitness</option>
-              <option value="Entertainment">Entertainment</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
-            {{ editingEventId ? 'Update Event' : 'Save Event' }}
-          </button>
-          <button 
-            v-if="editingEventId" 
-            type="button" 
-            class="btn btn-outline" 
-            style="width: 100%; margin-top: 8px;"
-            @click="cancelEdit"
-          >
-            Cancel Edit
-          </button>
-        </form>
-      </div>
-
-      <!-- Right Column: Events List -->
-      <div class="panel">
-        <div class="panel-header-tabs">
-          <h3>Upcoming Schedule</h3>
-          <div class="filter-tabs">
-            <button 
-              for="t in ['all', 'upcoming', 'passed']" 
-              v-for="t in ['all', 'upcoming', 'passed']" 
-              :key="t"
-              class="tab-btn"
-              :class="{ active: activeTab === t }"
-              @click="activeTab = t"
-            >
-              {{ t.toUpperCase() }}
-            </button>
-          </div>
-        </div>
-
-        <div class="events-list">
-          <div v-if="filteredEvents.length === 0" class="empty-msg">
-            No events scheduled.
-          </div>
-
-          <div 
-            v-else 
-            v-for="event in filteredEvents" 
-            :key="event.id" 
-            class="event-item"
-            :class="{ passed: isEventPassed(event), 'event-item-editing': event.id === editingEventId }"
-          >
-            <div class="event-left">
-              <div class="event-date-badge" :class="event.category">
-                <span class="badge-month">{{ getMonthAbbr(event.date) }}</span>
-                <span class="badge-day">{{ getDayNumber(event.date) }}</span>
-              </div>
-              <div class="event-details">
-                <div class="event-title">{{ event.title }}</div>
-                <div class="event-meta">
-                  <span class="event-time">{{ formatTimeLabel(event.time) }}</span> • 
-                  <span class="category-badge" :class="event.category">{{ event.category }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="event-right" style="display: flex; gap: 6px; align-items: center;">
-              <button class="btn-del" @click="startEdit(event)" title="Edit Event">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-              </button>
-              <button class="btn-del" @click="deleteEvent(event.id)" title="Delete Event">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+ <div class="planner-page">
+  <div class="planner-crumb">Workspace <span>/</span> <strong>Calendar</strong></div>
+  <header class="planner-header"><div><small>A LITTLE SPACE FOR WHAT'S NEXT</small><h1>Make time for your life.</h1><p>Your plans, your moments, and a little room to breathe.</p></div><button class="planner-primary" @click="openNew">＋ New event</button></header>
+  <div class="planner-layout"><section class="planner-calendar" aria-label="Monthly calendar"><div class="planner-month"><div><h2 aria-live="polite">{{ monthLabel }}</h2><span>{{ monthEvents }} {{ monthEvents === 1 ? 'event' : 'events' }} planned this month</span></div><div class="planner-controls"><button @click="goToday">Today</button><button @click="changeMonth(-1)" aria-label="Previous month">‹</button><button @click="changeMonth(1)" aria-label="Next month">›</button></div></div><div class="planner-weekdays" aria-hidden="true"><span v-for="day in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']" :key="day">{{ day }}</span></div><div class="planner-days"><button v-for="day in calendarDays" :key="day.key" class="planner-day" :class="{muted:!day.current,selected:day.key === selectedDate,today:day.key === store.todayKey}" :aria-pressed="day.key === selectedDate" :aria-label="`${day.key}, ${day.events.length} events`" @click="selectedDate = day.key"><span class="planner-day-number">{{ day.day }}</span><span v-for="event in day.events.slice(0,2)" :key="event.id" class="planner-event-chip" :class="event.category">{{ event.title }}</span><small v-if="day.events.length > 2">+{{ day.events.length - 2 }} more</small></button></div><div class="planner-legend"><span><i></i>Personal</span><span><i class="study"></i>Study / Work</span><span><i class="fitness"></i>Fitness</span><small>Select a day to see your plans</small></div></section>
+  <aside class="planner-agenda"><section><div class="planner-agenda-heading"><small>YOUR DAY AT A GLANCE</small><h2>{{ selectedLabel }}</h2><span>{{ dayEvents.length }} {{ dayEvents.length === 1 ? 'event' : 'events' }}</span></div><div v-if="!dayEvents.length" class="planner-empty"><span>☼</span><h3>A little breathing room.</h3><p>Nothing planned for this day.<br>Make space for something good.</p><button @click="openNew">Add a plan ↗</button></div><article v-for="event in dayEvents" :key="event.id" class="planner-agenda-event"><small>{{ formatTimeLabel(event.time) }} <span>· {{ event.category }}</span></small><h3>{{ event.title }}</h3><div><button @click="startEdit(event)" :aria-label="'Edit ' + event.title">Edit</button><button @click="deleteEvent(event.id)" :aria-label="'Delete ' + event.title">Delete</button></div></article></section><div class="planner-note"><span>✦</span><p>A good day doesn't need to be full.<br><strong>Just filled with what matters.</strong></p></div></aside></div>
+  <section class="planner-schedule"><div class="planner-schedule-top"><h2>Your schedule</h2><div role="group" aria-label="Filter schedule"><button v-for="tab in ['all','upcoming','passed']" :key="tab" :aria-pressed="activeTab === tab" @click="activeTab = tab">{{ tab === 'passed' ? 'Past' : tab }}</button></div></div><p v-if="!filteredEvents.length" class="planner-list-empty">No events in this view. Your plans will appear here as you add them.</p><article v-for="event in filteredEvents" :key="event.id" class="planner-list-row"><span class="planner-date-badge"><small>{{ getMonthAbbr(event.date) }}</small><strong>{{ getDayNumber(event.date) }}</strong></span><div><h3>{{ event.title }}</h3><p>{{ formatTimeLabel(event.time) }} · {{ event.category }}</p></div><button @click="startEdit(event)" :aria-label="'Edit scheduled event: ' + event.title">Edit ↗</button></article></section>
+  <Teleport to="body"><dialog ref="eventDialog" class="planner-dialog" aria-labelledby="event-form-title" @click="event => { if (event.target === eventDialog) closeForm() }"><button class="planner-close" @click="closeForm" aria-label="Close event form">×</button><small>MAKE IT A PLAN</small><h2 id="event-form-title">{{ editingEventId ? 'Edit your event' : 'Something to look forward to.' }}</h2><form @submit.prevent="saveEvent"><label for="planner-title">Event title</label><input id="planner-title" v-model="eventTitle" required maxlength="160" placeholder="e.g. Coffee with a friend"><div class="planner-form-row"><div><label for="planner-date">Date</label><input id="planner-date" type="date" v-model="eventDate" required></div><div><label for="planner-time">Time</label><input id="planner-time" type="time" v-model="eventTime" required></div></div><label for="planner-category">Category</label><select id="planner-category" v-model="eventCategory"><option v-for="category in ['Personal','Study','Fitness','Entertainment','Other']" :key="category">{{ category }}</option></select><div class="planner-form-actions"><button type="button" @click="closeForm">Cancel</button><button class="planner-primary" type="submit">{{ editingEventId ? 'Save changes' : 'Create event' }} ↗</button></div></form></dialog></Teleport>
+ </div>
 </template>
-
 <script setup>
 import { ref, computed } from 'vue'
 import { useAppStore, getTodayKey } from '../stores/appStore'
 
 const store = useAppStore()
+const eventDialog = ref(null)
+const selectedDate = ref(getTodayKey())
+const month = ref(new Date(new Date().getFullYear(), new Date().getMonth(), 1))
+const dateKey = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
+const monthLabel = computed(() => month.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }))
+const selectedLabel = computed(() => new Date(selectedDate.value + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }))
+const dayEvents = computed(() => store.eventsList.filter(e => e.date === selectedDate.value).sort((a,b) => (a.time || '').localeCompare(b.time || '')))
+const monthEvents = computed(() => store.eventsList.filter(e => e.date.startsWith(dateKey(month.value).slice(0,7))).length)
+const calendarDays = computed(() => {
+  const start = new Date(month.value)
+  start.setDate(1 - ((start.getDay() + 6) % 7))
+  return Array.from({length:42}, (_,index) => {
+    const date = new Date(start); date.setDate(start.getDate() + index)
+    const key = dateKey(date)
+    return { key, day:date.getDate(), current:date.getMonth() === month.value.getMonth(), events:store.eventsList.filter(e => e.date === key) }
+  })
+})
+function changeMonth(offset) { month.value = new Date(month.value.getFullYear(), month.value.getMonth()+offset, 1) }
+function goToday() { const now = new Date(); month.value = new Date(now.getFullYear(),now.getMonth(),1); selectedDate.value = dateKey(now) }
+function openNew() { cancelEdit(); eventDate.value = selectedDate.value; eventDialog.value.showModal() }
+function closeForm() { eventDialog.value.close() }
 
 // Form states
 const eventTitle = ref('')
@@ -201,6 +93,7 @@ function getDayNumber(dateStr) {
 }
 
 function formatTimeLabel(timeStr) {
+  if (!timeStr) return 'All day'
   const [hStr, mStr] = timeStr.split(':')
   let h = parseInt(hStr)
   const ampm = h >= 12 ? 'PM' : 'AM'
@@ -215,6 +108,7 @@ function startEdit(event) {
   eventDate.value = event.date
   eventTime.value = event.time
   eventCategory.value = event.category
+  eventDialog.value.showModal()
 }
 
 function cancelEdit() {
@@ -254,6 +148,10 @@ function saveEvent() {
     store.addEvent(newEvent)
   }
   
+  selectedDate.value = eventDate.value
+  const savedDate = new Date(eventDate.value + 'T00:00:00')
+  month.value = new Date(savedDate.getFullYear(), savedDate.getMonth(), 1)
+  closeForm()
   // Reset
   eventTitle.value = ''
   eventDate.value = getTodayKey()
@@ -275,314 +173,15 @@ function deleteEvent(id) {
   })
 }
 </script>
-
 <style scoped>
-.finance-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 28px;
-}
-.finance-header h1 {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 28px;
-}
-.stat-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  padding: 18px 20px;
-  box-shadow: var(--shadow-sm);
-}
-.stat-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 8px;
-}
-.stat-value {
-  font-size: 26px;
-  font-weight: 800;
-  color: var(--text-primary);
-}
-.stat-value.purple {
-  color: var(--accent-purple);
-}
-.stat-value.green {
-  color: #22c55e;
-}
-
-.content-grid-split {
-  display: grid;
-  grid-template-columns: 0.85fr 1.15fr;
-  gap: 24px;
-}
-@media (max-width: 900px) {
-  .content-grid-split {
-    grid-template-columns: 1fr;
-  }
-}
-
-.panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: var(--shadow-md);
-  margin-bottom: 24px;
-}
-.panel h3 {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text-heading);
-  margin: 0 0 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-.form-group label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.form-group input, .form-group select {
-  padding: 10px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color-strong);
-  background: var(--bg-input-inset);
-  font-size: 14px;
-  color: var(--text-primary);
-  outline: none;
-  width: 100%;
-  font-family: inherit;
-}
-.form-group input:focus, .form-group select:focus {
-  border-color: var(--accent-purple);
-}
-.two-input {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-/* Tabs */
-.panel-header-tabs {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.panel-header-tabs h3 {
-  margin: 0;
-}
-.filter-tabs {
-  display: flex;
-  gap: 4px;
-  background: var(--bg-subtle);
-  padding: 4px;
-  border-radius: 10px;
-}
-.tab-btn {
-  background: transparent;
-  border: none;
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 750;
-  color: var(--text-secondary);
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-.tab-btn.active {
-  background: var(--nav-active-bg);
-  color: var(--nav-active-color);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Events list items */
-.events-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 520px;
-  overflow-y: auto;
-}
-.event-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 14px;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-color);
-  border-radius: 18px;
-  transition: all 0.2s;
-}
-.event-item:hover {
-  transform: translateY(-1px);
-}
-.event-item.passed {
-  opacity: 0.65;
-}
-
-.event-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  min-width: 0;
-}
-
-.event-date-badge {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: #fff;
-  background: #64748b;
-}
-/* Category badges colors */
-.event-date-badge.Personal { background: #3b82f6; }
-.event-date-badge.Study { background: var(--accent-purple); }
-.event-date-badge.Fitness { background: #22c55e; }
-.event-date-badge.Entertainment { background: #ec4899; }
-.event-date-badge.Other { background: #f97316; }
-
-.badge-month {
-  font-size: 9px;
-  font-weight: 800;
-  opacity: 0.85;
-  letter-spacing: 0.05em;
-  line-height: 1;
-}
-.badge-day {
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 1.1;
-  margin-top: 1px;
-}
-
-.event-details {
-  min-width: 0;
-}
-.event-title {
-  font-weight: 750;
-  font-size: 15px;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.event-meta {
-  font-size: 12px;
-  color: var(--text-secondary);
-  margin-top: 2px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.category-badge {
-  display: inline-block;
-  padding: 1px 6px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  background: var(--bg-card);
-}
-.category-badge.Personal { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
-.category-badge.Study { color: var(--accent-purple); background: var(--accent-purple-light); }
-.category-badge.Fitness { color: #22c55e; background: rgba(34, 197, 94, 0.1); }
-.category-badge.Entertainment { color: #ec4899; background: rgba(236, 72, 153, 0.1); }
-.category-badge.Other { color: #f97316; background: rgba(249, 115, 22, 0.1); }
-
-.event-right {
-  flex-shrink: 0;
-}
-
-.btn-del {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: color 0.2s, background 0.2s;
-  line-height: 1;
-}
-.btn-del:hover {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.08);
-}
-
-.btn {
-  padding: 10px 18px;
-  border-radius: 12px;
-  border: none;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.btn-primary {
-  background: var(--accent-purple);
-  color: #fff;
-}
-.btn-primary:hover {
-  background: var(--accent-purple-hover);
-}
-.btn-outline {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color-strong);
-}
-.btn-outline:hover {
-  background: var(--bg-subtle);
-}
-
-.empty-msg {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-muted);
-  font-size: 14px;
-}
-
-.event-item-editing {
-  border-color: var(--accent-purple) !important;
-  background: var(--accent-purple-bg) !important;
-  box-shadow: none;
-}
-
-.btn-edit-action {
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.btn-edit-action:hover {
-  transform: scale(1.15);
-  opacity: 0.9;
-}
+.planner-page,.planner-dialog { --cal-bg:#fff; --cal-ink:#304c3c; --cal-muted:#7c8c80; --cal-line:#e2e9e2; --cal-soft:#edf2e9; color:var(--cal-ink); }
+:global([data-theme="dark"]) :is(.planner-page,.planner-dialog) { --cal-bg:#1c2922; --cal-ink:#e1ebe2; --cal-muted:#a0afa4; --cal-line:#35473a; --cal-soft:#293e30; }
+:global([data-theme="navy"]) :is(.planner-page,.planner-dialog) { --cal-bg:#182b37; --cal-ink:#dceaf0; --cal-muted:#9bafbb; --cal-line:#304854; --cal-soft:#294655; }
+.planner-page { max-width:1400px; margin:auto; }.planner-crumb { font-size:11px; color:var(--cal-muted); border-bottom:1px solid var(--cal-line); padding-bottom:24px; }.planner-crumb span { margin:0 12px; }.planner-crumb strong { font-weight:500; color:var(--cal-ink); }.planner-header { display:flex; align-items:center; justify-content:space-between; gap:20px; margin:32px 0; text-align:left; }.planner-header small,.planner-dialog > small { font-size:9px; letter-spacing:1.6px; color:var(--cal-muted); }.planner-header h1 { color:var(--cal-ink); font-size:clamp(25px,2.6vw,35px); letter-spacing:-1px; font-weight:500; margin:10px 0; }.planner-header p { color:var(--cal-muted); font-size:12px; margin:0; }.planner-primary { background:#3e7257; color:#fff; border:0; border-radius:8px; padding:11px 16px; font-size:12px; cursor:pointer; white-space:nowrap; }
+.planner-layout { display:grid; grid-template-columns:minmax(0,2.5fr) minmax(230px,1fr); gap:22px; align-items:start; }.planner-calendar { background:var(--cal-bg); border:1px solid var(--cal-line); border-radius:16px; overflow:hidden; }.planner-month { padding:24px; display:flex; align-items:center; justify-content:space-between; gap:12px; }.planner-month h2 { font-size:20px; font-weight:500; color:var(--cal-ink); margin:0 0 5px; }.planner-month span { font-size:10px; color:var(--cal-muted); }.planner-controls { display:flex; gap:6px; }.planner-controls button { border:1px solid var(--cal-line); background:var(--cal-bg); color:var(--cal-ink); padding:7px 11px; border-radius:7px; cursor:pointer; font-size:12px; }.planner-weekdays { display:grid; grid-template-columns:repeat(7,1fr); padding:13px 0; background:var(--cal-soft); text-align:center; color:var(--cal-muted); font-size:10px; }.planner-days { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); }.planner-day { min-height:92px; border:0; border-right:1px solid var(--cal-line); border-bottom:1px solid var(--cal-line); background:var(--cal-bg); padding:8px 5px; color:var(--cal-ink); text-align:left; cursor:pointer; min-width:0; transition:background .15s; }.planner-day:nth-child(7n) { border-right:0; }.planner-day:hover { background:var(--cal-soft); }.planner-day.selected { background:var(--cal-soft); box-shadow:inset 0 0 0 1px #85a17b; }.planner-day.muted { color:var(--cal-muted); }.planner-day.muted .planner-day-number { opacity:.5; }.planner-day-number { width:24px; height:24px; display:grid; place-items:center; font-size:11px; border-radius:50%; margin-bottom:4px; }.today .planner-day-number { background:#4e7b5d; color:#fff; }.planner-event-chip { display:block; font-size:8px; padding:3px 4px; background:#e6eedd; color:#557144; border-radius:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:3px; }.planner-event-chip.Study { background:#e4ebf1; color:#5e7c91; }.planner-event-chip.Fitness { background:#f3e8db; color:#9d7a4d; }.planner-day > small { font-size:8px; color:var(--cal-muted); }.planner-legend { display:flex; align-items:center; flex-wrap:wrap; gap:14px; padding:16px; font-size:9px; color:var(--cal-muted); }.planner-legend span { display:flex; align-items:center; gap:5px; }.planner-legend i { width:6px; height:6px; border-radius:50%; background:#91a781; }.planner-legend .study { background:#839dab; }.planner-legend .fitness { background:#c2a177; }.planner-legend small { margin-left:auto; font-size:9px; }
+.planner-agenda > section { padding:23px; border:1px solid var(--cal-line); background:var(--cal-bg); border-radius:16px; }.planner-agenda-heading > small { font-size:8px; letter-spacing:1.4px; color:var(--cal-muted); }.planner-agenda-heading h2 { color:var(--cal-ink); font-size:18px; font-weight:500; margin:12px 0 6px; }.planner-agenda-heading > span { font-size:10px; color:var(--cal-muted); }.planner-empty { padding:30px 0 8px; text-align:center; }.planner-empty > span { font-size:40px; color:#a5b691; }.planner-empty h3 { color:var(--cal-ink); font-size:13px; font-weight:500; margin:16px 0 8px; }.planner-empty p { font-size:11px; color:var(--cal-muted); line-height:1.8; }.planner-empty button { border:0; color:var(--cal-ink); background:var(--cal-soft); padding:9px 15px; border-radius:7px; font-size:10px; cursor:pointer; }.planner-note { display:flex; gap:13px; align-items:center; background:var(--cal-soft); border-radius:15px; margin-top:20px; padding:22px; }.planner-note > span { font-size:30px; color:#8ca177; }.planner-note p { font-size:10px; line-height:1.9; color:var(--cal-muted); margin:0; }.planner-note strong { color:var(--cal-ink); font-weight:500; }.planner-agenda-event { border-top:1px solid var(--cal-line); padding-top:17px; margin-top:19px; }.planner-agenda-event small { font-size:10px; }.planner-agenda-event small span { color:var(--cal-muted); }.planner-agenda-event h3 { color:var(--cal-ink); font-size:15px; font-weight:500; overflow-wrap:anywhere; margin:9px 0; }.planner-agenda-event button { border:0; background:transparent; color:var(--cal-muted); font-size:10px; padding:5px 12px 5px 0; cursor:pointer; }
+.planner-schedule { margin-top:25px; padding:24px; border:1px solid var(--cal-line); border-radius:16px; background:var(--cal-bg); }.planner-schedule-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }.planner-schedule h2 { font-size:17px; color:var(--cal-ink); font-weight:500; margin:0; }.planner-schedule-top button { border:0; padding:7px 12px; border-radius:7px; font-size:10px; background:transparent; color:var(--cal-muted); text-transform:capitalize; cursor:pointer; }.planner-schedule-top button[aria-pressed=true] { background:var(--cal-soft); color:var(--cal-ink); }.planner-list-empty { text-align:center; font-size:12px; color:var(--cal-muted); padding:25px 0 8px; }.planner-list-row { display:flex; align-items:center; gap:15px; padding:17px 0; border-bottom:1px solid var(--cal-line); }.planner-list-row:last-child { border:0; }.planner-date-badge { background:var(--cal-soft); text-align:center; border-radius:8px; min-width:44px; padding:8px; }.planner-date-badge small { font-size:8px; }.planner-date-badge strong { font-size:17px; font-weight:500; display:block; }.planner-list-row > div { flex:1; min-width:0; }.planner-list-row h3 { font-size:13px; font-weight:500; color:var(--cal-ink); margin:0; overflow-wrap:anywhere; }.planner-list-row p { font-size:10px; color:var(--cal-muted); margin:6px 0 0; }.planner-list-row > button { border:0; background:transparent; color:var(--cal-muted); font-size:11px; cursor:pointer; }
+.planner-dialog { margin:auto; width:min(440px,calc(100vw - 30px)); max-height:calc(100dvh - 40px); overflow:auto; background:var(--cal-bg); border:1px solid var(--cal-line); border-radius:20px; padding:30px; }.planner-dialog::backdrop { background:#15241d66; backdrop-filter:blur(4px); }.planner-close { position:absolute; right:15px; top:12px; border:0; background:transparent; color:var(--cal-muted); font-size:24px; cursor:pointer; }.planner-dialog h2 { font-size:24px; font-weight:500; color:var(--cal-ink); margin:13px 0 25px; }.planner-dialog label { display:block; font-size:11px; margin:17px 0 8px; }.planner-dialog input,.planner-dialog select { width:100%; padding:11px; border:1px solid var(--cal-line); border-radius:8px; background:var(--cal-bg); color:var(--cal-ink); font-size:12px; box-sizing:border-box; }.planner-form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }.planner-form-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:26px; }.planner-form-actions > button:not(.planner-primary) { background:transparent; border:1px solid var(--cal-line); color:var(--cal-muted); border-radius:8px; padding:10px 15px; cursor:pointer; }
+@media(max-width:1050px) { .planner-layout { grid-template-columns:1fr; }.planner-agenda { display:grid; grid-template-columns:1.5fr 1fr; gap:20px; }.planner-note { margin:0; }.planner-empty { padding-top:15px; } }
+@media(max-width:600px) { .planner-header { flex-direction:column; align-items:flex-start; }.planner-month { padding:17px 12px; }.planner-month h2 { font-size:17px; }.planner-controls button { padding:7px 9px; }.planner-day { min-height:65px; padding:5px 2px; }.planner-event-chip { font-size:7px; }.planner-legend small { display:none; }.planner-agenda { grid-template-columns:1fr; }.planner-note { display:none; }.planner-schedule { padding:17px; }.planner-schedule-top { flex-wrap:wrap; } }
 </style>

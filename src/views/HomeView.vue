@@ -1,24 +1,52 @@
 <template>
-  <div>
-    <!-- Dashboard Header (now contains Clock In / Clock Out) -->
-    <Header />
+  <div class="dashboard-page">
+    <div class="dashboard-topbar"><div class="dashboard-breadcrumb">Workspace <span>/</span> <strong>Overview</strong></div><router-link to="/events" class="dashboard-date">▦ {{ new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}</router-link></div>
+    <div class="dashboard-heading"><div><span class="dashboard-eyebrow">YOUR PERSONAL WORKSPACE</span><h1>Welcome back, {{ store.username || 'friend' }}<span class="greeting-spark">✦</span></h1><p>Here's how your day is shaping up. Let's make it a good one.</p></div><Header /></div>
+    <DashboardMetrics />
+    <div class="dashboard-columns"><div class="dashboard-primary"><!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
+    <section class="animate-in delay-250" style="margin-bottom: 36px;">
+      <article class="workspace-chart">
+        <div class="workspace-chart-heading">
+          <h3>{{ activeChartTitle }}</h3>
+          <div class="workspace-tabs">
+            <button
+              v-for="tab in tabs"
+              :key="tab.key"
+              class="workspace-tab"
+              :class="{ active: activeChart === tab.key }"
+              @click="selectChart(tab.key)"
+            >
+              {{ tab.label }}
+            </button>
+          </div>
+        </div>
+        <div class="workspace-chart-body">
+          <div v-if="hasRealData" class="workspace-canvas">
+            <canvas ref="chartCanvas"></canvas>
+          </div>
+          <div v-else class="workspace-empty" style="padding: 60px 20px; text-align: center; font-size: 14px; color: var(--text-muted);">
+            Your next step starts here. Log an activity to see your progress over time.
+          </div>
+        </div>
+      </article>
+    </section>
 
     <!-- Work Log Record Card -->
     <section class="animate-in delay-100" style="margin-bottom: 24px;">
-      <article class="focus-minimal-card">
-        <div class="focus-header" style="justify-content: space-between; display: flex; align-items: center; width: 100%; margin-bottom: 16px;">
-          <h3>Work Log Record</h3>
-          <span class="status-dot-badge" :class="{ active: store.isClockedIn }">
+      <article class="workspace-history">
+        <div class="workspace-history-heading" style="justify-content: space-between; display: flex; align-items: center; width: 100%; margin-bottom: 16px;">
+          <h3>Recent work sessions</h3>
+          <span class="workspace-count" :class="{ active: store.isClockedIn }">
             {{ store.workTimeLogs.length }} {{ store.workTimeLogs.length === 1 ? 'Log' : 'Logs' }}
           </span>
         </div>
 
         <!-- Log Table: always visible -->
-        <div v-if="store.workTimeLogs.length === 0" class="empty-msg" style="padding: 24px 0; text-align: center;">
+        <div v-if="store.workTimeLogs.length === 0" class="workspace-empty" style="padding: 24px 0; text-align: center;">
           No work logs recorded yet. Clock in above to start tracking.
         </div>
-        <div v-else class="logs-table-wrapper">
-          <table class="logs-history-table">
+        <div v-else class="workspace-table-scroll">
+          <table class="workspace-table">
             <thead>
               <tr>
                 <th>Date</th>
@@ -33,7 +61,7 @@
             </thead>
             <tbody>
               <tr 
-                v-for="log in [...store.workTimeLogs].reverse()" 
+                v-for="log in visibleWorkLogs"
                 :key="log.id" 
                 :class="{ 
                   'log-row-active': !log.clockOut 
@@ -77,7 +105,7 @@
 
                 <!-- Actions -->
                 <td>
-                  <button class="btn-del-log" @click="confirmDeleteWorkLog(log)">
+                  <button :aria-label="`Delete work session from ${log.date}`" class="workspace-delete" @click="confirmDeleteWorkLog(log)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
                 </td>
@@ -85,189 +113,42 @@
             </tbody>
           </table>
         </div>
-      </article>
+        <button v-if="store.workTimeLogs.length > 5" class="history-toggle" @click="showAllLogs = !showAllLogs">{{ showAllLogs ? 'Show recent sessions' : 'View all ' + store.workTimeLogs.length + ' sessions' }} <span>↓</span></button></article>
     </section>
 
-    <!-- Quick Stats Section (Modern Grid Cards) -->
-    <section class="animate-in delay-150">
-      <div class="stats-pastel-grid">
-        <!-- Calories -->
-        <router-link to="/fitness" class="stat-pastel-card">
-          <div class="stat-card-left">
-            <div class="stat-pastel-label">Calories Burned</div>
-            <div class="stat-pastel-value">{{ store.todayTotalCaloriesBurned }} kcal</div>
-            <span class="trend-pill" :class="calGoalPercent >= 100 ? 'success' : 'warning'">
-              {{ calGoalPercent }}% of goal
-            </span>
-          </div>
-          <div class="stat-card-right">
-            <div class="mini-ring-wrap" style="--ring-color: #f97316;">
-              <svg viewBox="0 0 36 36" class="mini-ring-svg">
-                <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
-                <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, calGoalPercent)" stroke-width="3"></circle>
-              </svg>
-              <div class="mini-ring-icon-center">
-                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-        </router-link>
-
-        <!-- Steps -->
-        <router-link to="/fitness" class="stat-pastel-card">
-          <div class="stat-card-left">
-            <div class="stat-pastel-label">Steps Today</div>
-            <div class="stat-pastel-value">{{ store.todaySteps.toLocaleString() }}</div>
-            <span class="trend-pill" :class="stepsGoalPercent >= 100 ? 'success' : 'warning'">
-              {{ stepsGoalPercent }}% of goal
-            </span>
-          </div>
-          <div class="stat-card-right">
-            <div class="mini-ring-wrap" style="--ring-color: #22c55e;">
-              <svg viewBox="0 0 36 36" class="mini-ring-svg">
-                <circle class="ring-bg" cx="18" cy="18" r="15.915" fill="none" stroke-width="3"></circle>
-                <circle class="ring-fill" cx="18" cy="18" r="15.915" fill="none" stroke-dasharray="100" :stroke-dashoffset="100 - Math.min(100, stepsGoalPercent)" stroke-width="3"></circle>
-              </svg>
-              <div class="mini-ring-icon-center">
-                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M12 8v8M8 12h8"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-        </router-link>
-
-        <!-- Watchlist Show Recommendation -->
-        <router-link to="/anime" class="stat-pastel-card">
-          <div class="stat-card-left" style="max-width: 70%;">
-            <div class="stat-pastel-label">Recommended Watch</div>
-            <div class="stat-pastel-value" style="font-size: 20px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;" :title="recommendedShow ? recommendedShow.title : 'Watchlist Empty'">
-              {{ recommendedShow ? recommendedShow.title : 'Plan a Show!' }}
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-              <span class="trend-pill success" style="margin-top: 0; font-size: 10px; padding: 2px 6px;">
-                {{ recommendedShow ? `Ep. ${recommendedShow.currentEpisode}/${recommendedShow.totalEpisodes}` : 'Empty list' }}
-              </span>
-              <button 
-                v-if="store.animeWatchlist.length > 1" 
-                class="shuffle-recommend-btn"
-                @click.prevent="shuffleRecommend"
-                title="Shuffle suggestion"
-              >
-                🎲 Shuffle
-              </button>
-            </div>
-          </div>
-          <div class="stat-card-right">
-            <div class="mini-ring-wrap" style="--ring-color: #ec4899;">
-              <div class="mini-ring-icon-center" style="position: static; width: auto; height: auto;">
-                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;">
-                  <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
-                  <line x1="7" y1="2" x2="7" y2="22"/>
-                  <line x1="17" y1="2" x2="17" y2="22"/>
-                  <line x1="2" y1="12" x2="22" y2="12"/>
-                  <line x1="2" y1="7" x2="7" y2="7"/>
-                  <line x1="2" y1="17" x2="7" y2="17"/>
-                  <line x1="17" y1="17" x2="22" y2="17"/>
-                  <line x1="17" y1="7" x2="22" y2="7"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-        </router-link>
-
-        <!-- Recommended Book (Replaces Total Savings card in status row) -->
-        <router-link to="/study" class="stat-pastel-card">
-          <div class="stat-card-left" style="max-width: 70%;">
-            <div class="stat-pastel-label">Recommended Book</div>
-            <div class="stat-pastel-value" style="font-size: 18px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;" :title="recommendedBook ? recommendedBook.title : 'No Books'">
-              {{ recommendedBook ? recommendedBook.title : 'Read a Book!' }}
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
-              <span class="trend-pill success" style="margin-top: 0; font-size: 10px; padding: 2px 6px;">
-                {{ recommendedBook ? recommendedBook.genre : 'Empty list' }}
-              </span>
-              <button 
-                class="shuffle-recommend-btn"
-                @click.prevent="shuffleBookRecommend"
-                title="Shuffle book recommendation"
-              >
-                🎲 Shuffle
-              </button>
-            </div>
-          </div>
-          <div class="stat-card-right">
-            <div class="mini-ring-wrap" style="--ring-color: #8b5cf6;">
-              <div class="mini-ring-icon-center" style="position: static; width: auto; height: auto;">
-                <svg class="stat-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5v-15z"/></svg>
-              </div>
-            </div>
-          </div>
-        </router-link>
-      </div>
-    </section>
-
-<!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
-    <section class="animate-in delay-250" style="margin-bottom: 36px;">
-      <article class="chart-card-tabbed">
-        <div class="chart-tab-header">
-          <h3>{{ activeChartTitle }}</h3>
-          <div class="chart-tabs">
-            <button 
-              v-for="tab in tabs" 
-              :key="tab.key" 
-              class="chart-tab-btn" 
-              :class="{ active: activeChart === tab.key }" 
-              @click="selectChart(tab.key)"
-            >
-              {{ tab.label }}
-            </button>
-          </div>
-        </div>
-        <div class="chart-container">
-          <div v-if="hasRealData" class="chart-wrapper">
-            <canvas ref="chartCanvas"></canvas>
-          </div>
-          <div v-else class="empty-msg" style="padding: 60px 20px; text-align: center; font-size: 14px; color: var(--text-muted);">
-            📊 No activity recorded for this category yet. Your analytics chart will appear here once logged.
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <!-- Permanent 30-Day Fitness & Savings Charts Row -->
+</div><DashboardAside /></div><div class="dashboard-section-title"><h2>Your bigger picture</h2><span>Movement, momentum, and milestones</span></div>    <!-- Permanent 30-Day Fitness & Savings Charts Row -->
     <section class="animate-in delay-300" style="margin-bottom: 36px;">
-      <div class="charts-row">
-        <div class="panel chart-panel">
+      <div class="workspace-trends">
+        <div class="workspace-trend">
           <h3>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon" style="vertical-align: middle; margin-right: 8px;"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             30-Day Steps Trend
           </h3>
           <div class="chart-wrap" style="position: relative; height: 260px; width: 100%;"><canvas ref="stepsChartCanvas"></canvas></div>
         </div>
-        <div class="panel chart-panel">
+        <div class="workspace-trend">
           <h3>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon" style="vertical-align: middle; margin-right: 8px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="9" y2="17"/><line x1="15" y1="13" x2="15" y2="17"/></svg>
             30-Day Gym Calories
           </h3>
           <div class="chart-wrap" style="position: relative; height: 260px; width: 100%;"><canvas ref="gymChartCanvas"></canvas></div>
         </div>
-        <div class="panel chart-panel">
+        <div class="workspace-trend">
           <h3>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon" style="vertical-align: middle; margin-right: 8px; color: #22c55e;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" class="panel-icon" style="vertical-align: middle; margin-right: 8px; color: #6b9a7e;"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             Savings Goals Progress
           </h3>
           <div class="chart-wrap" style="position: relative; height: 260px; width: 100%;"><canvas ref="savingsChartCanvas"></canvas></div>
         </div>
       </div>
     </section>
-  </div>
-</template>
-
-<script setup>
+<section class="dashboard-discover" aria-label="Your downtime">
+  <router-link to="/check-in"><span class="discover-icon">◌</span><div><small>A MOMENT FOR YOURSELF</small><strong>How are you feeling today?</strong><p>Complete your daily check-in</p></div><span>↗</span></router-link>
+  <router-link to="/study"><span class="discover-icon">▤</span><div><small>ON YOUR READING LIST</small><strong>{{ recommendedBook ? recommendedBook.title : 'Find your next great read' }}</strong><p>Open your study space</p></div><span>↗</span></router-link>
+  <router-link to="/anime"><span class="discover-icon">▷</span><div><small>WHEN IT'S TIME TO UNWIND</small><strong>{{ recommendedShow ? recommendedShow.title : 'Find something worth watching' }}</strong><p>Open your watchlist</p></div><span>↗</span></router-link>
+</section></div></template><script setup>
+import DashboardMetrics from '../components/DashboardMetrics.vue'
+import DashboardAside from '../components/DashboardAside.vue'
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import Header from '../components/Header.vue'
 import { useAppStore } from '../stores/appStore'
@@ -276,6 +157,8 @@ import Chart from 'chart.js/auto'
 import { LIBRARY_BOOKS } from '../services/libraryBooks'
 
 const store = useAppStore()
+const showAllLogs = ref(false)
+const visibleWorkLogs = computed(() => [...store.workTimeLogs].reverse().slice(0, showAllLogs.value ? undefined : 5))
 
 // Book Recommendation Logic
 const recommendBookId = ref(localStorage.getItem('dailyBookRecommendId') || '')
@@ -618,8 +501,8 @@ function renderChart() {
           {
             label: 'Steps Taken',
             data: displaySteps,
-            backgroundColor: 'rgba(230, 92, 0, 0.75)',
-            borderColor: '#e65c00',
+            backgroundColor: 'rgba(181, 141, 97, 0.75)',
+            borderColor: '#b58d61',
             borderWidth: 1,
             borderRadius: 8,
             maxBarThickness: 35
@@ -628,7 +511,7 @@ function renderChart() {
             label: 'Daily Goal',
             data: goalLineData,
             type: 'line',
-            borderColor: 'rgba(34, 197, 94, 0.8)',
+            borderColor: 'rgba(107, 154, 126, 0.8)',
             borderWidth: 2,
             borderDash: [5, 5],
             fill: false,
@@ -679,12 +562,12 @@ function renderChart() {
           {
             label: 'Hours Logged',
             data: displayHours,
-            borderColor: 'rgba(99, 102, 241, 0.95)',
-            backgroundColor: 'rgba(99, 102, 241, 0.12)',
+            borderColor: 'rgba(102, 140, 118, 0.95)',
+            backgroundColor: 'rgba(102, 140, 118, 0.12)',
             fill: true,
             tension: 0.35,
             pointRadius: 2,
-            pointBackgroundColor: 'rgba(99, 102, 241, 1)'
+            pointBackgroundColor: 'rgba(102, 140, 118, 1)'
           },
           {
             label: 'Daily Goal (8h)',
@@ -797,7 +680,7 @@ function renderChart() {
         labels: labels,
         datasets: [{
           data: values,
-          backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--accent-purple').trim() || '#334155', '#22c55e', '#f97316', '#3b82f6', '#ec4899', '#14b8a6'],
+          backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--accent-purple').trim() || '#334155', '#6b9a7e', '#f97316', '#3b82f6', '#ec4899', '#14b8a6'],
           borderWidth: 0
         }]
       },
@@ -836,12 +719,12 @@ function renderChart() {
         datasets: [{
           label: 'Calories Burned',
           data: totals,
-          borderColor: '#22c55e',
-          backgroundColor: 'rgba(34, 197, 94, 0.12)',
+          borderColor: '#6b9a7e',
+          backgroundColor: 'rgba(107, 154, 126, 0.12)',
           fill: true,
           tension: 0.35,
           pointRadius: 2,
-          pointBackgroundColor: '#22c55e'
+          pointBackgroundColor: '#6b9a7e'
         }]
       },
       options: {
@@ -885,12 +768,12 @@ function renderStepsChart() {
       datasets: [{
         label: 'Steps Walked',
         data: displaySteps,
-        borderColor: '#6366f1',
-        backgroundColor: 'rgba(99, 102, 241, 0.08)',
+        borderColor: '#668c76',
+        backgroundColor: 'rgba(102, 140, 118, 0.08)',
         fill: true,
         tension: 0.35,
         pointRadius: 2,
-        pointBackgroundColor: '#6366f1'
+        pointBackgroundColor: '#668c76'
       }]
     },
     options: {
@@ -934,7 +817,7 @@ function renderGymChart() {
       datasets: [{
         label: 'Calories Burned (kcal)',
         data: displayGym,
-        backgroundColor: '#6366f1',
+        backgroundColor: '#668c76',
         borderRadius: 6
       }]
     },
@@ -979,8 +862,8 @@ function renderSavingsChart() {
         {
           label: 'Current Saved (₱)',
           data: currentValues,
-          backgroundColor: 'rgba(34, 197, 94, 0.85)',
-          borderColor: '#22c55e',
+          backgroundColor: 'rgba(107, 154, 126, 0.85)',
+          borderColor: '#6b9a7e',
           borderWidth: 1,
           borderRadius: 4
         },
@@ -1036,606 +919,3 @@ watch(
   { deep: true }
 )
 </script>
-
-<style scoped>
-/* Scoped adjustments */
-.animate-in {
-  opacity: 0;
-  animation: fadeInUp 0.5s ease forwards;
-}
-.delay-100 { animation-delay: 0.08s; }
-.delay-200 { animation-delay: 0.16s; }
-.delay-300 { animation-delay: 0.24s; }
-.delay-400 { animation-delay: 0.32s; }
-
-/* ── Stat Cards: Split Layout with Trend Pills ─────────── */
-.stats-pastel-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-bottom: 24px;
-}
-.stat-pastel-card {
-    font-family: 'Inter', sans-serif !important;
-    border-radius: 20px;
-    padding: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 148px;
-    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
-    text-decoration: none;
-    position: relative;
-    overflow: hidden;
-    background: var(--glass-bg, rgba(255,255,255,0.15)) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid var(--glass-border, rgba(255,255,255,0.2)) !important;
-    color: var(--time-text, var(--text-primary)) !important;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.06);
-}
-.stat-pastel-card:hover {
-    transform: translateY(-3px);
-    background: var(--glass-hover, rgba(255,255,255,0.22)) !important;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.12);
-}
-.stat-card-left {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    text-align: left;
-}
-.stat-pastel-label {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--time-text-muted, var(--text-secondary));
-    opacity: 0.8;
-}
-.stat-pastel-value {
-    font-size: 28px;
-    font-weight: 800;
-    line-height: 1.2;
-    color: var(--time-text, var(--text-primary));
-    margin: 0;
-}
-.trend-pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1;
-    margin-top: 4px;
-}
-.shuffle-recommend-btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-family: 'Inter', sans-serif !important;
-    font-size: 10px;
-    font-weight: 700;
-    line-height: 1.2;
-    background: var(--glass-bg, rgba(255,255,255,0.1));
-    border: 1px solid var(--glass-border, rgba(255,255,255,0.2));
-    color: var(--time-text, var(--text-primary));
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.shuffle-recommend-btn:hover {
-    background: var(--glass-hover, rgba(255,255,255,0.2));
-    border-color: var(--time-accent, var(--accent-purple));
-    transform: scale(1.03);
-}
-.trend-pill.success {
-    background: rgba(34, 197, 94, 0.15);
-    color: #16a34a;
-}
-.trend-pill.warning {
-    background: rgba(249, 115, 22, 0.15);
-    color: #ea580c;
-}
-.trend-pill.danger {
-    background: rgba(239, 68, 68, 0.15);
-    color: #dc2626;
-}
-.trend-pill.neutral {
-    background: rgba(148, 163, 184, 0.15);
-    color: var(--text-secondary);
-}
-.stat-card-right {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--time-accent, var(--accent-orange));
-}
-.stat-card-icon {
-    width: 20px;
-    height: 20px;
-    stroke-width: 1.75;
-    opacity: 0.85;
-}
-
-/* ── Circular Progress Rings ───────────────────────────── */
-.mini-ring-wrap {
-    position: relative;
-    width: 64px;
-    height: 64px;
-    flex-shrink: 0;
-}
-.mini-ring-svg {
-    transform: rotate(-90deg);
-    width: 100%;
-    height: 100%;
-}
-.mini-ring-svg .ring-bg {
-    stroke: var(--border-color-strong, rgba(0,0,0,0.08));
-    opacity: 0.3;
-}
-.mini-ring-svg .ring-fill {
-    stroke: var(--ring-color, #f97316);
-    stroke-linecap: round;
-    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.mini-ring-icon-center {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--time-text, var(--text-primary));
-}
-
-/* ── Time Tracker Widget Styling ────────────────────────── */
-.status-dot-badge {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 3px 10px;
-    border-radius: 6px;
-    background: rgba(148, 163, 184, 0.15);
-    color: var(--text-secondary);
-    letter-spacing: 0.05em;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-.status-dot-badge::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #64748b;
-}
-.status-dot-badge.active {
-    background: rgba(34, 197, 94, 0.15);
-    color: #16a34a;
-}
-.status-dot-badge.active::before {
-    background: #22c55e;
-    animation: blinkDotPulse 1.5s step-start infinite;
-}
-@keyframes blinkDotPulse {
-  50% { opacity: 0.3; }
-}
-.timer-tick-display {
-    font-family: 'Inter', sans-serif !important;
-    font-size: 40px;
-    font-weight: 800;
-    text-align: center;
-    color: var(--time-text, var(--text-primary));
-    letter-spacing: -0.01em;
-    margin: 8px 0;
-}
-.active-note-lbl {
-    font-size: 13px;
-    text-align: center;
-    color: var(--time-text-muted, var(--text-secondary));
-    margin-bottom: 12px;
-}
-.btn-warning {
-    background: linear-gradient(135deg, #ea580c 0%, #d97706 100%);
-    color: #ffffff;
-    border: none;
-    cursor: pointer;
-    padding: 10px 18px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 700;
-    transition: all 0.2s;
-}
-.btn-warning:hover {
-    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
-}
-.btn-text-toggle {
-    background: transparent;
-    border: none;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--time-accent, var(--accent-purple));
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-.btn-text-toggle:hover {
-    opacity: 0.8;
-    text-decoration: underline;
-}
-.logs-drawer-content {
-    margin-top: 20px;
-    border-top: 1px solid var(--glass-border, rgba(255,255,255,0.15));
-    padding-top: 16px;
-}
-.logs-table-wrapper {
-    overflow-x: auto;
-    width: 100%;
-}
-.logs-history-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    text-align: left;
-}
-.logs-history-table th {
-    font-weight: 700;
-    color: var(--time-text-muted, var(--text-secondary));
-    padding: 8px;
-    border-bottom: 1.5px solid var(--glass-border, rgba(255,255,255,0.15));
-}
-.logs-history-table td {
-    padding: 10px 8px;
-    border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.1));
-    color: var(--time-text, var(--text-primary));
-}
-.log-note-td {
-    max-width: 160px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.btn-del-log {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: color 0.2s, background 0.2s;
-    line-height: 1;
-}
-.btn-del-log:hover {
-    color: #ef4444;
-    background: rgba(239, 68, 68, 0.08);
-}
-
-/* ── Dashboard Dual Row ──────────────────────────────────── */
-.dashboard-dual-row {
-    display: flex;
-    gap: 24px;
-    align-items: flex-start;
-}
-.dashboard-dual-row > article {
-    flex: 1;
-    min-width: 0;
-}
-@media (max-width: 768px) {
-    .dashboard-dual-row {
-        flex-direction: column;
-    }
-}
-.timesheet-table th,
-.timesheet-table td {
-    white-space: nowrap;
-    padding: 8px 6px;
-}
-.timesheet-table td:first-child div:first-child {
-    font-weight: 700;
-    font-size: 12.5px;
-}
-.ts-rest-row td {
-    background: rgba(100, 116, 139, 0.04);
-    opacity: 0.75;
-}
-.ts-rest-row:hover td {
-    background: rgba(100, 116, 139, 0.08);
-    opacity: 1;
-}
-
-.python-analytics-box {
-    background: var(--bg-subtle, rgba(255,255,255,0.06));
-    border: 1px solid var(--glass-border, rgba(255,255,255,0.12));
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 20px;
-}
-.python-analytics-box h4 {
-    font-family: 'Inter', sans-serif !important;
-    font-size: 12px;
-    font-weight: 750;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--time-accent, var(--accent-orange));
-    margin: 0 0 12px;
-}
-.python-stats-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-.py-stat-card {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    background: var(--bg-card, rgba(255,255,255,0.1));
-    border: 1px solid var(--glass-border, rgba(255,255,255,0.08));
-    border-radius: 12px;
-    padding: 12px 10px;
-    text-align: center;
-}
-.py-stat-lbl {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--time-text-muted, var(--text-secondary));
-    text-transform: uppercase;
-}
-.py-stat-val {
-    font-size: 14px;
-    font-weight: 800;
-    color: var(--time-text, var(--text-primary));
-}
-@media (max-width: 500px) {
-    .python-stats-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* ── Tabbed Chart Card: Glassmorphism ──────────────────── */
-.chart-card-tabbed {
-    background: var(--glass-bg, rgba(255,255,255,0.18)) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid var(--glass-border, rgba(255,255,255,0.2)) !important;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    width: 100%;
-}
-.chart-tab-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.15));
-    padding-bottom: 16px;
-}
-.chart-tab-header h3 {
-    font-family: 'Inter', sans-serif !important;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--time-text, var(--text-primary));
-}
-.chart-tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--glass-bg, rgba(255,255,255,0.1));
-    padding: 4px;
-    border-radius: 12px;
-}
-.chart-tab-btn {
-    font-family: 'Inter', sans-serif !important;
-    background: transparent;
-    border: none;
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--time-text-muted, var(--text-secondary));
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-}
-.chart-tab-btn:hover { color: var(--time-text, var(--text-primary)); }
-.chart-tab-btn.active {
-    background: var(--glass-hover, rgba(255,255,255,0.2));
-    color: var(--time-text, var(--text-primary));
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-.chart-wrapper { position: relative; height: 320px; width: 100%; }
-
-/* ── Action Buttons: Glassmorphism ─────────────────────── */
-.actions-minimal-row { display: flex; gap: 12px; margin-bottom: 32px; }
-.action-minimal-btn {
-    font-family: 'Inter', sans-serif !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 12px 24px;
-    background: var(--glass-bg, rgba(255,255,255,0.15)) !important;
-    backdrop-filter: blur(16px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-    border: 1px solid var(--glass-border, rgba(255,255,255,0.2)) !important;
-    border-radius: 12px;
-    color: var(--time-text, var(--text-primary)) !important;
-    font-size: 14px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.25s ease;
-}
-.action-minimal-btn:hover {
-    background: var(--glass-hover, rgba(255,255,255,0.25)) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-}
-
-/* ── Focus Card: Glassmorphism ─────────────────────────── */
-.focus-minimal-card {
-    background: var(--glass-bg, rgba(255,255,255,0.15)) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid var(--glass-border, rgba(255,255,255,0.2)) !important;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-    margin-bottom: 24px;
-}
-.focus-minimal-card .focus-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
-}
-.focus-minimal-card h3 {
-    font-family: 'Inter', sans-serif !important;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--time-text-muted, var(--text-secondary));
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-.focus-minimal-input {
-    font-family: 'Inter', sans-serif !important;
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid var(--glass-border, rgba(255,255,255,0.2));
-    border-radius: 12px;
-    background: var(--glass-bg, rgba(255,255,255,0.1));
-    color: var(--time-text, var(--text-primary));
-    font-size: 14px;
-    font-weight: 500;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-}
-.focus-minimal-input::placeholder {
-    color: var(--time-text-muted, var(--text-secondary));
-    opacity: 0.7;
-}
-.focus-minimal-input:focus {
-    border-color: var(--time-accent, var(--accent-purple));
-    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
-    background: var(--glass-hover, rgba(255,255,255,0.2));
-}
-
-/* ── Permanent Charts Grid & Glass Panels ── */
-.charts-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-    gap: 24px;
-    margin-bottom: 28px;
-}
-.chart-panel {
-    background: var(--glass-bg, rgba(255,255,255,0.18)) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid var(--glass-border, rgba(255,255,255,0.2)) !important;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-.chart-panel h3 {
-    font-family: 'Inter', sans-serif !important;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--time-text, var(--text-primary));
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.chart-panel h3 svg {
-    color: var(--time-accent, var(--accent-purple));
-}
-.chart-wrap {
-    position: relative;
-    height: 260px;
-    width: 100%;
-}
-
-/* ── Punctuality Badges ── */
-.punctuality-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-family: 'Inter', sans-serif !important;
-    font-size: 11px;
-    font-weight: 700;
-    line-height: 1;
-    gap: 4px;
-}
-.punctuality-badge.ontime {
-    background: rgba(34, 197, 94, 0.15);
-    color: #16a34a;
-}
-.punctuality-badge.late {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-}
-
-/* ── Recommended Books grid and cards ── */
-.recommended-books-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-}
-.rec-book-card {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  padding: 18px;
-  border-radius: 16px;
-  transition: all 0.25s ease;
-}
-.rec-book-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent-purple);
-  box-shadow: var(--shadow-sm);
-}
-.rec-book-header-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.rec-book-icon {
-  font-size: 28px;
-  flex-shrink: 0;
-}
-.rec-book-title {
-  font-size: 14px;
-  font-weight: 750;
-  color: var(--text-primary);
-  margin: 0;
-}
-.rec-book-author {
-  font-size: 11px;
-  color: var(--text-secondary);
-  margin: 0;
-}
-.rec-book-genre {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-.rec-book-btn {
-  width: 100%;
-  text-align: center;
-  display: block;
-}
-</style>
-

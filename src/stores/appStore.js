@@ -109,6 +109,12 @@ export const useAppStore = defineStore('app', {
       waterIntakeLog = (parsed && typeof parsed === 'object') ? parsed : {}
     } catch { waterIntakeLog = {} }
 
+    let dailyCheckins = {}
+    try {
+      const parsed = JSON.parse(localStorage.getItem('dailyCheckins') || '{}')
+      dailyCheckins = (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {}
+    } catch { dailyCheckins = {} }
+
     let workTimeLogs = []
     try {
       const parsed = JSON.parse(localStorage.getItem('workTimeLogs') || '[]')
@@ -169,6 +175,7 @@ export const useAppStore = defineStore('app', {
       
       waterIntakeLog,
       waterDailyTarget: parseInt(localStorage.getItem('waterDailyTarget') || '2000'),
+      dailyCheckins,
       
       // Work logs data
       workTimeLogs,
@@ -382,6 +389,20 @@ export const useAppStore = defineStore('app', {
     deleteTransaction(id) {
       this.financeTransactions = this.financeTransactions.filter(t => t.id !== id)
       localStorage.setItem('financeTransactions', JSON.stringify(this.financeTransactions))
+    },
+
+    // ── Daily wellbeing check-ins ──────────────────────────
+    async saveDailyCheckin(date, checkin) {
+      this.dailyCheckins = { ...this.dailyCheckins, [date]: { ...checkin, date, updatedAt: new Date().toISOString() } }
+      localStorage.setItem('dailyCheckins', JSON.stringify(this.dailyCheckins))
+      await this.syncAllDataToCloud()
+    },
+    async deleteDailyCheckin(date) {
+      const next = { ...this.dailyCheckins }
+      delete next[date]
+      this.dailyCheckins = next
+      localStorage.setItem('dailyCheckins', JSON.stringify(this.dailyCheckins))
+      await this.syncAllDataToCloud()
     },
 
     // ── Savings ───────────────────────────────────────────
@@ -715,6 +736,7 @@ export const useAppStore = defineStore('app', {
           this.studyTotalTime = data.studyTotalTime !== undefined ? data.studyTotalTime : 0
           this.waterIntakeLog = data.waterIntakeLog || {}
           this.waterDailyTarget = data.waterDailyTarget !== undefined ? data.waterDailyTarget : 2000
+          this.dailyCheckins = data.dailyCheckins || {}
           this.workTimeLogs = data.workTimeLogs || []
           this.isClockedIn = data.isClockedIn !== undefined ? data.isClockedIn : false
           this.activeClockInLogId = data.activeClockInLogId !== undefined ? data.activeClockInLogId : null
@@ -755,6 +777,7 @@ export const useAppStore = defineStore('app', {
           studyTotalTime: this.studyTotalTime,
           waterIntakeLog: this.waterIntakeLog,
           waterDailyTarget: this.waterDailyTarget,
+          dailyCheckins: this.dailyCheckins,
           workTimeLogs: this.workTimeLogs,
           isClockedIn: this.isClockedIn,
           activeClockInLogId: this.activeClockInLogId,
@@ -784,6 +807,7 @@ export const useAppStore = defineStore('app', {
       localStorage.setItem('studyTotalTime', this.studyTotalTime.toString())
       localStorage.setItem('waterIntakeLog', JSON.stringify(this.waterIntakeLog))
       localStorage.setItem('waterDailyTarget', this.waterDailyTarget.toString())
+      localStorage.setItem('dailyCheckins', JSON.stringify(this.dailyCheckins))
       localStorage.setItem('workTimeLogs', JSON.stringify(this.workTimeLogs))
       localStorage.setItem('isClockedIn', this.isClockedIn ? 'true' : 'false')
       if (this.activeClockInLogId) {
@@ -821,6 +845,7 @@ export const useAppStore = defineStore('app', {
       this.studyTotalTime = 0
       this.waterIntakeLog = {}
       this.waterDailyTarget = 2000
+      this.dailyCheckins = {}
       this.workTimeLogs = []
       this.isClockedIn = false
       this.activeClockInLogId = null
@@ -845,6 +870,7 @@ export const useAppStore = defineStore('app', {
       localStorage.removeItem('studyTotalTime')
       localStorage.removeItem('waterIntakeLog')
       localStorage.removeItem('waterDailyTarget')
+      localStorage.removeItem('dailyCheckins')
       localStorage.removeItem('workTimeLogs')
       localStorage.removeItem('isClockedIn')
       localStorage.removeItem('activeClockInLogId')
