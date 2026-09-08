@@ -420,6 +420,7 @@ html {
     width: 550px;
     height: 550px;
     background: radial-gradient(circle, var(--glow-color-1, var(--accent-purple)), transparent 75%);
+    animation: ambient-drift-one 18s ease-in-out infinite alternate;
 }
 
 .bg-glow-2 {
@@ -428,7 +429,12 @@ html {
     width: 600px;
     height: 600px;
     background: radial-gradient(circle, var(--glow-color-2, var(--accent-blue)), transparent 75%);
+    animation: ambient-drift-two 22s ease-in-out infinite alternate;
 }
+
+@keyframes ambient-drift-one { to { transform: translate3d(7vw, 5vh, 0) scale(1.08); } }
+@keyframes ambient-drift-two { to { transform: translate3d(-6vw, -4vh, 0) scale(.94); } }
+@media (prefers-reduced-motion: reduce) { .bg-glow { animation: none; } }
 
 /* Page Glow Color Configurations based on Sidebar Category Theme */
 .page-dashboard {

@@ -148,6 +148,15 @@ export const useAppStore = defineStore('app', {
     const isClockedIn = localStorage.getItem('isClockedIn') === 'true'
     const activeClockInLogId = localStorage.getItem('activeClockInLogId') || null
 
+    let preferences = {
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      currency: 'PHP',
+      distanceUnit: 'km',
+      notifications: true,
+      dashboard: { metrics: true, progress: true, work: true, sidePanel: true, trends: true, discover: true }
+    }
+    try { preferences = { ...preferences, ...JSON.parse(localStorage.getItem('userPreferences') || '{}'), dashboard: { ...preferences.dashboard, ...(JSON.parse(localStorage.getItem('userPreferences') || '{}').dashboard || {}) } } } catch {}
+
     return {
       // User authentication state
       user: null,
@@ -193,6 +202,7 @@ export const useAppStore = defineStore('app', {
       
       isSidebarCollapsed: localStorage.getItem('isSidebarCollapsed') === 'true',
       colorAccent: localStorage.getItem('colorAccent') || 'orange',
+      preferences,
       
       dailyStreak: parseInt(localStorage.getItem('dailyStreak') || '0'),
       lastStreakDate: localStorage.getItem('lastStreakDate') || '',
@@ -567,6 +577,15 @@ export const useAppStore = defineStore('app', {
       this.readingLogs = []
       localStorage.removeItem('readingLogs')
     },
+    async updatePreferences(updates) {
+      this.preferences = { ...this.preferences, ...updates, dashboard: { ...this.preferences.dashboard, ...(updates.dashboard || {}) } }
+      localStorage.setItem('userPreferences', JSON.stringify(this.preferences))
+      await this.syncAllDataToCloud()
+    },
+    async updateProfileName(name) {
+      this.username = String(name || '').trim().slice(0, 60) || this.user?.email?.split('@')[0] || ''
+      if (this.user) await setDoc(doc(db, 'users', this.user.uid), { profileName: this.username }, { merge: true })
+    },
     saveReadingBookmark(bookId, bookmark) {
       if (!bookId) return
       this.readingBookmarks = {
@@ -763,6 +782,7 @@ export const useAppStore = defineStore('app', {
           this.activeClockInLogId = data.activeClockInLogId !== undefined ? data.activeClockInLogId : null
           this.dailyStreak = data.dailyStreak !== undefined ? data.dailyStreak : 0
           this.lastStreakDate = data.lastStreakDate !== undefined ? data.lastStreakDate : ''
+          this.preferences = { ...this.preferences, ...(data.preferences || {}), dashboard: { ...this.preferences.dashboard, ...(data.preferences?.dashboard || {}) } }
           this.username = data.profileName || data.username || this.user?.email?.split('@')[0] || ''
 
           this.saveAllDataToLocalStorage()
@@ -804,7 +824,8 @@ export const useAppStore = defineStore('app', {
           isClockedIn: this.isClockedIn,
           activeClockInLogId: this.activeClockInLogId,
           dailyStreak: this.dailyStreak,
-          lastStreakDate: this.lastStreakDate
+          lastStreakDate: this.lastStreakDate,
+          preferences: this.preferences
         }, { merge: true })
       } catch (err) {
         console.error('Error syncing all data to cloud:', err)
@@ -840,8 +861,14 @@ export const useAppStore = defineStore('app', {
       }
       localStorage.setItem('dailyStreak', this.dailyStreak.toString())
       localStorage.setItem('lastStreakDate', this.lastStreakDate)
+      localStorage.setItem('userPreferences', JSON.stringify(this.preferences))
     },
     resetStoreData() {
+      this.preferences = {
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        currency: 'PHP', distanceUnit: 'km', notifications: true,
+        dashboard: { metrics: true, progress: true, work: true, sidePanel: true, trends: true, discover: true }
+      }
       this.dailyTasks = []
       this.customCategories = []
       this.walkTrackerData = {}
@@ -901,6 +928,7 @@ export const useAppStore = defineStore('app', {
       localStorage.removeItem('activeClockInLogId')
       localStorage.removeItem('dailyStreak')
       localStorage.removeItem('lastStreakDate')
+      localStorage.removeItem('userPreferences')
     },
     initializeAuth() {
       return new Promise((resolve) => {

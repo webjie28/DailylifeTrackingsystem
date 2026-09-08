@@ -43,6 +43,7 @@
 
     <!-- Global Confirmation Modal Dialog -->
     <TrackerAssistant v-if="store.isAuthenticated && !route.meta.isGuest" />
+    <OnboardingTour v-if="showOnboarding" @done="showOnboarding=false" />
     <Teleport to="body">
       <div
         v-if="store.confirmDialog.show"
@@ -96,16 +97,21 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Sidebar from './components/Sidebar.vue'
 import TrackerAssistant from './components/TrackerAssistant.vue'
+import OnboardingTour from './components/OnboardingTour.vue'
 import { useAppStore } from './stores/appStore'
 
 const store = useAppStore()
 const route = useRoute()
 const showSplash = ref(true)
 const isSplashFading = ref(false)
+const showOnboarding = ref(false)
 const focusMain = () => document.getElementById('main-content')?.focus()
 watch(() => route.path, () => {
   if (window.matchMedia('(max-width: 768px)').matches) store.isSidebarCollapsed = true
 })
+watch(() => store.user?.uid, uid => {
+  showOnboarding.value = !!uid && localStorage.getItem(`dlt-onboarding:${uid}`) !== 'done'
+}, { immediate: true })
 
 const pageThemeClass = computed(() => {
   if (!route.path) return 'page-dashboard'

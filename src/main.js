@@ -11,6 +11,10 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
+}
+
 // Initialize global store watch for cloud sync with a debounce
 const store = useAppStore()
 let syncTimeout = null

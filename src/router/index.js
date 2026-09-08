@@ -10,6 +10,7 @@ const GoalsView = () => import('../views/GoalsView.vue')
 const WaterView = () => import('../views/WaterView.vue')
 const LoginView = () => import('../views/LoginView.vue')
 const RegisterView = () => import('../views/RegisterView.vue')
+const LifeHubView = () => import('../views/LifeHubView.vue')
 import { useAppStore } from '../stores/appStore'
 
 const router = createRouter({
@@ -73,7 +74,14 @@ const router = createRouter({
       path: '/water',
       name: 'water',
       component: WaterView
-    }
+    },
+    { path: '/reports', name: 'reports', component: LifeHubView },
+    { path: '/activity', name: 'activity', component: LifeHubView },
+    { path: '/search', name: 'search', component: LifeHubView },
+    { path: '/notifications', name: 'notifications', component: LifeHubView },
+    { path: '/achievements', name: 'achievements', component: LifeHubView },
+    { path: '/ai-insights', name: 'ai-insights', component: LifeHubView },
+    { path: '/settings', name: 'settings', component: LifeHubView }
   ]
 })
 

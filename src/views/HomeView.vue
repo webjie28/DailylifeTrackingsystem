@@ -2,9 +2,9 @@
   <div class="dashboard-page">
     <div class="dashboard-topbar"><div class="dashboard-breadcrumb">Workspace <span>/</span> <strong>Overview</strong></div><router-link to="/events" class="dashboard-date">▦ {{ new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}</router-link></div>
     <div class="dashboard-heading"><div><span class="dashboard-eyebrow">YOUR PERSONAL WORKSPACE</span><h1>Welcome back, {{ store.username || 'friend' }}<span class="greeting-spark">✦</span></h1><p>Here's how your day is shaping up. Let's make it a good one.</p></div><Header /></div>
-    <DashboardMetrics />
-    <div class="dashboard-columns"><div class="dashboard-primary"><!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
-    <section class="animate-in delay-250" style="margin-bottom: 36px;">
+    <DashboardMetrics v-if="dashboard.metrics" />
+    <div class="dashboard-columns" :style="dashboard.sidePanel ? undefined : { gridTemplateColumns: '1fr' }"><div class="dashboard-primary"><!-- Bottom: Analytics & Trends (Tabbed Chart, full width) -->
+    <section v-if="dashboard.progress" class="animate-in delay-250" style="margin-bottom: 36px;">
       <article class="workspace-chart">
         <div class="workspace-chart-heading">
           <h3>{{ activeChartTitle }}</h3>
@@ -32,7 +32,7 @@
     </section>
 
     <!-- Work Log Record Card -->
-    <section class="animate-in delay-100" style="margin-bottom: 24px;">
+    <section v-if="dashboard.work" class="animate-in delay-100" style="margin-bottom: 24px;">
       <article class="workspace-history">
         <div class="workspace-history-heading" style="justify-content: space-between; display: flex; align-items: center; width: 100%; margin-bottom: 16px;">
           <h3>Recent work sessions</h3>
@@ -116,7 +116,7 @@
         <button v-if="store.workTimeLogs.length > 5" class="history-toggle" @click="showAllLogs = !showAllLogs">{{ showAllLogs ? 'Show recent sessions' : 'View all ' + store.workTimeLogs.length + ' sessions' }} <span>↓</span></button></article>
     </section>
 
-</div><DashboardAside /></div><div class="dashboard-section-title"><h2>Your bigger picture</h2><span>Movement, momentum, and milestones</span></div>    <!-- Permanent 30-Day Fitness & Savings Charts Row -->
+</div><DashboardAside v-if="dashboard.sidePanel" /></div><template v-if="dashboard.trends"><div class="dashboard-section-title"><h2>Your bigger picture</h2><span>Movement, momentum, and milestones</span></div>    <!-- Permanent 30-Day Fitness & Savings Charts Row -->
     <section class="animate-in delay-300" style="margin-bottom: 36px;">
       <div class="workspace-trends">
         <div class="workspace-trend">
@@ -141,8 +141,8 @@
           <div class="chart-wrap" style="position: relative; height: 260px; width: 100%;"><canvas ref="savingsChartCanvas"></canvas></div>
         </div>
       </div>
-    </section>
-<section class="dashboard-discover" aria-label="Your downtime">
+    </section></template>
+<section v-if="dashboard.discover" class="dashboard-discover" aria-label="Your downtime">
   <router-link to="/check-in"><span class="discover-icon">◌</span><div><small>A MOMENT FOR YOURSELF</small><strong>How are you feeling today?</strong><p>Complete your daily check-in</p></div><span>↗</span></router-link>
   <router-link to="/study"><span class="discover-icon">▤</span><div><small>ON YOUR READING LIST</small><strong>{{ recommendedBook ? recommendedBook.title : 'Find your next great read' }}</strong><p>Open your study space</p></div><span>↗</span></router-link>
   <router-link to="/anime"><span class="discover-icon">▷</span><div><small>WHEN IT'S TIME TO UNWIND</small><strong>{{ recommendedShow ? recommendedShow.title : 'Find something worth watching' }}</strong><p>Open your watchlist</p></div><span>↗</span></router-link>
@@ -157,6 +157,7 @@ import Chart from 'chart.js/auto'
 import { LIBRARY_BOOKS } from '../services/libraryBooks'
 
 const store = useAppStore()
+const dashboard = computed(() => store.preferences.dashboard)
 const showAllLogs = ref(false)
 const visibleWorkLogs = computed(() => [...store.workTimeLogs].reverse().slice(0, showAllLogs.value ? undefined : 5))
 
