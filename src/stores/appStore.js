@@ -80,10 +80,17 @@ export const useAppStore = defineStore('app', {
           status: item.status === 'plantowatch' ? 'planning' : (item.status || 'watching'),
           currentEpisode: item.hasOwnProperty('currentEpisode') ? item.currentEpisode : (item.currentEp || 0),
           totalEpisodes: item.hasOwnProperty('totalEpisodes') ? item.totalEpisodes : (item.totalEp || 12),
-          rating: item.rating || 0
+          rating: item.rating || 0,
+          review: item.review || ''
         }
       }).filter(Boolean)
     } catch { animeWatchlist = [] }
+
+    let readingBookmarks = {}
+    try {
+      const parsed = JSON.parse(localStorage.getItem('readingBookmarks') || '{}')
+      readingBookmarks = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+    } catch { readingBookmarks = {} }
 
     let eventsList = []
     try {
@@ -172,6 +179,7 @@ export const useAppStore = defineStore('app', {
       studySessionNotes: localStorage.getItem('studySessionNotes') || '',
       studyTotalTime: parseInt(localStorage.getItem('studyTotalTime') || '0'),
       readingLogs: JSON.parse(localStorage.getItem('readingLogs') || '[]'),
+      readingBookmarks,
       
       waterIntakeLog,
       waterDailyTarget: parseInt(localStorage.getItem('waterDailyTarget') || '2000'),
@@ -558,6 +566,14 @@ export const useAppStore = defineStore('app', {
       this.readingLogs = []
       localStorage.removeItem('readingLogs')
     },
+    saveReadingBookmark(bookId, bookmark) {
+      if (!bookId) return
+      this.readingBookmarks = {
+        ...this.readingBookmarks,
+        [bookId]: bookmark
+      }
+      localStorage.setItem('readingBookmarks', JSON.stringify(this.readingBookmarks))
+    },
     showConfirm(options) {
       this.confirmDialog = {
         show: true,
@@ -734,6 +750,7 @@ export const useAppStore = defineStore('app', {
           this.studyBooksList = data.studyBooksList || []
           this.studySessionNotes = data.studySessionNotes !== undefined ? data.studySessionNotes : ''
           this.studyTotalTime = data.studyTotalTime !== undefined ? data.studyTotalTime : 0
+          this.readingBookmarks = data.readingBookmarks || {}
           this.waterIntakeLog = data.waterIntakeLog || {}
           this.waterDailyTarget = data.waterDailyTarget !== undefined ? data.waterDailyTarget : 2000
           this.dailyCheckins = data.dailyCheckins || {}
@@ -775,6 +792,7 @@ export const useAppStore = defineStore('app', {
           studyBooksList: this.studyBooksList,
           studySessionNotes: this.studySessionNotes,
           studyTotalTime: this.studyTotalTime,
+          readingBookmarks: this.readingBookmarks,
           waterIntakeLog: this.waterIntakeLog,
           waterDailyTarget: this.waterDailyTarget,
           dailyCheckins: this.dailyCheckins,
@@ -805,6 +823,7 @@ export const useAppStore = defineStore('app', {
       localStorage.setItem('studyBooksList', JSON.stringify(this.studyBooksList))
       localStorage.setItem('studySessionNotes', this.studySessionNotes)
       localStorage.setItem('studyTotalTime', this.studyTotalTime.toString())
+      localStorage.setItem('readingBookmarks', JSON.stringify(this.readingBookmarks))
       localStorage.setItem('waterIntakeLog', JSON.stringify(this.waterIntakeLog))
       localStorage.setItem('waterDailyTarget', this.waterDailyTarget.toString())
       localStorage.setItem('dailyCheckins', JSON.stringify(this.dailyCheckins))
@@ -843,6 +862,7 @@ export const useAppStore = defineStore('app', {
       this.studyBooksList = []
       this.studySessionNotes = ''
       this.studyTotalTime = 0
+      this.readingBookmarks = {}
       this.waterIntakeLog = {}
       this.waterDailyTarget = 2000
       this.dailyCheckins = {}
@@ -868,6 +888,7 @@ export const useAppStore = defineStore('app', {
       localStorage.removeItem('studyBooksList')
       localStorage.removeItem('studySessionNotes')
       localStorage.removeItem('studyTotalTime')
+      localStorage.removeItem('readingBookmarks')
       localStorage.removeItem('waterIntakeLog')
       localStorage.removeItem('waterDailyTarget')
       localStorage.removeItem('dailyCheckins')

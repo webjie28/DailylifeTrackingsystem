@@ -113,6 +113,7 @@
             <h4 class="library-book-title">{{ book.title }}</h4>
             <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">by {{ book.author }}</div>
             <span class="library-book-genre">{{ book.genre }}</span>
+            <span v-if="bookmarkFor(book.id)" class="library-bookmark">↗ Resume page {{ bookmarkFor(book.id).page }}</span>
           </div>
         </div>
       </div>
@@ -146,7 +147,7 @@
     </div>
 
     <!-- Reading Timer Modal / Running Timer -->
-    <div class="modal-overlay" v-if="showReadingModal" @click.self="!isReadingActive && (showReadingModal = false)">
+    <div class="modal-overlay" v-if="showReadingModal" @click.self="!isReadingActive && closeReadingModal()">
       <div class="modal-content" :style="{ 'max-width': isReadingActive ? '1080px' : '440px', 'width': '96%', 'padding': '28px' }">
 
         <!-- Setup Screen (before starting) -->
@@ -167,7 +168,7 @@
             ⚠ {{ bookLoadingError }}
           </div>
           <div v-else-if="bookParagraphs.length > 0" style="font-size: 12px; color: var(--text-muted); margin: 8px 0 20px; padding: 8px 12px; background: rgba(var(--accent-purple-rgb, 139,92,246), 0.08); border-radius: 8px;">
-            ✅ {{ bookParagraphs.length.toLocaleString() }} paragraphs loaded — full book ready!
+            ✅ {{ bookParagraphs.length.toLocaleString() }} paragraphs loaded — {{ currentPage > 1 ? `ready to resume on page ${currentPage}` : 'full book ready!' }}
           </div>
 
           <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
@@ -187,7 +188,7 @@
             <button type="button" class="btn btn-primary" style="flex: 1;" @click="startReadingSession" :disabled="isBookLoading || bookParagraphs.length === 0">
               {{ isBookLoading ? 'Loading…' : 'Start Reading' }}
             </button>
-            <button type="button" class="btn btn-outline" @click="showReadingModal = false">Cancel</button>
+            <button type="button" class="btn btn-outline" @click="closeReadingModal">Cancel</button>
           </div>
         </div>
 
@@ -293,11 +294,13 @@ const visibleParagraphs = computed(() => {
 function nextPage() {
   if (scrollOffset.value + PARAS_PER_PAGE < bookParagraphs.value.length) {
     scrollOffset.value += PARAS_PER_PAGE
+    saveReadingPosition()
   }
 }
 function prevPage() {
   if (scrollOffset.value > 0) {
     scrollOffset.value = Math.max(0, scrollOffset.value - PARAS_PER_PAGE)
+    saveReadingPosition()
   }
 }
 const store = useAppStore()
@@ -505,6 +508,52 @@ const isReadingPaused = ref(false)
 const readingTimeRemaining = ref(0)
 const totalReadingSessionSecs = ref(0)
 let readingTimerId = null
+let readerHistoryEntry = false
+
+function bookmarkFor(bookId) {
+  return store.readingBookmarks?.[bookId] || null
+}
+
+function saveReadingPosition() {
+  if (!selectedLibBook.value || !bookParagraphs.value.length) return
+  store.saveReadingBookmark(selectedLibBook.value.id, {
+    page: currentPage.value,
+    offset: scrollOffset.value,
+    totalPages: totalPages.value,
+    title: selectedLibBook.value.title,
+    updatedAt: new Date().toISOString()
+  })
+}
+
+function closeReaderState() {
+  saveReadingPosition()
+  if (readingTimerId) clearInterval(readingTimerId)
+  readingTimerId = null
+  isReadingActive.value = false
+  isReadingPaused.value = false
+  showReadingModal.value = false
+}
+
+function handleReaderBack() {
+  if (showReadingModal.value) closeReaderState()
+  readerHistoryEntry = false
+}
+
+function closeReadingModal() {
+  if (readerHistoryEntry) {
+    window.history.back()
+  } else {
+    closeReaderState()
+  }
+}
+
+function finishReaderHistory() {
+  closeReaderState()
+  if (readerHistoryEntry) {
+    readerHistoryEntry = false
+    window.history.back()
+  }
+}
 
 const formattedReadingTime = computed(() => {
   const h = Math.floor(readingTimeRemaining.value / 3600).toString().padStart(2, '0')
@@ -524,11 +573,21 @@ async function openReadingSetup(book) {
   bookLoadingError.value = null
   scrollOffset.value = 0
 
+  if (!readerHistoryEntry) {
+    window.history.pushState({ ...window.history.state, dltReader: book.id }, '', window.location.href)
+    readerHistoryEntry = true
+  }
+
   // Fetch the full book text
   isBookLoading.value = true
   try {
     const paragraphs = await fetchBookText(book.textUrl, book.id)
     bookParagraphs.value = paragraphs
+    const saved = bookmarkFor(book.id)
+    if (saved) {
+      const maxOffset = Math.max(0, Math.floor((paragraphs.length - 1) / PARAS_PER_PAGE) * PARAS_PER_PAGE)
+      scrollOffset.value = Math.min(Math.max(0, Number(saved.offset) || 0), maxOffset)
+    }
   } catch (e) {
     bookLoadingError.value = 'Could not load book. Check your internet connection and try again.'
   } finally {
@@ -556,8 +615,7 @@ function startReadingSession() {
       } else {
         clearInterval(readingTimerId)
         readingTimerId = null
-        isReadingActive.value = false
-        showReadingModal.value = false
+        saveReadingPosition()
 
         // Add to global total study time
         store.addStudyMinutes(totalMins)
@@ -574,6 +632,7 @@ function startReadingSession() {
         store.addReadingLog(logObj)
 
         alert(`🎉 Congratulations! You completed your reading session for "${selectedLibBook.value.title}" of ${totalMins} minutes! Stopped at page ${currentPage.value}.`)
+        finishReaderHistory()
       }
     }
   }, 1000)
@@ -581,14 +640,14 @@ function startReadingSession() {
 
 function toggleReadingPause() {
   isReadingPaused.value = !isReadingPaused.value
+  if (isReadingPaused.value) saveReadingPosition()
 }
 
 function stopReadingSessionEarly() {
   if (confirm('Do you want to end your reading session early? The minutes you read so far will still be saved.')) {
     if (readingTimerId) clearInterval(readingTimerId)
     readingTimerId = null
-    isReadingActive.value = false
-    showReadingModal.value = false
+    saveReadingPosition()
 
     const secondsRead = totalReadingSessionSecs.value - readingTimeRemaining.value
     const minsRead = Math.floor(secondsRead / 60)
@@ -609,12 +668,17 @@ function stopReadingSessionEarly() {
     store.addReadingLog(logObj)
 
     alert(`Saved ${actualMinsToSave} minutes of reading for "${selectedLibBook.value.title}"! Stopped at page ${currentPage.value}.`)
+    finishReaderHistory()
   }
 }
 
+onMounted(() => window.addEventListener('popstate', handleReaderBack))
+
 onUnmounted(() => {
+  saveReadingPosition()
   if (timerId) clearInterval(timerId)
   if (readingTimerId) clearInterval(readingTimerId)
+  window.removeEventListener('popstate', handleReaderBack)
 })
 </script>
 
@@ -635,6 +699,8 @@ onUnmounted(() => {
   color: var(--text-primary);
   margin: 0;
 }
+.library-bookmark { display:block; width:max-content; max-width:100%; margin-top:7px; padding:4px 7px; border-radius:99px; background:#edf2e9; color:#4f765c; font-size:10px; font-weight:600; }
+:global([data-theme="dark"]) .library-bookmark,:global([data-theme="navy"]) .library-bookmark { background:var(--bg-secondary); color:var(--accent-green); }
 .study-subtitle {
   font-family: 'Inter', sans-serif;
   color: var(--text-muted);

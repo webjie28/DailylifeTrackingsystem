@@ -143,6 +143,8 @@
             <div class="goal-bar-fill" :style="{ width: calculateProgressPercentage(anime) + '%' }"></div>
           </div>
 
+          <p v-if="anime.review" class="anime-review">“{{ anime.review }}”</p>
+
           <div class="anime-card-footer">
             <span class="rating-display">
               {{ anime.rating > 0 ? anime.rating + '/10' : 'Unrated' }}
@@ -209,6 +211,12 @@
               </select>
             </div>
 
+            <div class="form-group">
+              <label>My Review <span class="optional-label">Optional</span></label>
+              <textarea v-model="animeReview" rows="4" maxlength="500" placeholder="What did you like, dislike, or remember about it?"></textarea>
+              <small class="review-count">{{ animeReview.length }}/500</small>
+            </div>
+
             <div style="display: flex; gap: 10px; margin-top: 20px;">
               <button type="submit" class="btn btn-primary" style="width: 100%;">
                 {{ editingId ? 'Update Entry' : 'Save Entry' }}
@@ -234,6 +242,7 @@ const animeStatus = ref('watching')
 const animeCurrentEpisode = ref(0)
 const animeTotalEpisodes = ref(12)
 const animeRating = ref(0)
+const animeReview = ref('')
 const editingId = ref(null)
 
 // Filtering state
@@ -334,7 +343,8 @@ function saveAnime() {
     status: status,
     currentEpisode: current,
     totalEpisodes: total,
-    rating: parseInt(animeRating.value) || 0
+    rating: parseInt(animeRating.value) || 0,
+    review: animeReview.value.trim()
   }
 
   if (editingId.value) {
@@ -362,6 +372,7 @@ function editAnime(id) {
   animeCurrentEpisode.value = a.currentEpisode
   animeTotalEpisodes.value = a.totalEpisodes
   animeRating.value = a.rating
+  animeReview.value = a.review || ''
   showAddModal.value = true
 }
 
@@ -422,6 +433,7 @@ function resetForm() {
   animeCurrentEpisode.value = 0
   animeTotalEpisodes.value = 12
   animeRating.value = 0
+  animeReview.value = ''
 }
 </script>
 

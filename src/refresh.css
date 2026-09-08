@@ -65,3 +65,34 @@ button:active:not(:disabled), .btn:active { transform: scale(.97); }
  .mobile-backdrop { display: block; position: fixed; inset: 0; z-index: 999; border: 0; background: #101b165c; backdrop-filter: blur(3px); }
  .sidebar-container .sidebar-wrapper { padding-top: 60px; }
 }
+
+/* End-user readability pass */
+.main-content { font-size:15px; }
+.main-content :where(p) { font-size: max(14px, .875rem) !important; line-height: 1.65; }
+.main-content :where(small) { font-size: max(12px, .75rem) !important; line-height: 1.45; }
+.main-content :where(button, input, select, textarea, label) { font-size: max(13px, .8125rem) !important; }
+.main-content :where(.stat-label,.metric-label,.ss-label,.workspace-count,.panel-caption,.purpose-progress-label,.goal-amounts,.goal-due,.tx-meta,.contrib-meta) { font-size: 11px !important; }
+.life-link { font-size: 13px !important; }.life-links h2 { font-size: 10px !important; }.life-profile-copy strong { font-size: 13px !important; }
+
+/* Auth layout: balanced desktop composition and a true single-column phone flow. */
+.no-sidebar .main-content { display:grid; place-items:center; padding:24px !important; }
+.auth-view.auth-view { width:min(1180px,100%); grid-template-columns:minmax(0,1.12fr) minmax(390px,.88fr) !important; gap:34px !important; min-height:calc(100svh - 48px) !important; }
+.auth-view .auth-glass-container { width:100% !important; max-width:440px !important; }
+.auth-view .auth-input-group input,.auth-view .btn-auth-submit { font-size:14px !important; }
+.auth-view .auth-footer,.auth-view .auth-footer a { font-size:13px !important; }
+.welcome-story .story-tags,.welcome-story .story-footnote { font-size:12px; }
+@media (max-width: 760px) {
+  .no-sidebar .main-content { display:block; padding:0 !important; }
+  .no-sidebar .main-content > .container { width:100%; }
+  .auth-view.auth-view { display:flex !important; flex-direction:column !important; width:100% !important; max-width:none !important; min-height:100svh !important; gap:14px !important; padding:14px !important; }
+  .welcome-story { flex:none !important; min-height:auto !important; padding:22px !important; border-radius:20px !important; }
+  .welcome-story .story-copy { margin-top:22px !important; }
+  .welcome-story .story-copy h2 { font-size:36px !important; line-height:1.02 !important; letter-spacing:-1.8px !important; margin:14px 0 10px !important; }
+  .welcome-story .story-copy p { font-size:14px !important; line-height:1.55 !important; }
+  .welcome-story .story-art,.welcome-story .story-tags,.welcome-story .story-footnote { display:none !important; }
+  .auth-view .auth-glass-container { max-width:none !important; width:100% !important; padding:28px 22px 30px !important; border:1px solid var(--border-color) !important; border-radius:20px !important; background:var(--bg-card) !important; }
+  .auth-view .auth-header { margin-bottom:24px !important; }
+  .auth-view .auth-title { font-size:26px !important; }
+  .auth-input-group input { min-height:50px; font-size:16px !important; }
+  .auth-input-group label,.btn-auth-submit { font-size:15px !important; }
+}

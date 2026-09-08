@@ -85,6 +85,7 @@ watch(
     store.studyBooksList,
     store.studySessionNotes,
     store.studyTotalTime,
+    store.readingBookmarks,
     store.waterIntakeLog,
     store.waterDailyTarget,
     store.dailyCheckins,
