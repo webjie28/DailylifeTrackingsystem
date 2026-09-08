@@ -147,17 +147,15 @@ body, h1, h2, h3, h4, h5, h6, input, button, select, textarea, p, span, a, label
 /* View transitions for fade-slide premium feel */
 .fade-slide-enter-active,
 .fade-slide-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.16s ease;
 }
 
 .fade-slide-enter-from {
   opacity: 0;
-  transform: translateY(8px);
 }
 
 .fade-slide-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
 }
 
 /* Splash Screen Overlay Styling */

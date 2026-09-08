@@ -9,6 +9,22 @@
     font-family: 'Outfit', sans-serif !important;
 }
 
+html {
+    scrollbar-gutter: stable;
+}
+
+/* Touchscreens emulate hover after a tap. Keep cards and controls stationary so
+   opening an item never makes the surrounding layout appear to jump. */
+@media (hover: none), (pointer: coarse) {
+    a:hover,
+    button:hover,
+    [class*="card"]:hover,
+    [class*="tile"]:hover,
+    [class*="item"]:hover {
+        transform: none !important;
+    }
+}
+
 /* ── CSS Custom Properties (Light Theme — Default) ────────────── */
 :root {
     /* Backgrounds */
