@@ -80,7 +80,7 @@ const router = createRouter({
     { path: '/search', name: 'search', component: LifeHubView },
     { path: '/notifications', name: 'notifications', component: LifeHubView },
     { path: '/achievements', name: 'achievements', component: LifeHubView },
-    { path: '/ai-insights', name: 'ai-insights', component: LifeHubView },
+    { path: '/ai-insights', redirect: '/search' },
     { path: '/settings', name: 'settings', component: LifeHubView }
   ]
 })

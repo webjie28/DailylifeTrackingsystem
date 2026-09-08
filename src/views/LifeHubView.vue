@@ -1,7 +1,7 @@
 <template>
   <div class="hub-page">
     <div class="hub-crumb">Workspace <span>/</span> {{ current.label }}</div>
-    <header class="hub-header"><div><small>{{ current.eyebrow }}</small><h1>{{ current.title }}</h1><p>{{ current.description }}</p></div><nav aria-label="Insights tools"><router-link v-for="item in tabs" :key="item.to" :to="item.to" :class="{active:route.path===item.to}">{{ item.short }}</router-link></nav></header>
+    <header class="hub-header"><div><small>{{ current.eyebrow }}</small><h1>{{ current.title }}</h1><p>{{ current.description }}</p></div><nav aria-label="Insights tools"><router-link v-for="item in tabs.filter(entry => entry.to !== '/ai-insights')" :key="item.to" :to="item.to" :class="{active:route.path===item.to}">{{ item.short }}</router-link></nav></header>
 
     <section v-if="mode==='reports'" class="hub-stack">
       <div class="period-switch"><button :class="{active:days===7}" @click="days=7">This week</button><button :class="{active:days===30}" @click="days=30">This month</button></div>
