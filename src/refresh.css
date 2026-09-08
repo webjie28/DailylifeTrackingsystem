@@ -74,19 +74,13 @@ button:active:not(:disabled), .btn:active { transform: scale(.97); }
 .main-content :where(.stat-label,.metric-label,.ss-label,.workspace-count,.panel-caption,.purpose-progress-label,.goal-amounts,.goal-due,.tx-meta,.contrib-meta) { font-size: 11px !important; }
 .life-link { font-size: 13px !important; }.life-links h2 { font-size: 10px !important; }.life-profile-copy strong { font-size: 13px !important; }
 
-/* Auth layout: balanced desktop composition and a true single-column phone flow. */
-.login-layout { position:relative; }
-.login-layout .welcome-story { transition:opacity .4s ease, transform .55s cubic-bezier(.22,1,.36,1), visibility .4s; }
-.login-layout .auth-glass-container { position:relative; transition:transform .65s cubic-bezier(.22,1,.36,1), box-shadow .4s; }
-.login-layout.login-focused .welcome-story { opacity:0; visibility:hidden; transform:translateX(-30px) scale(.97); pointer-events:none; }
-.login-layout.login-focused .auth-glass-container { transform:translateX(var(--login-shift)); box-shadow:0 24px 80px #10241a24; }
-.login-back { position:absolute; top:16px; left:24px; border:0; background:transparent; color:var(--text-secondary); cursor:pointer; padding:6px; }
-@media(prefers-reduced-motion:reduce) { .login-layout .welcome-story,.login-layout .auth-glass-container { transition:none; } }
+/* Auth layout: one unified panel with a story side and a form side. */
+.login-layout { position:relative; overflow:hidden; background:#e9eddf; border:1px solid #dce2d2; border-radius:30px; box-shadow:0 20px 60px #26382c12; }
 .no-sidebar .main-content { display:grid; place-items:center; padding:24px !important; }
 .no-sidebar .main-content > .container { width:100%; max-width:none; padding:0 !important; }
-.auth-view.auth-view { display:grid !important; width:min(1680px,calc(100vw - 64px)); max-width:none !important; grid-template-columns:minmax(0,1.15fr) minmax(410px,.85fr) !important; align-items:stretch !important; justify-content:stretch !important; gap:28px !important; min-height:calc(100svh - 48px) !important; }
-.auth-view .auth-glass-container { align-self:center; justify-self:center; width:100% !important; max-width:620px !important; padding:50px 44px !important; }
-.auth-view .welcome-story { padding:46px 56px 32px; }
+.auth-view.auth-view { display:grid !important; width:min(1280px,calc(100vw - 64px)); max-width:none !important; grid-template-columns:minmax(0,1.12fr) minmax(390px,.88fr) !important; align-items:stretch !important; justify-content:stretch !important; gap:0 !important; min-height:min(760px,calc(100svh - 48px)) !important; }
+.auth-view .auth-glass-container { align-self:stretch; justify-self:stretch; width:100% !important; max-width:none !important; padding:52px clamp(38px,4vw,68px) !important; display:flex; flex-direction:column; justify-content:center; background:var(--bg-card) !important; border:0 !important; border-left:1px solid var(--border-color-strong) !important; border-radius:0 !important; box-shadow:none !important; }
+.auth-view .welcome-story { padding:42px 50px 30px; border:0; border-radius:0; }
 .auth-view .story-copy { max-width:680px; }
 .auth-view .story-copy h2 { font-size:clamp(48px,4.2vw,76px); }
 .auth-view .story-art { width:min(520px,100%); align-self:center; }
@@ -96,20 +90,20 @@ button:active:not(:disabled), .btn:active { transform: scale(.97); }
 @media (max-width: 760px) {
   .no-sidebar .main-content { display:block; padding:0 !important; }
   .no-sidebar .main-content > .container { width:100%; }
-  .auth-view.auth-view { display:flex !important; flex-direction:column !important; width:100% !important; max-width:none !important; min-height:100svh !important; gap:14px !important; padding:14px !important; }
-  .welcome-story { flex:none !important; min-height:auto !important; padding:22px !important; border-radius:20px !important; }
+  .auth-view.auth-view { display:flex !important; flex-direction:column !important; width:calc(100% - 24px) !important; max-width:none !important; min-height:auto !important; gap:0 !important; margin:12px !important; padding:0 !important; border-radius:22px; }
+  .welcome-story { flex:none !important; min-height:auto !important; padding:22px !important; border-radius:0 !important; }
   .welcome-story .story-copy { margin-top:22px !important; }
   .welcome-story .story-copy h2 { font-size:36px !important; line-height:1.02 !important; letter-spacing:-1.8px !important; margin:14px 0 10px !important; }
   .welcome-story .story-copy p { font-size:14px !important; line-height:1.55 !important; }
   .welcome-story .story-art,.welcome-story .story-tags,.welcome-story .story-footnote { display:none !important; }
-  .auth-view .auth-glass-container { max-width:none !important; width:100% !important; padding:28px 22px 30px !important; border:1px solid var(--border-color) !important; border-radius:20px !important; background:var(--bg-card) !important; }
+  .auth-view .auth-glass-container { max-width:none !important; width:100% !important; padding:28px 22px 30px !important; border:0 !important; border-top:1px solid var(--border-color) !important; border-radius:0 !important; background:var(--bg-card) !important; }
   .auth-view .auth-header { margin-bottom:24px !important; }
   .auth-view .auth-title { font-size:26px !important; }
   .auth-input-group input { min-height:50px; font-size:16px !important; }
   .auth-input-group label,.btn-auth-submit { font-size:15px !important; }
 }
 @media (min-width:761px) and (max-width:1050px) {
-  .auth-view.auth-view { width:calc(100vw - 40px); grid-template-columns:minmax(0,1fr) minmax(390px,.9fr) !important; gap:20px !important; }
+  .auth-view.auth-view { width:calc(100vw - 40px); grid-template-columns:minmax(0,1fr) minmax(390px,.9fr) !important; gap:0 !important; }
   .auth-view .welcome-story { padding:34px 32px 26px; }
   .auth-view .story-copy h2 { font-size:clamp(40px,5vw,58px); }
   .auth-view .auth-glass-container { padding:40px 30px !important; }
