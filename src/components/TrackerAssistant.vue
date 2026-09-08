@@ -46,7 +46,15 @@ async function ask(text = question.value) {
 }
 watch(()=>store.user?.uid,()=>{request?.abort();question.value='';error.value='';open.value=false;loadHistory()},{immediate:true})
 function onKeydown(event) { if (event.key === 'Escape' && open.value) close() }
-function openFromPage() { open.value = true; nextTick(()=>document.getElementById('assistant-question')?.focus()) }
+function openFromPage(event) {
+  open.value = true
+  const prompt = typeof event?.detail?.prompt === 'string' ? event.detail.prompt.trim() : ''
+  if (prompt) question.value = prompt.slice(0, 1000)
+  nextTick(() => {
+    if (prompt) ask(question.value)
+    else document.getElementById('assistant-question')?.focus()
+  })
+}
 function onOutsidePointer(event) {
   if (open.value && !panel.value?.contains(event.target) && !trigger.value?.contains(event.target)) close(false)
 }
