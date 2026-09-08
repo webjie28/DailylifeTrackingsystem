@@ -4,6 +4,7 @@ import { useAppStore } from '../stores/appStore'
 import { assistantContext } from '../services/assistantContext'
 const store = useAppStore()
 const trigger = ref(null)
+const panel = ref(null)
 const thread = ref(null)
 const open = ref(false)
 const question = ref('')
@@ -19,7 +20,7 @@ function loadHistory() {
 }
 function saveHistory() { try { localStorage.setItem(historyKey(), JSON.stringify(messages.value.slice(-30))) } catch {} }
 function clearHistory() { messages.value = []; try { localStorage.removeItem(historyKey()) } catch {} }
-function close() { open.value = false; trigger.value?.focus() }
+function close(returnFocus = true) { open.value = false; if (returnFocus) trigger.value?.focus() }
 async function ask(text = question.value) {
   if (pending.value || !text.trim()) return
   question.value = text
@@ -45,9 +46,12 @@ async function ask(text = question.value) {
 }
 watch(()=>store.user?.uid,()=>{request?.abort();question.value='';error.value='';open.value=false;loadHistory()},{immediate:true})
 function onKeydown(event) { if (event.key === 'Escape' && open.value) close() }
-onMounted(()=>window.addEventListener('keydown',onKeydown))
+function onOutsidePointer(event) {
+  if (open.value && !panel.value?.contains(event.target) && !trigger.value?.contains(event.target)) close(false)
+}
+onMounted(()=>{ window.addEventListener('keydown',onKeydown); document.addEventListener('pointerdown',onOutsidePointer) })
 onUnmounted(()=>request?.abort())
-onUnmounted(()=>window.removeEventListener('keydown',onKeydown))
+onUnmounted(()=>{ window.removeEventListener('keydown',onKeydown); document.removeEventListener('pointerdown',onOutsidePointer) })
 </script>
 <template>
   <button ref="trigger" class="assistant-launch" @click="open=true" aria-haspopup="dialog" :aria-expanded="open" aria-controls="dlt-assistant-panel" aria-label="Open DLT AI assistant">
@@ -56,7 +60,7 @@ onUnmounted(()=>window.removeEventListener('keydown',onKeydown))
     <span class="assistant-pulse"></span>
   </button>
   <Teleport to="body">
-    <aside id="dlt-assistant-panel" class="assistant-panel" :class="{'is-open':open}" :aria-hidden="!open" aria-labelledby="assistant-title">
+    <aside ref="panel" id="dlt-assistant-panel" class="assistant-panel" :class="{'is-open':open}" :aria-hidden="!open" aria-labelledby="assistant-title">
       <header><div><span class="assistant-eyebrow">DLT AI</span><h2 id="assistant-title">Your daily assistant</h2><p>Understand your day, one check-in at a time.</p></div><button @click="close" aria-label="Close assistant">×</button></header>
       <p class="assistant-disclosure">When you send a question, a summary of your tracker—including wellbeing and money totals—is shared with the connected AI workflow. Answers use your current logs. A missing log does not mean you skipped an activity.</p>
       <div class="assistant-history-bar"><span>{{ messages.length ? `${messages.length} saved conversation${messages.length === 1 ? '' : 's'}` : 'Start a new conversation' }}</span><button v-if="messages.length" @click="clearHistory">Clear history</button></div>
