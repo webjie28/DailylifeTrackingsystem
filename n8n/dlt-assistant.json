@@ -41,6 +41,7 @@
     },
     {
       "parameters": {
+        "modelName": "models/gemini-3.6-flash",
         "options": {}
       },
       "id": "dlt-model",

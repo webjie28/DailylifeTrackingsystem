@@ -42,6 +42,7 @@
     </div>
 
     <!-- Global Confirmation Modal Dialog -->
+    <TrackerAssistant v-if="store.isAuthenticated && !route.meta.isGuest" />
     <Teleport to="body">
       <div
         v-if="store.confirmDialog.show"
@@ -94,6 +95,7 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Sidebar from './components/Sidebar.vue'
+import TrackerAssistant from './components/TrackerAssistant.vue'
 import { useAppStore } from './stores/appStore'
 
 const store = useAppStore()
