@@ -18,7 +18,14 @@ export default async function handler(req, res) {
     if (new URL(url).protocol !== 'https:') throw new Error('Invalid configuration')
     const response = await fetch(url, {
       method:'POST', redirect:'error', headers:{'Content-Type':'application/json','X-DLT-Secret':secret},
-      body:JSON.stringify({question:body.question.trim(), context:body.context}), signal:AbortSignal.timeout(20000)
+      body:JSON.stringify({
+        question:body.question.trim(),
+        context:body.context,
+        history:Array.isArray(body.history) ? body.history.slice(-8).map(item=>({
+          question:String(item?.question || '').slice(0,500),
+          reply:String(item?.reply || '').slice(0,1500)
+        })) : []
+      }), signal:AbortSignal.timeout(20000)
     })
     if (!response.ok) throw new Error('Workflow unavailable')
     const result = await response.json()
