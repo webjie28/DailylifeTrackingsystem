@@ -203,6 +203,7 @@ export const useAppStore = defineStore('app', {
       isSidebarCollapsed: localStorage.getItem('isSidebarCollapsed') === 'true',
       colorAccent: localStorage.getItem('colorAccent') || 'orange',
       preferences,
+      isNewUserOnboardingPending: false,
       
       dailyStreak: parseInt(localStorage.getItem('dailyStreak') || '0'),
       lastStreakDate: localStorage.getItem('lastStreakDate') || '',
@@ -698,6 +699,9 @@ export const useAppStore = defineStore('app', {
     // ── Authentication Actions ─────────────────────────────
     async registerUser(email, password) {
       const normalizedEmail = email.trim().toLowerCase()
+      // Never seed a new Firebase account with data left by another local session.
+      this.resetStoreData()
+      localStorage.removeItem('dlt-local-owner')
       // Step 1: Create Firebase Auth account — this MUST succeed
       let userCredential
       try {
@@ -710,6 +714,8 @@ export const useAppStore = defineStore('app', {
       this.user = userCredential.user
       this.isAuthenticated = true
       this.username = normalizedEmail.split('@')[0]
+      this.isNewUserOnboardingPending = true
+      localStorage.setItem('dlt-local-owner', this.user.uid)
 
       // Step 2: Write profile data to Firestore — do NOT block registration if this fails
       try {
@@ -726,8 +732,10 @@ export const useAppStore = defineStore('app', {
     async loginUser(email, password) {
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password)
+        if (localStorage.getItem('dlt-local-owner') !== userCredential.user.uid) this.resetStoreData()
         this.user = userCredential.user
         this.isAuthenticated = true
+        this.isNewUserOnboardingPending = false
         await this.fetchUserData()
       } catch (err) {
         throw err
@@ -742,7 +750,9 @@ export const useAppStore = defineStore('app', {
         this.user = null
         this.isAuthenticated = false
         this.username = ''
+        this.isNewUserOnboardingPending = false
         this.resetStoreData()
+        localStorage.removeItem('dlt-local-owner')
       } catch (err) {
         console.error('Logout error:', err)
       }
@@ -786,9 +796,11 @@ export const useAppStore = defineStore('app', {
           this.username = data.profileName || data.username || this.user?.email?.split('@')[0] || ''
 
           this.saveAllDataToLocalStorage()
+          localStorage.setItem('dlt-local-owner', this.user.uid)
         } else {
           // New user: Reset state to zero first, then sync to cloud to create document
           this.resetStoreData()
+          localStorage.setItem('dlt-local-owner', this.user.uid)
           await this.syncAllDataToCloud()
         }
       } catch (err) {
@@ -935,12 +947,16 @@ export const useAppStore = defineStore('app', {
         onAuthStateChanged(auth, async (firebaseUser) => {
           this.isAuthLoading = true
           if (firebaseUser) {
+            if (localStorage.getItem('dlt-local-owner') !== firebaseUser.uid) this.resetStoreData()
             this.user = firebaseUser
             this.isAuthenticated = true
+            // Restored sessions belong to existing accounts; onboarding is registration-only.
+            this.isNewUserOnboardingPending = false
             await this.fetchUserData()
           } else {
             this.user = null
             this.isAuthenticated = false
+            this.isNewUserOnboardingPending = false
           }
           this.isAuthLoading = false
           resolve(firebaseUser)

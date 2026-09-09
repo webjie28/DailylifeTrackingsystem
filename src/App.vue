@@ -43,7 +43,7 @@
 
     <!-- Global Confirmation Modal Dialog -->
     <TrackerAssistant v-if="store.isAuthenticated && !route.meta.isGuest" />
-    <OnboardingTour v-if="showOnboarding" @done="showOnboarding=false" />
+    <OnboardingTour v-if="showOnboarding" />
     <Teleport to="body">
       <div
         v-if="store.confirmDialog.show"
@@ -104,15 +104,11 @@ const store = useAppStore()
 const route = useRoute()
 const showSplash = ref(true)
 const isSplashFading = ref(false)
-const showOnboarding = ref(false)
+const showOnboarding = computed(() => store.isAuthenticated && store.isNewUserOnboardingPending)
 const focusMain = () => document.getElementById('main-content')?.focus()
 watch(() => route.path, () => {
   if (window.matchMedia('(max-width: 768px)').matches) store.isSidebarCollapsed = true
 })
-watch(() => store.user?.uid, uid => {
-  showOnboarding.value = !!uid && localStorage.getItem(`dlt-onboarding:${uid}`) !== 'done'
-}, { immediate: true })
-
 const pageThemeClass = computed(() => {
   if (!route.path) return 'page-dashboard'
   if (route.path === '/') return 'page-dashboard'
