@@ -5,7 +5,7 @@
   <div class="planner-layout"><section class="planner-calendar" aria-label="Monthly calendar"><div class="planner-month"><div><h2 aria-live="polite">{{ monthLabel }}</h2><span>{{ monthEvents }} {{ monthEvents === 1 ? 'event' : 'events' }} planned this month</span></div><div class="planner-controls"><button @click="goToday">Today</button><button @click="changeMonth(-1)" aria-label="Previous month">‹</button><button @click="changeMonth(1)" aria-label="Next month">›</button></div></div><div class="planner-weekdays" aria-hidden="true"><span v-for="day in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']" :key="day">{{ day }}</span></div><div class="planner-days"><button v-for="day in calendarDays" :key="day.key" class="planner-day" :class="{muted:!day.current,selected:day.key === selectedDate,today:day.key === store.todayKey}" :aria-pressed="day.key === selectedDate" :aria-label="`${day.key}, ${day.events.length} events`" @click="selectedDate = day.key"><span class="planner-day-number">{{ day.day }}</span><span v-for="event in day.events.slice(0,2)" :key="event.id" class="planner-event-chip" :class="event.category">{{ event.title }}</span><small v-if="day.events.length > 2">+{{ day.events.length - 2 }} more</small></button></div><div class="planner-legend"><span><i></i>Personal</span><span><i class="study"></i>Study / Work</span><span><i class="fitness"></i>Fitness</span><small>Select a day to see your plans</small></div></section>
   <aside class="planner-agenda"><section><div class="planner-agenda-heading"><small>YOUR DAY AT A GLANCE</small><h2>{{ selectedLabel }}</h2><span>{{ dayEvents.length }} {{ dayEvents.length === 1 ? 'item' : 'items' }}</span></div><div v-if="!dayEvents.length" class="planner-empty"><span>☼</span><h3>A little breathing room.</h3><p>Nothing planned for this day.<br>Make space for something good.</p><button @click="openNew">Add a plan ↗</button></div><article v-for="event in dayEvents" :key="event.id" class="planner-agenda-event"><small>{{ formatTimeLabel(event.time) }} <span>· {{ event.category }}{{ event.system ? ' · Synced' : '' }}</span></small><h3>{{ event.title }}</h3><div v-if="!event.system"><button @click="startEdit(event)" :aria-label="'Edit ' + event.title">Edit</button><button @click="deleteEvent(event.id)" :aria-label="'Delete ' + event.title">Delete</button></div></article></section><div class="planner-note"><span>✦</span><p>Goals, workouts, reading, and savings dates<br><strong>appear here automatically.</strong></p></div></aside></div>
   <section class="planner-schedule"><div class="planner-schedule-top"><h2>Your connected schedule</h2><div role="group" aria-label="Filter schedule"><button v-for="tab in ['all','upcoming','passed']" :key="tab" :aria-pressed="activeTab === tab" @click="activeTab = tab">{{ tab === 'all' ? 'Active' : tab === 'passed' ? 'Past' : 'Upcoming' }}</button></div></div><p v-if="!filteredEvents.length" class="planner-list-empty">No events in this view. Finished days move automatically to Past.</p><article v-for="event in filteredEvents" :key="event.id" class="planner-list-row"><span class="planner-date-badge"><small>{{ getMonthAbbr(event.date) }}</small><strong>{{ getDayNumber(event.date) }}</strong></span><div><h3>{{ event.title }}</h3><p>{{ formatTimeLabel(event.time) }} · {{ event.category }}{{ event.system ? ' · Synced from tracker' : '' }}</p></div><button v-if="!event.system" @click="startEdit(event)" :aria-label="'Edit scheduled event: ' + event.title">Edit ↗</button></article></section>
-  <Teleport to="body"><dialog ref="eventDialog" class="planner-dialog" aria-labelledby="event-form-title" @click="event => { if (event.target === eventDialog) closeForm() }"><button class="planner-close" @click="closeForm" aria-label="Close event form">×</button><small>MAKE IT A PLAN</small><h2 id="event-form-title">{{ editingEventId ? 'Edit your event' : 'Something to look forward to.' }}</h2><form @submit.prevent="saveEvent"><label for="planner-title">Event title</label><input id="planner-title" v-model="eventTitle" required maxlength="160" placeholder="e.g. Coffee with a friend"><div class="planner-form-row"><div><label for="planner-date">Date</label><input id="planner-date" type="date" v-model="eventDate" required></div><div><label for="planner-time">Time</label><input id="planner-time" type="time" v-model="eventTime" required></div></div><label for="planner-category">Category</label><select id="planner-category" v-model="eventCategory"><option v-for="category in ['Personal','Study','Fitness','Entertainment','Other']" :key="category">{{ category }}</option></select><div class="planner-form-actions"><button type="button" @click="closeForm">Cancel</button><button class="planner-primary" type="submit">{{ editingEventId ? 'Save changes' : 'Create event' }} ↗</button></div></form></dialog></Teleport>
+  <Teleport to="body"><dialog ref="eventDialog" class="planner-dialog" aria-labelledby="event-form-title" @click="event => { if (event.target === eventDialog) closeForm() }"><button class="planner-close" @click="closeForm" aria-label="Close event form">×</button><small>MAKE IT A PLAN</small><h2 id="event-form-title">{{ editingEventId ? 'Edit your event' : 'Something to look forward to.' }}</h2><form @submit.prevent="saveEvent"><label for="planner-title">Event title</label><input id="planner-title" v-model="eventTitle" required maxlength="160" placeholder="e.g. Coffee with a friend"><div class="planner-form-row"><div><label for="planner-date">Date</label><input id="planner-date" type="date" v-model="eventDate" required></div><div><label for="planner-time">Time</label><input id="planner-time" type="time" v-model="eventTime" required></div></div><label for="planner-category">Category</label><select id="planner-category" v-model="eventCategory"><option v-for="category in eventCategories" :key="category">{{ category }}</option></select><input v-if="eventCategory === 'Custom'" id="planner-custom-category" v-model="customCategory" required maxlength="40" placeholder="e.g. Family or volunteering"><div class="planner-form-actions"><button type="button" @click="closeForm">Cancel</button><button class="planner-primary" type="submit">{{ editingEventId ? 'Save changes' : 'Create event' }} ↗</button></div></form></dialog></Teleport>
  </div>
 </template>
 <script setup>
@@ -16,6 +16,7 @@ const store = useAppStore()
 const eventDialog = ref(null)
 const selectedDate = ref(getTodayKey())
 const month = ref(new Date(new Date().getFullYear(), new Date().getMonth(), 1))
+const eventCategories = ['Personal', 'Study', 'Fitness', 'Entertainment', 'Other', 'Custom']
 const dateKey = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
 const monthLabel = computed(() => month.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }))
 const selectedLabel = computed(() => new Date(selectedDate.value + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }))
@@ -47,6 +48,7 @@ const eventTitle = ref('')
 const eventDate = ref(getTodayKey())
 const eventTime = ref('09:00')
 const eventCategory = ref('Personal')
+const customCategory = ref('')
 const editingEventId = ref(null)
 
 const activeTab = ref('all')
@@ -115,7 +117,8 @@ function startEdit(event) {
   eventTitle.value = event.title
   eventDate.value = event.date
   eventTime.value = event.time
-  eventCategory.value = event.category
+  eventCategory.value = eventCategories.includes(event.category) ? event.category : 'Custom'
+  customCategory.value = eventCategories.includes(event.category) ? '' : event.category
   eventDialog.value.showModal()
 }
 
@@ -125,10 +128,11 @@ function cancelEdit() {
   eventDate.value = getTodayKey()
   eventTime.value = '09:00'
   eventCategory.value = 'Personal'
+  customCategory.value = ''
 }
 
 function saveEvent() {
-  if (!eventTitle.value.trim() || !eventDate.value || !eventTime.value) {
+  if (!eventTitle.value.trim() || !eventDate.value || !eventTime.value || (eventCategory.value === 'Custom' && !customCategory.value.trim())) {
     alert('Please fill out all fields.')
     return
   }
@@ -140,7 +144,7 @@ function saveEvent() {
       title: eventTitle.value.trim(),
       date: eventDate.value,
       time: eventTime.value,
-      category: eventCategory.value
+      category: eventCategory.value === 'Custom' ? customCategory.value.trim() : eventCategory.value
     }
     store.updateEvent(updated)
     editingEventId.value = null
@@ -151,7 +155,7 @@ function saveEvent() {
       title: eventTitle.value.trim(),
       date: eventDate.value,
       time: eventTime.value,
-      category: eventCategory.value
+      category: eventCategory.value === 'Custom' ? customCategory.value.trim() : eventCategory.value
     }
     store.addEvent(newEvent)
   }
@@ -165,6 +169,7 @@ function saveEvent() {
   eventDate.value = getTodayKey()
   eventTime.value = '09:00'
   eventCategory.value = 'Personal'
+  customCategory.value = ''
 }
 
 function deleteEvent(id) {
