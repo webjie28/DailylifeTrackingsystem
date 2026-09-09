@@ -1,8 +1,10 @@
 <script setup>
-import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAppStore } from '../stores/appStore'
 import { assistantContext } from '../services/assistantContext'
 const store = useAppStore()
+const router = useRouter()
 const trigger = ref(null)
 const panel = ref(null)
 const thread = ref(null)
@@ -11,8 +13,20 @@ const question = ref('')
 const messages = ref([])
 const pending = ref(false)
 const error = ref('')
+const showAttention = ref(false)
 let request
 const suggestions = ["How am I doing today?", "What haven't I logged today?", 'Which goal should I revisit?']
+const needsAttention = computed(() => {
+  const today = store.todayKey
+  const items = []
+  const habits = store.dailyTasks.filter(task => task.kind === 'everyday-habit')
+  const unchecked = habits.filter(task => !task.dates?.includes(today)).length
+  if (unchecked) items.push({ label:`${unchecked} habit${unchecked === 1 ? '' : 's'} not logged`, detail:'Review today’s habits', to:'/habits', icon:'✓' })
+  if (!store.dailyCheckins[today]) items.push({ label:'Daily check-in not logged', detail:'Add mood, sleep, meals, or self-care', to:'/check-in', icon:'♡' })
+  if (store.todayWaterIntake < store.waterDailyTarget) items.push({ label:`${Math.max(0, store.waterDailyTarget - store.todayWaterIntake).toLocaleString()} ml hydration remaining`, detail:'Update your water record', to:'/water', icon:'◌' })
+  if (!store.todaySteps && !store.gymTrackerData[today]) items.push({ label:'Movement not logged', detail:'Add steps or a workout', to:'/fitness', icon:'⌁' })
+  return items
+})
 const historyKey = () => `dlt-assistant-history:${store.user?.uid || 'anonymous'}`
 function loadHistory() {
   try { messages.value = JSON.parse(localStorage.getItem(historyKey()) || '[]').slice(-30) }
@@ -21,6 +35,7 @@ function loadHistory() {
 function saveHistory() { try { localStorage.setItem(historyKey(), JSON.stringify(messages.value.slice(-30))) } catch {} }
 function clearHistory() { messages.value = []; try { localStorage.removeItem(historyKey()) } catch {} }
 function close(returnFocus = true) { open.value = false; if (returnFocus) trigger.value?.focus() }
+function openAttention(item) { close(false); router.push(item.to) }
 async function ask(text = question.value) {
   if (pending.value || !text.trim()) return
   question.value = text
@@ -78,7 +93,11 @@ onUnmounted(()=>{ window.removeEventListener('keydown',onKeydown); window.remove
         <article v-for="(message,i) in messages" :key="i"><p class="assistant-question">{{ message.question }}</p><p class="assistant-reply">{{ message.reply }}</p></article>
         <p v-if="pending" role="status">Checking your tracker…</p>
       </div>
-      <div class="assistant-suggestions"><button v-for="text in suggestions" :key="text" :disabled="pending" @click="ask(text)">{{ text }}</button></div>
+      <div v-if="!messages.length" class="assistant-suggestions"><button v-for="text in suggestions" :key="text" :disabled="pending" @click="ask(text)">{{ text }}</button></div>
+      <section v-if="messages.length && needsAttention.length" class="attention-inbox">
+        <button class="attention-toggle" @click="showAttention=!showAttention" :aria-expanded="showAttention"><span><b>{{ needsAttention.length }}</b><span><strong>Needs attention</strong><small>Items you have not logged today</small></span></span><i>{{ showAttention ? '−' : '+' }}</i></button>
+        <div v-if="showAttention" class="attention-list"><button v-for="item in needsAttention" :key="item.to" @click="openAttention(item)"><span>{{ item.icon }}</span><span><strong>{{ item.label }}</strong><small>{{ item.detail }}</small></span><b>→</b></button></div>
+      </section>
       <p v-if="error" role="alert" class="assistant-error">{{ error }}</p>
       <form @submit.prevent="ask()"><label for="assistant-question">Ask about your tracker</label><div><input id="assistant-question" v-model="question" maxlength="1000" placeholder="What should I focus on next?" required :disabled="pending"><button :disabled="pending || !question.trim()">{{ pending ? 'Waiting…' : 'Send' }}</button></div></form>
     </aside>
@@ -90,6 +109,7 @@ onUnmounted(()=>{ window.removeEventListener('keydown',onKeydown); window.remove
 .assistant-launch:hover{transform:translateY(-4px) scale(1.07);box-shadow:0 18px 40px #d957006b,0 0 0 10px #ef6c1b24}.assistant-launch:focus-visible{outline:3px solid #ef6c1b55;outline-offset:5px}.assistant-launch svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transform-origin:center;transition:transform .2s ease}.assistant-launch:hover svg{animation:assistant-wave .55s ease}.assistant-launch-label{position:absolute;right:69px;min-width:128px;padding:9px 12px;border:1px solid var(--border-color);border-radius:12px;background:var(--bg-card);color:var(--text-primary);box-shadow:0 8px 24px #18231d20;text-align:left;white-space:nowrap;transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}.assistant-launch:hover .assistant-launch-label{transform:translateX(-5px);border-color:#ef6c1b80;box-shadow:0 12px 30px #b750172b}.assistant-launch-label strong,.assistant-launch-label small{display:block}.assistant-launch-label strong{font-size:13px}.assistant-launch-label small{margin-top:2px;color:var(--text-muted);font-size:11px;font-weight:500}.assistant-pulse{position:absolute;right:2px;top:2px;width:11px;height:11px;border:2px solid var(--bg-primary);border-radius:50%;background:#8fb46d}.assistant-pulse::after{content:'';position:absolute;inset:-4px;border:1px solid #8fb46d;border-radius:50%;animation:assistant-ping 2s ease-out infinite}@keyframes assistant-ping{0%{transform:scale(.7);opacity:.8}70%,100%{transform:scale(1.8);opacity:0}}@keyframes assistant-arrive{from{opacity:0;transform:translateY(18px) scale(.84)}to{opacity:1;transform:none}}@keyframes assistant-wave{0%,100%{transform:rotate(0) scale(1)}30%{transform:rotate(-8deg) scale(1.08)}65%{transform:rotate(7deg) scale(1.12)}}
 .assistant-panel{position:fixed;z-index:950;inset:0 0 0 auto;width:min(440px,100vw);height:100dvh;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;padding:26px 22px;border:0;border-left:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);box-shadow:-20px 0 55px #101a1530;transform:translateX(105%);visibility:hidden;pointer-events:none;transition:transform .32s cubic-bezier(.2,.8,.2,1),visibility .32s}
 .assistant-panel.is-open{transform:translateX(0);visibility:visible;pointer-events:auto}header{display:flex;justify-content:space-between;align-items:start;text-align:left;margin:0;flex-shrink:0}h2{font-size:25px;margin:3px 0 0}.assistant-eyebrow{color:#ef6c1b;font-size:11px;font-weight:800;letter-spacing:.16em}header p{font-size:14px;color:var(--text-muted);margin:5px 0 14px}header button{flex:0 0 44px;width:44px;height:44px;display:grid;place-items:center;margin:-6px -6px 0 8px;background:var(--bg-subtle);border:1px solid var(--border-color);border-radius:50%;color:inherit;font-size:27px;line-height:1;cursor:pointer}.assistant-disclosure{font-size:12px;color:var(--text-muted);line-height:1.6;padding:12px;background:var(--bg-subtle);border-radius:10px}.assistant-history-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0 4px;color:var(--text-muted);font-size:12px}.assistant-history-bar button{border:0;background:none;color:#d45e18;font-size:12px;cursor:pointer}.assistant-thread{flex:1;min-height:100px;overflow:auto;padding-right:3px;font-size:15px;line-height:1.7;overscroll-behavior:contain}.assistant-thread article{padding-bottom:8px;border-bottom:1px solid var(--border-color)}.assistant-question{background:var(--bg-subtle);padding:12px;border-radius:12px}.assistant-reply{white-space:pre-wrap;overflow-wrap:anywhere}.assistant-suggestions{display:flex;gap:7px;flex-wrap:wrap;margin:13px 0}.assistant-suggestions button{background:var(--bg-subtle);color:var(--text-primary);border:1px solid var(--border-color);padding:8px 10px;border-radius:15px;font-size:12px;cursor:pointer}form label{font-size:13px;display:block;margin:10px 0 8px}form>div{display:flex;gap:8px}input{min-width:0;flex:1;padding:12px;border:1px solid var(--border-color);border-radius:10px;background:var(--bg-primary);color:var(--text-primary);font-size:16px}form button{border:0;background:#315f47;color:white;padding:12px;border-radius:10px;cursor:pointer}button:disabled{opacity:.6;cursor:wait}.assistant-error{color:var(--text-primary);border-left:3px solid #c68766;padding:10px;font-size:13px}
+.attention-inbox{flex-shrink:0;margin-top:10px;border:1px solid var(--border-color);border-radius:13px;overflow:hidden;background:var(--bg-subtle)}.attention-inbox button{font:inherit;color:var(--text-primary);cursor:pointer}.attention-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:11px;border:0;background:transparent;text-align:left}.attention-toggle>span{display:flex;align-items:center;gap:10px}.attention-toggle>span>b{display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:#d96721;color:white;font-size:12px}.attention-toggle strong,.attention-toggle small,.attention-list strong,.attention-list small{display:block}.attention-toggle strong{font-size:12px}.attention-toggle small,.attention-list small{margin-top:2px;color:var(--text-muted);font-size:10px}.attention-toggle>i{font-style:normal;font-size:20px}.attention-list{border-top:1px solid var(--border-color);max-height:190px;overflow:auto}.attention-list>button{display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:9px;width:100%;padding:10px 12px;border:0;border-bottom:1px solid var(--border-color);background:transparent;text-align:left}.attention-list>button:hover{background:var(--bg-hover)}.attention-list>button:last-child{border-bottom:0}.attention-list>button>span:first-child{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--bg-card)}.attention-list strong{font-size:11px}
 @media (max-width:700px){.assistant-launch{right:16px;bottom:max(16px,env(safe-area-inset-bottom));width:54px;height:54px}.assistant-launch-label{display:none}.assistant-panel{width:calc(100vw - 10px);height:100dvh;padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom));border-radius:18px 0 0 18px}.assistant-panel header h2{font-size:22px}.assistant-disclosure{max-height:92px;overflow:auto}.assistant-suggestions{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.assistant-suggestions button{flex:0 0 auto;min-height:40px}form{flex-shrink:0}form button{min-height:46px;min-width:62px}}
 @media (prefers-reduced-motion:reduce){.assistant-launch,.assistant-launch svg,.assistant-launch-label{animation:none!important;transition:none}.assistant-pulse::after{animation:none}}
 </style>
